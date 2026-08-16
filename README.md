@@ -32,9 +32,10 @@ Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 
 ## Current status
 
-Slice 1 currently introduces only `@wizloft/harness-kernel` as a real workspace package.
-The public consumer-facing `@wizloft/harness` facade remains intentionally deferred until a
-later slice gives it concrete responsibility.
+Slice 2 extends `@wizloft/harness-kernel` with deterministic profile/config composition and typed
+runtime events, and introduces `@wizloft/harness-plugin-file-events` for JSONL event persistence.
+The public consumer-facing `@wizloft/harness` facade remains intentionally deferred until a later
+slice gives it concrete responsibility.
 
 ## Development
 

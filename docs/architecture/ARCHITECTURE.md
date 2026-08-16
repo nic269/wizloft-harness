@@ -94,7 +94,8 @@ Deleting the memory index/store must not delete project truth. Deleting an event
 
 ## Profiles
 
-Profiles compose plugins/configuration deterministically:
+Profiles are a kernel composition primitive. They compose plugins and declarative,
+JSON-compatible plugin configuration deterministically:
 
 ```text
 base
@@ -102,6 +103,67 @@ base
     -> domain profile/plugin
       -> project-local config/overrides
 ```
+
+Each named layer is applied in declaration order. The kernel first adds that layer's
+plugins, then applies that layer's per-plugin config overrides. An override may target a
+plugin added in the same layer or an earlier layer; targeting a plugin that does not yet
+exist is a structured composition error. Adding the same plugin name more than once is
+also an error. v0 has no plugin replace/remove semantics.
+
+Configuration accepts JSON-compatible primitives, arrays, plain objects, and `null`.
+Plain objects merge recursively; arrays, primitives, and `null` replace the prior value;
+and an `undefined` override means inherit/no override. The resolved config for each plugin
+is cloned and deeply frozen before only that plugin receives it through its public
+`PluginContext`.
+
+`profiles/base` remains a target location and is created only when a real base profile has
+plugins or configuration to compose.
+
+## Events
+
+Typed event contracts use stable string-identified tokens such as
+`createEventType<TPayload>('wizloft.validation.finished')`. Independent plugins keep their own
+payload types without contributing to a closed global event map.
+
+Every immutable event envelope contains:
+
+- a runtime id;
+- the stable event type string;
+- a runtime-local monotonic sequence;
+- an ISO-8601 UTC occurrence timestamp;
+- an immutable JSON-compatible payload snapshot.
+
+Runtime id generation and the clock have defaults and are injectable for deterministic
+tests. `runtimeId + sequence` is the stable runtime-scoped event identity.
+
+Publish calls are serialized and receive sequence numbers in accepted enqueue order.
+Delivery uses deterministic subscription registration order. A publish snapshots its
+active listener set before delivery, so subscription changes affect only later events.
+Listener failures do not stop remaining listeners: the kernel collects structured
+diagnostics and rejects the publish after the whole snapshot completes, without rolling
+back successful listener effects.
+
+Event publication is non-reentrant in v0. A listener attempting to publish another event
+during delivery receives a structured failure instead of entering a nested scheduler or
+queue deadlock. Plugins may subscribe during setup, but publication begins only after the
+runtime becomes active. Subscriptions are plugin-owned effects and participate in normal
+rollback and shutdown cleanup.
+
+`plugins/file-events` is an ordinary event subscriber. It appends immutable envelopes as
+JSONL and reads persisted events in append order. Persistence failures follow ordinary
+listener failure semantics. v0 makes no transactional, write-ahead, or crash-durability
+claim for this provider.
+
+Runtime identifiers follow a lightweight namespacing convention before ecosystem growth:
+
+- first-party plugin ids: `@wizloft/<name>`;
+- project/domain plugin ids: `@<project>/<name>`;
+- first-party event ids: `wizloft.<domain>.<event>`;
+- project/domain event ids: `<project>.<domain>.<event>`.
+
+The file-events package therefore registers the runtime plugin id `@wizloft/file-events`.
+These are documentation conventions in v0; the kernel does not add namespace registries or
+ownership enforcement.
 
 ## Agent/runtime relationship
 

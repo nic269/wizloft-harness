@@ -12,6 +12,8 @@ export {
   type KernelDiagnostic,
   type KernelDiagnosticCode,
 } from './diagnostics.js';
+export { assertEventTypeId, createEventType } from './events.js';
+export { composeProfile, defineProfile } from './profiles.js';
 export { createHarnessRuntime } from './runtime.js';
 export type {
   CapabilityAccess,
@@ -20,9 +22,25 @@ export type {
   CapabilityRequirement,
   CapabilityToken,
   CreateHarnessRuntimeOptions,
+  DeepReadonly,
   Disposer,
+  EventAccess,
+  EventEnvelope,
+  EventListener,
+  EventPublisher,
+  EventType,
+  HarnessProfile,
   HarnessRuntime,
+  JsonArray,
+  JsonObject,
+  JsonObjectOverride,
+  JsonOverride,
+  JsonPrimitive,
+  JsonValue,
   MaybePromise,
   PluginContext,
+  ProfileLayer,
+  ResolvedProfile,
+  ResolvedProfilePlugin,
   WizloftPlugin,
 } from './types.js';

@@ -20,6 +20,12 @@ importers:
 
   packages/kernel: {}
 
+  plugins/file-events:
+    dependencies:
+      '@wizloft/harness-kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
+
 packages:
 
   '@biomejs/biome@2.5.2':

@@ -46,6 +46,12 @@ For bounded work, use an ephemeral plan in the current Codex session.
 For work spanning slices/sessions, maintain the active plan.
 Do not create story packets, matrices, or parallel planning artifacts without independent long-term value.
 
+## Review snapshots
+
+- Generate Repomix and external-review snapshots outside the repository root by default.
+- If a local copy is temporarily necessary, place it only under `.local/review-snapshots/`.
+- Generated review snapshots are local artifacts, not repository authority, and must not be tracked or staged.
+
 ## Subagent Discipline
 
 - Review, audit, and debug-analysis subagents are read-only unless explicitly granted write ownership.

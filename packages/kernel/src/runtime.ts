@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { assertCapabilityId } from './capabilities.js';
 import {
   type Diagnostic,
@@ -6,20 +8,27 @@ import {
   HarnessKernelError,
   type KernelDiagnostic,
 } from './diagnostics.js';
+import { createEventDispatcher, type RuntimeState } from './events.js';
+import { composeProfile, profileFromPlugins } from './profiles.js';
 import type {
   CapabilityId,
   CapabilityToken,
   CreateHarnessRuntimeOptions,
   Disposer,
   HarnessRuntime,
+  JsonValue,
+  MaybePromise,
   PluginContext,
+  ResolvedProfile,
+  ResolvedProfilePlugin,
   WizloftPlugin,
 } from './types.js';
 
 interface PluginRecord {
+  readonly config: JsonValue;
   readonly name: string;
   readonly version: string;
-  readonly setup: WizloftPlugin['setup'];
+  readonly setup: (context: PluginContext<JsonValue>) => MaybePromise<Disposer | undefined>;
   readonly requires: Set<CapabilityId>;
   readonly provides: Set<CapabilityId>;
   readonly effects: Disposer[];
@@ -157,14 +166,15 @@ function findCycle(
 }
 
 function resolveComposition(
-  plugins: readonly unknown[],
+  plugins: readonly ResolvedProfilePlugin[],
   emit: (d: KernelDiagnostic) => void,
 ): Composition {
   const diagnostics: KernelDiagnostic[] = [];
   const names = new Set<string>();
   const records: PluginRecord[] = [];
 
-  for (const plugin of plugins) {
+  for (const resolvedPlugin of plugins) {
+    const plugin: unknown = resolvedPlugin.plugin;
     if (plugin === null || typeof plugin !== 'object') {
       diagnostics.push(
         pluginDiagnostic(
@@ -211,9 +221,10 @@ function resolveComposition(
 
     try {
       records.push({
+        config: resolvedPlugin.config,
         name,
         version,
-        setup: candidate.setup.bind(plugin),
+        setup: candidate.setup.bind(plugin) as PluginRecord['setup'],
         requires: capabilityIds(candidate.requires, name, 'requires'),
         provides: capabilityIds(candidate.provides, name, 'provides'),
         effects: [],
@@ -339,23 +350,18 @@ export async function createHarnessRuntime(
 ): Promise<HarnessRuntime> {
   const collector = new DiagnosticCollector();
   const runtimeOptions: unknown = options;
-  if (
-    runtimeOptions === null ||
-    typeof runtimeOptions !== 'object' ||
-    !('plugins' in runtimeOptions) ||
-    !Array.isArray(runtimeOptions.plugins)
-  ) {
+  if (runtimeOptions === null || typeof runtimeOptions !== 'object') {
     const diagnostic = pluginDiagnostic(
       'INVALID_PLUGIN',
-      'Harness runtime options must contain a plugins array',
+      'Harness runtime options must be an object',
       '<runtime>',
     );
     collector.report(diagnostic);
     throw new HarnessKernelError(diagnostic.message, [diagnostic]);
   }
+  const optionsRecord = runtimeOptions as Record<string, unknown>;
 
-  const diagnosticsOption =
-    'diagnostics' in runtimeOptions ? runtimeOptions.diagnostics : undefined;
+  const diagnosticsOption = 'diagnostics' in optionsRecord ? optionsRecord.diagnostics : undefined;
   if (
     diagnosticsOption !== undefined &&
     (diagnosticsOption === null ||
@@ -383,10 +389,91 @@ export async function createHarnessRuntime(
     }
   };
 
-  const composition = resolveComposition(runtimeOptions.plugins, emit);
+  const hasPlugins = 'plugins' in optionsRecord;
+  const hasProfile = 'profile' in optionsRecord;
+  if (hasPlugins === hasProfile) {
+    const diagnostic = pluginDiagnostic(
+      'INVALID_PROFILE',
+      'Harness runtime options must contain exactly one of plugins or profile',
+      '<runtime>',
+    );
+    emit(diagnostic);
+    throw new HarnessKernelError(diagnostic.message, [diagnostic]);
+  }
+  if (hasPlugins && !Array.isArray(optionsRecord.plugins)) {
+    const diagnostic = pluginDiagnostic(
+      'INVALID_PLUGIN',
+      'Harness runtime plugins must be an array',
+      '<runtime>',
+    );
+    emit(diagnostic);
+    throw new HarnessKernelError(diagnostic.message, [diagnostic]);
+  }
+
+  let resolvedProfile: ResolvedProfile;
+  try {
+    resolvedProfile = hasProfile
+      ? composeProfile(optionsRecord.profile as never)
+      : profileFromPlugins(optionsRecord.plugins as readonly WizloftPlugin[]);
+  } catch (error) {
+    if (error instanceof HarnessKernelError) {
+      for (const diagnostic of error.diagnostics) emit(diagnostic);
+    }
+    throw error;
+  }
+
+  const clockOption = 'clock' in optionsRecord ? optionsRecord.clock : undefined;
+  if (clockOption !== undefined && typeof clockOption !== 'function') {
+    const diagnostic = pluginDiagnostic(
+      'INVALID_CLOCK',
+      'Harness runtime clock must be a function',
+      '<runtime>',
+    );
+    emit(diagnostic);
+    throw new HarnessKernelError(diagnostic.message, [diagnostic]);
+  }
+  const clock = (clockOption ?? (() => new Date())) as () => Date;
+
+  const runtimeIdGeneratorOption =
+    'runtimeIdGenerator' in optionsRecord ? optionsRecord.runtimeIdGenerator : undefined;
+  if (runtimeIdGeneratorOption !== undefined && typeof runtimeIdGeneratorOption !== 'function') {
+    const diagnostic = pluginDiagnostic(
+      'INVALID_RUNTIME_ID',
+      'Harness runtime id generator must be a function',
+      '<runtime>',
+    );
+    emit(diagnostic);
+    throw new HarnessKernelError(diagnostic.message, [diagnostic]);
+  }
+
+  let runtimeId: string;
+  try {
+    runtimeId = (runtimeIdGeneratorOption ?? randomUUID)();
+  } catch (error) {
+    const diagnostic = pluginDiagnostic(
+      'INVALID_RUNTIME_ID',
+      'Harness runtime id generator failed',
+      '<runtime>',
+      undefined,
+      error,
+    );
+    emit(diagnostic);
+    throw new HarnessKernelError(diagnostic.message, [diagnostic], error);
+  }
+  if (typeof runtimeId !== 'string' || runtimeId.trim().length === 0) {
+    const diagnostic = pluginDiagnostic(
+      'INVALID_RUNTIME_ID',
+      'Harness runtime id generator must return a non-empty string',
+      '<runtime>',
+    );
+    emit(diagnostic);
+    throw new HarnessKernelError(diagnostic.message, [diagnostic]);
+  }
+
+  const composition = resolveComposition(resolvedProfile.plugins, emit);
   const services = new Map<CapabilityId, ActiveService>();
   const initialized: PluginRecord[] = [];
-  let state: 'booting' | 'active' | 'shutting-down' | 'disposed' = 'booting';
+  let state: RuntimeState = 'booting';
   let shutdownPromise: Promise<void> | undefined;
 
   const fail = (diagnostic: KernelDiagnostic): never => {
@@ -449,7 +536,15 @@ export async function createHarnessRuntime(
     return failures;
   };
 
-  const contextFor = (record: PluginRecord): PluginContext => ({
+  const eventDispatcher = createEventDispatcher({
+    clock,
+    emit,
+    runtimeId,
+    state: () => state,
+  });
+
+  const contextFor = (record: PluginRecord): PluginContext<JsonValue> => ({
+    config: record.config,
     capabilities: {
       get<T>(token: CapabilityToken<T>): T {
         const capabilityId = readCapabilityId(token, record.name);
@@ -536,6 +631,9 @@ export async function createHarnessRuntime(
         return dispose;
       },
     },
+    events: eventDispatcher.accessFor(record.name, (disposer) => {
+      record.effects.push(disposer);
+    }),
     diagnostics: {
       report(diagnostic): void {
         emit({
@@ -605,7 +703,9 @@ export async function createHarnessRuntime(
     get diagnostics(): readonly Diagnostic[] {
       return collector.diagnostics;
     },
+    events: eventDispatcher.publisher,
     pluginOrder: Object.freeze(composition.order.map((record) => record.name)),
+    runtimeId,
     getCapability<T>(token: CapabilityToken<T>): T {
       const capabilityId = readCapabilityId(token);
       if (state !== 'active') {
@@ -633,6 +733,8 @@ export async function createHarnessRuntime(
       shutdownPromise ??= (async () => {
         state = 'shutting-down';
         const failures: KernelDiagnostic[] = [];
+
+        await eventDispatcher.drain();
 
         for (const record of [...initialized].reverse()) {
           failures.push(...(await cleanupRecord(record, 'shutdown')));

@@ -73,13 +73,61 @@ Slice 1 implements only the capability/lifecycle/diagnostic plugin-context surfa
 
 ## Slice 2 — Config/profiles/events
 
-- typed project/profile config;
-- deterministic profile layering/overrides;
-- event bus;
-- append-only file event provider;
-- repeatable boot/event ordering tests.
+Status: Complete (2026-08-16)
 
-No workflow engine or dynamic remote plugin execution.
+Accepted scope:
+
+- keep profile/config composition in the kernel and accept only declarative JSON-compatible data;
+- apply named layers in declaration order by adding the layer's plugins and then applying its config overrides;
+- reject duplicate plugin additions and overrides for plugins that do not yet exist; do not add plugin replace/remove behavior;
+- recursively merge plain objects, replace arrays/primitives/`null`, and treat `undefined` overrides as inherit/no override;
+- clone and deeply freeze each plugin's resolved config, exposing only that config through typed `PluginContext<TConfig>.config`;
+- add stable typed event tokens without a central/global augmented event map;
+- emit immutable envelopes with injectable runtime id/clock, runtime-local sequence, ISO-8601 UTC timestamp, and immutable JSON-compatible payload snapshots;
+- serialize publish calls and deliver snapshot listener sets in subscription registration order;
+- continue delivery after listener failures, collect structured diagnostics, and reject publish after delivery completes;
+- reject non-reentrant nested publication with a structured diagnostic;
+- allow setup-time subscriptions but prohibit publication until runtime activation;
+- own subscriptions through existing plugin rollback/shutdown lifecycle;
+- create `plugins/file-events` to append envelopes as JSONL and read them in append order;
+- treat file persistence as an ordinary listener effect and make no transactional/write-ahead/crash-durability claim;
+- cover repeatable boot, config merge/immutability, event ordering/snapshot/failure/lifecycle, and persisted read-order behavior.
+
+Explicitly deferred:
+
+- `profiles/base` until a real profile has plugins/configuration;
+- replay, projections, workflow orchestration, startup/lifecycle events, and dynamic remote plugin execution;
+- Context, Authority, Validation, Evidence, Memory, commands, and the public `@wizloft/harness` facade.
+
+Implemented:
+
+- kernel-owned named profile layers with add-then-override composition semantics;
+- JSON-compatible config validation, recursive object merge, replacement semantics, and `undefined` inheritance;
+- cloned, deeply frozen, per-plugin typed config through `PluginContext<TConfig>.config`;
+- runtime config validation remains plugin-owned because the string-keyed profile config map is not compile-time schema-correlated with each plugin's `TConfig`;
+- stable typed event tokens and immutable runtime-scoped event envelopes;
+- injectable runtime id generation and clock seams;
+- serialized publish ordering, listener registration ordering, listener-set snapshots, and immutable payload snapshots;
+- continue-on-listener-failure diagnostics with post-delivery publish rejection;
+- structured non-reentrant publication rejection and active-runtime publication gating;
+- plugin-owned event subscriptions integrated with rollback/shutdown, including draining accepted publications before cleanup;
+- `@wizloft/harness-plugin-file-events` as an ordinary all-event subscriber with runtime plugin id `@wizloft/file-events` and JSONL append/read behavior;
+- persisted envelope validation for non-empty runtime ids, event ids, positive safe sequences, writer-compatible UTC timestamps, and recursive `JsonValue` payloads;
+- documented first-party and project/domain plugin/event namespacing conventions without kernel enforcement;
+- no `profiles/base`, facade, capability packages, workflow behavior, replay, or projection implementation.
+
+Proof:
+
+- `pnpm verify` succeeds in the repository workspace on Node.js 22.13.1 with pnpm 11.10.0;
+- `pnpm install --frozen-lockfile` followed by `pnpm verify` succeeds in a fresh temporary copy;
+- the fresh proof succeeds on exact Node.js 22.13.0 with pnpm 11.10.0;
+- bootstrap tests pass: 5 passed, 0 failed;
+- kernel tests pass: 30 passed, 0 failed, including all 19 Slice 1 regressions and the listener delivery-scope lifetime regression;
+- file-events tests pass: 9 passed, 0 failed, including 5 corrupted-history regressions;
+- total automated tests pass: 44 passed, 0 failed;
+- both workspace packages typecheck and build from the fresh copy without relying on stale `dist/` output;
+- Biome check and workspace ownership/verification checks pass.
+- the repository and fresh proof copy contain no generated Repomix/review snapshot; the legacy tracked snapshot is removed and future local snapshots are confined to the ignored `.local/review-snapshots/` path.
 
 ## Slice 3 — Context + Authority
 

@@ -2,10 +2,10 @@
 
 Composition-only kernel for Wizloft Harness runtimes.
 
-The public consumer-facing `@wizloft/harness` facade is still deferred. Slice 1 exposes only the
-kernel package because no later-slice SDK responsibility is implemented yet.
+The public consumer-facing `@wizloft/harness` facade is still deferred. The kernel package exposes
+only composition primitives and runtime invariants.
 
-## Slice 1 contract
+## Current contract
 
 - capability identity uses stable exact-major ids such as `context@1`;
 - one active service may exist for each capability id in one runtime;
@@ -14,32 +14,49 @@ kernel package because no later-slice SDK responsibility is implemented yet.
 - plugin names are unique within one resolved runtime;
 - setup failure and shutdown clean up in reverse order and report every disposer failure;
 - diagnostics accept capability-specific codes without adding them to the kernel.
+- named profile layers add plugins and then apply deterministic per-plugin config overrides;
+- plugin config is JSON-compatible, cloned, deeply frozen, and visible only to its plugin;
+- typed event tokens use stable string identity without a global event map;
+- event publication is serialized, immutable, listener-snapshotted, and non-reentrant;
+- listener subscriptions are plugin-owned lifecycle effects.
 
 ```ts
 import {
   createCapabilityToken,
+  createEventType,
   createHarnessRuntime,
   declareCapability,
 } from '@wizloft/harness-kernel';
 
 const greeting = createCapabilityToken<{ message: string }>('greeting@1');
+const completed = createEventType<{ result: string }>('wizloft.example.completed');
 
 const runtime = await createHarnessRuntime({
-  plugins: [
-    {
-      name: 'greeting-provider',
-      version: '1.0.0',
-      provides: [declareCapability(greeting)],
-      setup(context) {
-        context.capabilities.provide(greeting, { message: 'hello' });
+  profile: {
+    layers: [
+      {
+        name: 'example',
+        plugins: [
+          {
+            name: 'greeting-provider',
+            version: '1.0.0',
+            provides: [declareCapability(greeting)],
+            setup(context) {
+              context.capabilities.provide(greeting, { message: 'hello' });
+            },
+          },
+        ],
+        config: { 'greeting-provider': { enabled: true } },
       },
-    },
-  ],
+    ],
+  },
 });
 
 runtime.getCapability(greeting);
+await runtime.events.publish(completed, { result: 'ok' });
 await runtime.shutdown();
 ```
 
-Configuration, profiles, and events are intentionally deferred to Slice 2. Capability-specific
-multi-contributor behavior belongs inside capability services, not in generic kernel multibinding.
+Capability-specific multi-contributor behavior belongs inside capability services, not in generic
+kernel multibinding. Replay, projections, workflows, capability packages, commands, and the public
+SDK facade remain outside this kernel slice.
