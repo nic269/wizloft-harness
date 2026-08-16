@@ -7,7 +7,7 @@ This file is the human bootstrap guide for starting Wizloft Harness with Codex.
 Keep Wizloft projects as sibling repositories:
 
 ```text
-~/Projects/AnhN/
+/Volumes/anh.nguyen/Projects/AnhN/
 ├── wizloft-harness/
 ├── wizloft-cli/
 ├── meldmark/
@@ -22,7 +22,7 @@ The current JavaScript/CommonJS implementation is a behavior and safety referenc
 Before changing it:
 
 ```bash
-cd ~/Projects/AnhN/wizloft-cli
+cd /Volumes/anh.nguyen/Projects/AnhN/wizloft-cli
 git status
 git add -A
 git commit -m "chore: checkpoint pre-TypeScript Wizloft CLI"   # only if needed
@@ -37,13 +37,13 @@ Do not begin the TypeScript rewrite yet.
 Unzip/copy this starter to:
 
 ```text
-~/Projects/AnhN/wizloft-harness
+/Volumes/anh.nguyen/Projects/AnhN/wizloft-harness
 ```
 
 Then:
 
 ```bash
-cd ~/Projects/AnhN/wizloft-harness
+cd /Volumes/anh.nguyen/Projects/AnhN/wizloft-harness
 git init
 git add .
 git commit -m "chore: bootstrap Wizloft Harness architecture"
@@ -83,13 +83,13 @@ Commit the updated `docs/references/UPSTREAM-BASELINES.md`.
 Make the existing CLI easy for Codex to inspect without copying it into Harness:
 
 ```bash
-./scripts/link-consumer.sh wizloft-cli ~/Projects/AnhN/wizloft-cli
+./scripts/link-consumer.sh wizloft-cli /Volumes/anh.nguyen/Projects/AnhN/wizloft-cli
 ```
 
 Optionally link Meldmark now for later inspection:
 
 ```bash
-./scripts/link-consumer.sh meldmark ~/Projects/AnhN/meldmark
+./scripts/link-consumer.sh meldmark /Volumes/anh.nguyen/Projects/AnhN/meldmark
 ```
 
 The links live under `.references/consumers/` and are gitignored. Treat them as read-only while implementing Harness unless a later phase explicitly switches work to that consumer repository.
@@ -97,7 +97,7 @@ The links live under `.references/consumers/` and are gitignored. Treat them as 
 ## 6. Open Codex in the Harness repository
 
 ```bash
-cd ~/Projects/AnhN/wizloft-harness
+cd /Volumes/anh.nguyen/Projects/AnhN/wizloft-harness
 codex
 ```
 
