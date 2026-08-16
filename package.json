@@ -11,7 +11,7 @@
     "build": "pnpm workspace:check && pnpm --recursive run build",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "test": "pnpm workspace:check && node --test tests/bootstrap.test.mjs && pnpm --recursive run test",
+    "test": "pnpm workspace:check && node --test tests/bootstrap.test.mjs && pnpm --recursive run test && node --test tests/muh.test.mjs",
     "typecheck": "pnpm workspace:check && tsc --project tsconfig.json --noEmit --pretty false && pnpm --recursive run typecheck",
     "verify": "pnpm workspace:check && pnpm check && pnpm typecheck && pnpm test && pnpm build",
     "workspace:check": "node scripts/check-workspace.mjs"

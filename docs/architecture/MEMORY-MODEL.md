@@ -165,6 +165,6 @@ change Memory lifecycle automatically, or execute docs/skill/policy/validator/pl
 - embeddings, vector search, or semantic relevance scoring;
 - SQLite/Postgres providers or store multibinding/fallback/tiering;
 - memory events and Evidence coupling;
-- workflows, commands, SDK/public facade, and profile/base;
+- workflows and profile/base;
 - source watchers, source hashing, and autonomous invalidation;
 - generic update/delete APIs.

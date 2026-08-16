@@ -192,6 +192,57 @@ wizloft-cli
 
 This prevents duplicate command logic while keeping Harness embeddable by agents, CI, future UIs, and DeepSeek integration.
 
+## Public SDK, commands, and CLI adapter
+
+`@wizloft/harness` is a curated facade over exactly one owned Harness runtime. Consumers must pass
+an explicit `HarnessProfile` to `createHarness()`; v0 has no implicit/default/global profile or
+process-global runtime. The facade re-exports the stable profile contracts/helpers needed to define
+and compose profiles, while provider plugins remain explicit application-bootstrap imports.
+
+The facade delegates grouped Context, Authority, Memory, Validation, and Evidence operations to the
+corresponding active capability service without exposing raw services or duplicating their business
+logic. It also exposes immutable runtime inspection, optional event-history reading through a
+construction-time snapshotted structural reader, and idempotent runtime shutdown. Facade lifecycle
+and availability failures use structured `HarnessError` codes for unavailable capabilities, missing
+event-history configuration, and a runtime that is no longer active; capability-specific errors
+retain their existing public types.
+
+Kernel inspection is read-only and deterministic: runtime id/state, resolved plugin order and
+snapshotted plugin identity/requirements/provisions, active capability-to-provider identities, and
+diagnostics in recorded order. It never exposes service instances, plugin config, mutable
+collections, listeners, disposers, or registry internals. Inspection remains available during
+shutdown and after disposal; disposed snapshots retain resolved plugin metadata but have no active
+capabilities.
+
+`@wizloft/harness-commands` is a bounded SDK command executor over the public facade, not a kernel
+capability or command registry. It owns the stable v0 command ids `harness.inspect`,
+`context.resolve`, `authority.resolve`, `memory.remember`, `memory.recall`, `memory.transition`,
+`validation.select`, `validation.run`, `evidence.list`, and `events.read`. Unknown/untyped requests
+are validated at runtime. Expected operational/domain failures become deeply immutable,
+JSON-compatible command-error envelopes; completed negative domain results such as Authority
+ambiguity/conflict or a Validation report with `ok: false` remain normal result envelopes.
+
+`@wizloft/harness-cli-adapter` parses only Harness-module argv, invokes the command executor, and
+returns rendered `{ exitCode, stdout, stderr }` data. It owns module-local `--json`, `--help`, and
+Harness subcommand help, but never performs process IO, exits a process, runs shell commands, loads a
+profile, or owns executable branding/version/root options. JSON mode emits exactly one envelope on
+stdout and no structured-error stderr; human mode sends results to stdout and structured errors to
+stderr. Exit codes are `0` for completed positive/inspection results, `1` for operational errors or
+negative validation proof, and `2` for invalid argv/usage/unknown CLI commands.
+
+The dependency direction is:
+
+```text
+kernel + capability packages
+        -> @wizloft/harness
+        -> @wizloft/harness-commands
+        -> @wizloft/harness-cli-adapter
+```
+
+Event history/replay is not a kernel capability. Commands use only the facade's optional reader;
+file-events may be adapted structurally by the embedding application without depending on the
+facade package.
+
 ## DeepSeek interoperability seam
 
 Do not depend on DeepSeek Harness in v0. Keep contracts modular enough for either future direction:

@@ -8,7 +8,7 @@ import {
   HarnessKernelError,
   type KernelDiagnostic,
 } from './diagnostics.js';
-import { createEventDispatcher, type RuntimeState } from './events.js';
+import { createEventDispatcher } from './events.js';
 import { composeProfile, profileFromPlugins } from './profiles.js';
 import type {
   CapabilityId,
@@ -16,6 +16,9 @@ import type {
   CreateHarnessRuntimeOptions,
   Disposer,
   HarnessRuntime,
+  HarnessRuntimeInspection,
+  HarnessRuntimePluginInspection,
+  HarnessRuntimeState,
   JsonValue,
   MaybePromise,
   PluginContext,
@@ -473,8 +476,19 @@ export async function createHarnessRuntime(
   const composition = resolveComposition(resolvedProfile.plugins, emit);
   const services = new Map<CapabilityId, ActiveService>();
   const initialized: PluginRecord[] = [];
-  let state: RuntimeState = 'booting';
+  let state: HarnessRuntimeState = 'booting';
   let shutdownPromise: Promise<void> | undefined;
+
+  const pluginInspection: readonly HarnessRuntimePluginInspection[] = Object.freeze(
+    composition.order.map((record) =>
+      Object.freeze({
+        name: record.name,
+        version: record.version,
+        requires: Object.freeze([...record.requires].sort(compareNames)),
+        provides: Object.freeze([...record.provides].sort(compareNames)),
+      }),
+    ),
+  );
 
   const fail = (diagnostic: KernelDiagnostic): never => {
     emit(diagnostic);
@@ -728,6 +742,27 @@ export async function createHarnessRuntime(
       }
 
       return active.value as T;
+    },
+    inspect(): HarnessRuntimeInspection {
+      const capabilities = [...services.entries()]
+        .sort(([left], [right]) => compareNames(left, right))
+        .map(([id, service]) =>
+          Object.freeze({
+            id,
+            provider: Object.freeze({
+              name: service.owner.name,
+              version: service.owner.version,
+            }),
+          }),
+        );
+
+      return Object.freeze({
+        runtimeId,
+        state,
+        plugins: pluginInspection,
+        capabilities: Object.freeze(capabilities),
+        diagnostics: collector.diagnostics,
+      });
     },
     shutdown(): Promise<void> {
       shutdownPromise ??= (async () => {

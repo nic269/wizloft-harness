@@ -219,6 +219,69 @@ test('composition reports capability cycles with plugin and capability edges', a
   );
 });
 
+test('runtime inspection is deterministic, immutable, and retained after disposal', async () => {
+  const alpha = createCapabilityToken('alpha@1');
+  const zeta = createCapabilityToken('zeta@1');
+  const runtime = await createHarnessRuntime({
+    runtimeIdGenerator: () => 'inspection-runtime',
+    plugins: [
+      plugin({
+        name: 'provider',
+        version: '1.2.3',
+        provides: [declareCapability(zeta), declareCapability(alpha)],
+        setup(context) {
+          context.capabilities.provide(zeta, { id: 'zeta' });
+          context.capabilities.provide(alpha, { id: 'alpha' });
+          context.diagnostics.report({
+            code: 'INSPECTION_NOTE',
+            severity: 'info',
+            message: 'recorded in order',
+          });
+        },
+      }),
+    ],
+  });
+
+  const active = runtime.inspect();
+  assert.equal(Object.isFrozen(active), true);
+  assert.equal(Object.isFrozen(active.plugins), true);
+  assert.equal(Object.isFrozen(active.plugins[0].provides), true);
+  assert.equal(Object.isFrozen(active.capabilities[0].provider), true);
+  assert.deepEqual(active, {
+    runtimeId: 'inspection-runtime',
+    state: 'active',
+    plugins: [
+      {
+        name: 'provider',
+        version: '1.2.3',
+        requires: [],
+        provides: ['alpha@1', 'zeta@1'],
+      },
+    ],
+    capabilities: [
+      { id: 'alpha@1', provider: { name: 'provider', version: '1.2.3' } },
+      { id: 'zeta@1', provider: { name: 'provider', version: '1.2.3' } },
+    ],
+    diagnostics: [
+      {
+        code: 'INSPECTION_NOTE',
+        severity: 'info',
+        message: 'recorded in order',
+        pluginName: 'provider',
+      },
+    ],
+  });
+
+  const shutdown = runtime.shutdown();
+  assert.equal(runtime.inspect().state, 'shutting-down');
+  await shutdown;
+
+  const disposed = runtime.inspect();
+  assert.equal(disposed.state, 'disposed');
+  assert.deepEqual(disposed.capabilities, []);
+  assert.deepEqual(disposed.plugins, active.plugins);
+});
+
 test('plugins can access only required capabilities', async () => {
   const token = createCapabilityToken('context@1');
 

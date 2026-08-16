@@ -1,5 +1,7 @@
 # Minimum Useful Harness (MUH)
 
+Status: Passed (2026-08-17)
+
 MUH is the stop condition for initial Harness implementation. Once these pass, stop adding platform features and move to self-hosting / Wizloft CLI rebuild.
 
 ## Required capabilities
@@ -70,3 +72,11 @@ MUH is the stop condition for initial Harness implementation. Once these pass, s
 ## Exit statement
 
 MUH is achieved when Harness is reliable enough to help rebuild Wizloft CLI with itself. It does not mean feature complete.
+
+## Observed evaluation
+
+- all required capability categories have focused package regressions;
+- `tests/muh.test.mjs` composes real first-party providers and exercises the public facade, command,
+  CLI adapter, inspection, durability reads, and shutdown as one executable flow;
+- repository and fresh exact-minimum Node 22.13.0 verification pass with 114 tests and no Harness
+  executable ownership.

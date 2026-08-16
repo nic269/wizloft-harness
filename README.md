@@ -32,10 +32,10 @@ Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 
 ## Current status
 
-Slices 0–5 are complete. The workspace now has the deterministic kernel/plugin foundation plus
-Events, Context, Authority, Evidence, Validation, and file-backed Memory capabilities with optional
-Memory-to-Context composition. Slice 6 is next: the public `@wizloft/harness` SDK facade, reusable
-command API, and CLI adapter—without taking executable ownership from Wizloft CLI.
+Slices 0–6 and the Minimum Useful Harness gate are complete. The workspace now includes the
+deterministic kernel/plugin foundation, Events, Context, Authority, Evidence, Validation, file-backed
+Memory, the public `@wizloft/harness` facade, structured commands, and an IO-free CLI adapter. The
+next gated activity is self-hosting; no Wizloft CLI migration has started in this repository.
 
 ## Development
 

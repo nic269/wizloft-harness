@@ -2,8 +2,8 @@
 
 Composition-only kernel for Wizloft Harness runtimes.
 
-The public consumer-facing `@wizloft/harness` facade is still deferred. The kernel package exposes
-only composition primitives and runtime invariants.
+The public consumer-facing facade now exists in `@wizloft/harness`. This kernel package remains
+composition-only and exposes runtime mechanics/invariants rather than consumer capability wrappers.
 
 ## Current contract
 
@@ -59,4 +59,4 @@ await runtime.shutdown();
 
 Capability-specific multi-contributor behavior belongs inside capability services, not in generic
 kernel multibinding. Replay, projections, workflows, capability packages, commands, and the public
-SDK facade remain outside this kernel slice.
+SDK facade remain outside the kernel package.

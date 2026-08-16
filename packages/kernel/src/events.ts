@@ -10,10 +10,9 @@ import type {
   EventListener,
   EventPublisher,
   EventType,
+  HarnessRuntimeState,
   JsonValue,
 } from './types.js';
-
-export type RuntimeState = 'active' | 'booting' | 'disposed' | 'shutting-down';
 
 interface EventRegistration {
   readonly eventType?: string;
@@ -30,7 +29,7 @@ interface EventDispatcherOptions {
   readonly clock: () => Date;
   readonly emit: (diagnostic: KernelDiagnostic) => void;
   readonly runtimeId: string;
-  readonly state: () => RuntimeState;
+  readonly state: () => HarnessRuntimeState;
 }
 
 export interface EventDispatcher {

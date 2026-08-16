@@ -396,24 +396,107 @@ Proof:
 
 ## Slice 6 — SDK + Command API + CLI Adapter
 
-Expose reusable programmatic operations for:
+Status: Complete (2026-08-17)
 
-- profile composition/run/inspect;
-- context resolution;
-- authority resolution;
-- memory remember/recall;
-- validation/evidence;
-- event inspection.
+Accepted scope:
 
-Add a CLI adapter library that maps argv/options to the same command semantics and can render human or structured/JSON-friendly output.
+- create `packages/harness`, `packages/commands`, and `packages/cli-adapter` plus only the minimal
+  immutable kernel runtime-inspection seam needed by the facade;
+- make `createHarness()` require an explicit `HarnessProfile`, own exactly one runtime, pass through
+  the existing runtime-id/event-clock/diagnostic seams, and expose grouped Context, Authority,
+  Memory, Validation, Evidence, event-history, inspection, and shutdown operations;
+- curate stable profile contracts/helpers such as `defineProfile` and `composeProfile` without
+  blind cross-package barrels, implicit providers, JSON profile loading, or `profiles/base`;
+- use structured facade errors for unavailable capabilities, missing event-history configuration,
+  and non-active runtime state while preserving existing capability-domain error types;
+- keep runtime inspection deterministic and available through disposal with resolved plugin
+  identity/requirements/provisions, active capability providers, and recorded diagnostics but no
+  config, service, listener, disposer, or mutable registry access;
+- accept one optional structural event-history reader on the facade, snapshot/bind it at
+  construction, and keep history/replay out of the kernel;
+- implement only the stable command ids `harness.inspect`, `context.resolve`, `authority.resolve`,
+  `memory.remember`, `memory.recall`, `memory.transition`, `validation.select`, `validation.run`,
+  `evidence.list`, and `events.read` through the public facade;
+- export a typed command-request union while handwritten runtime validation protects untyped
+  CLI/agent/CI input; normalize expected operational/domain/infrastructure failures into deeply
+  immutable JSON-compatible result/error envelopes and reserve throws for unexpected bugs;
+- preserve completed negative domain results as results, including Authority ambiguity/conflict and
+  Validation reports with `ok: false`; retain Validation infrastructure report/failure summaries in
+  command error details without raw causes;
+- build an IO-free CLI adapter over the command executor with module-local `--json`, `--help`, and
+  Harness grammar, deterministic rendering, one-envelope JSON output, and exit codes `0` completed,
+  `1` operational/negative proof, and `2` usage/unknown CLI command;
+- delegate facade shutdown directly to the kernel's idempotent shutdown contract and do not expose
+  shutdown as a command.
 
-**Do not expose a global `wizharness` binary from this repository.**
+Explicitly deferred:
+
+- `profiles/base`, global executable/bin ownership, executable branding/version/root options, and
+  profile selection/loading in the adapter;
+- generic command/plugin registries, multibinding, priority, middleware, discovery, and policy
+  engines;
+- event replay/history kernel capability, workflows/jobs/subagents, shell/process runners, remote
+  execution, UI, self-hosting changes, and Wizloft CLI migration;
+- any change to completed Context, Authority, Memory, Validation, Evidence, event, or plugin
+  composition semantics.
+
+Implemented:
+
+- immutable kernel inspection snapshots with runtime lifecycle state, deterministic resolved plugin
+  metadata, sorted active capability providers, and diagnostics retained through disposal;
+- `@wizloft/harness` as an explicit-profile facade over one owned runtime with curated profile
+  exports, grouped capability delegation, structured lifecycle/availability errors, a snapshotted
+  optional event-history reader, inspectable disposal state, and direct idempotent shutdown;
+- `@wizloft/harness-commands` as a fixed command switch over the facade with the ten accepted ids,
+  typed requests, cloned/frozen JSON request and envelope boundaries, handwritten validation, and
+  structured expected-error normalization, including coded provider errors without provider-package
+  coupling, that preserves negative domain results as results;
+- JSON-safe Validation infrastructure summaries retaining completed reports while omitting raw
+  runtime causes from command output;
+- `@wizloft/harness-cli-adapter` with module-local help/JSON options, nested Harness grammar,
+  deterministic human/JSON rendering, stable exit codes, snapshotted executor callback, and no
+  process IO, shell execution, profile loading, version, branding, or binary ownership;
+- an end-to-end MUH smoke proof composing real first-party providers through an explicit profile,
+  then exercising Authority, Context, Memory, Validation, Evidence, event history, commands, CLI
+  JSON output, inspection, and shutdown.
+
+Proof:
+
+- `pnpm verify` succeeds in the repository workspace on Node.js 22.13.1 with pnpm 11.10.0;
+- `pnpm install --frozen-lockfile` followed by `pnpm verify` succeeds in a fresh temporary copy on
+  exact Node.js 22.13.0 with pnpm 11.10.0;
+- bootstrap tests pass: 5 passed, 0 failed;
+- kernel tests pass: 31 passed, 0 failed;
+- Authority tests pass: 8 passed, 0 failed;
+- Context tests pass: 5 passed, 0 failed;
+- Evidence tests pass: 6 passed, 0 failed;
+- Memory tests pass: 9 passed, 0 failed;
+- file-events tests pass: 9 passed, 0 failed;
+- repository-files tests pass: 6 passed, 0 failed;
+- Validation tests pass: 10 passed, 0 failed;
+- file-memory tests pass: 5 passed, 0 failed;
+- memory-context tests pass: 3 passed, 0 failed;
+- Harness facade tests pass: 5 passed, 0 failed;
+- command tests pass: 6 passed, 0 failed;
+- CLI adapter tests pass: 5 passed, 0 failed;
+- end-to-end MUH smoke test passes: 1 passed, 0 failed;
+- total automated tests pass: 114 passed, 0 failed;
+- all thirteen workspace packages/plugins typecheck and build from the fresh copy without relying on
+  repository `dist/` output;
+- Biome and workspace ownership checks pass; no global CLI binary, `profiles/base`, self-hosting
+  implementation, or Wizloft CLI migration was added.
 
 ## Gate A — MUH
 
-Run `docs/milestones/MUH.md`. Stop feature work when it passes.
+Status: Complete (2026-08-17)
+
+The executable package regressions plus `tests/muh.test.mjs` satisfy every required category in
+`docs/milestones/MUH.md`. The stop condition is reached; no additional platform features should be
+added before the separately gated self-hosting evaluation.
 
 ## Gate B — Self-host
+
+Status: Not started
 
 Run `docs/milestones/SELF-HOST.md`. Fix only blocking/reliability issues.
 

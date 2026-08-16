@@ -24,6 +24,18 @@ importers:
         specifier: workspace:*
         version: link:../kernel
 
+  packages/cli-adapter:
+    dependencies:
+      '@wizloft/harness-commands':
+        specifier: workspace:*
+        version: link:../commands
+
+  packages/commands:
+    dependencies:
+      '@wizloft/harness':
+        specifier: workspace:*
+        version: link:../harness
+
   packages/context:
     dependencies:
       '@wizloft/harness-kernel':
@@ -35,6 +47,27 @@ importers:
       '@wizloft/harness-kernel':
         specifier: workspace:*
         version: link:../kernel
+
+  packages/harness:
+    dependencies:
+      '@wizloft/harness-authority':
+        specifier: workspace:*
+        version: link:../authority
+      '@wizloft/harness-context':
+        specifier: workspace:*
+        version: link:../context
+      '@wizloft/harness-evidence':
+        specifier: workspace:*
+        version: link:../evidence
+      '@wizloft/harness-kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@wizloft/harness-memory':
+        specifier: workspace:*
+        version: link:../memory
+      '@wizloft/harness-validation':
+        specifier: workspace:*
+        version: link:../validation
 
   packages/kernel: {}
 

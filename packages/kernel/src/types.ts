@@ -111,12 +111,38 @@ export interface ResolvedProfile {
   readonly plugins: readonly ResolvedProfilePlugin[];
 }
 
+export type HarnessRuntimeState = 'active' | 'booting' | 'disposed' | 'shutting-down';
+
+export interface HarnessRuntimePluginInspection {
+  readonly name: string;
+  readonly version: string;
+  readonly requires: readonly CapabilityId[];
+  readonly provides: readonly CapabilityId[];
+}
+
+export interface HarnessRuntimeCapabilityInspection {
+  readonly id: CapabilityId;
+  readonly provider: {
+    readonly name: string;
+    readonly version: string;
+  };
+}
+
+export interface HarnessRuntimeInspection {
+  readonly runtimeId: string;
+  readonly state: HarnessRuntimeState;
+  readonly plugins: readonly HarnessRuntimePluginInspection[];
+  readonly capabilities: readonly HarnessRuntimeCapabilityInspection[];
+  readonly diagnostics: readonly Diagnostic[];
+}
+
 export interface HarnessRuntime {
   readonly diagnostics: readonly Diagnostic[];
   readonly events: EventPublisher;
   readonly pluginOrder: readonly string[];
   readonly runtimeId: string;
   getCapability<T>(token: CapabilityToken<T>): T;
+  inspect(): HarnessRuntimeInspection;
   shutdown(): Promise<void>;
 }
 
