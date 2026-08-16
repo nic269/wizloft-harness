@@ -8,26 +8,56 @@ Build the smallest tested Wizloft Harness that satisfies MUH, self-hosts reliabl
 
 ## Slice 0 — Repository/tooling bootstrap
 
+Status: Complete (2026-08-16)
+
 - initialize strict TypeScript pnpm workspace;
-- create minimal package boundaries for kernel, SDK/commands, and first-party capabilities;
-- root format/lint/typecheck/test/build/verify;
+- record the approved target package topology without scaffolding empty packages;
+- create a package only when its implementation slice gives it real responsibility;
+- root check/typecheck/test/build/verify/workspace:check contract;
 - CI-ready validation command;
 - minimal dependencies.
 
-Proof: clean install and root verify succeed.
+Implemented:
+
+- private pnpm workspace with `packages/*`, `plugins/*`, and `profiles/*` discovery;
+- strict shared TypeScript configuration without product/runtime code;
+- exact-pinned Biome check/check:fix tooling plus TypeScript typecheck/test/build/verify commands;
+- Node.js 22.13+ and pnpm 11.10+ tooling contract;
+- workspace contract checks that reject symlinked packages, require non-empty non-recursive build/typecheck/test scripts, and reject Wizloft CLI executable ownership;
+- bootstrap tests for private/no-binary ownership, the Biome-era root verification contract, workspace discovery, and invalid-package rejection;
+- architecture and plugin-model clarifications approved before implementation.
+
+Proof:
+
+- `pnpm install --frozen-lockfile` succeeds from a fresh temporary checkout;
+- the documented npm-installed pnpm 11.10 bootstrap succeeds from a fresh temporary checkout;
+- `pnpm verify` succeeds on the exact minimum Node.js 22.13.0;
+- `pnpm verify` succeeds;
+- `pnpm check` succeeds with formatter, recommended lint rules, and import organization enabled;
+- bootstrap tests pass: 5 passed, 0 failed;
+- `packages/`, `plugins/`, and `profiles/` still contain only their `.gitkeep` placeholders;
+- no Slice 1 plugin-host or capability behavior is implemented.
 
 ## Slice 1 — Kernel/plugin host
 
 - plugin identity;
-- capability declarations/requirements;
+- unique plugin names within one resolved runtime/profile;
+- stable serializable exact-major capability ids and declarations/requirements;
+- one runtime-scoped active capability service per capability token;
 - capability registry;
 - deterministic dependency graph/topological composition;
+- declared-requirement-only capability access;
+- declared-provides-only capability service registration;
+- reproducible tie-breaking that carries no sibling-order semantics;
+- capability-specific contributor registries rather than kernel multibinding;
 - missing capability diagnostics;
 - cycle diagnostics;
-- lifecycle/disposer seam;
+- rollback of partial setup effects plus reverse-order lifecycle/disposer cleanup that continues after disposer failures;
 - diagnostics primitives.
 
 No project-specific knowledge.
+
+Slice 1 implements only the capability/lifecycle/diagnostic plugin-context surface. Typed profile config and the event bus join the public context in Slice 2.
 
 ## Slice 2 — Config/profiles/events
 

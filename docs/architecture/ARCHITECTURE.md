@@ -45,6 +45,8 @@ The kernel owns only composition mechanics/invariants:
 
 The kernel must not understand TypeScript, Next.js, Prisma, Shopify, Meldmark, Wizloft CLI, Codex, Claude Code, or DeepSeek semantics.
 
+Kernel registries and capability services are scoped to one resolved Harness runtime instance. There are no process-global capability service singletons in v0.
+
 ## First-party capability contracts
 
 - **Context** — contributors resolve the smallest useful context for work.
@@ -54,6 +56,31 @@ The kernel must not understand TypeScript, Next.js, Prisma, Shopify, Meldmark, W
 - **Evidence** — normalizes proof/outcomes for humans, agents, and future automation.
 
 They are first-party ecosystem packages, not kernel internals.
+
+## Target package topology
+
+The target workspace topology is:
+
+```text
+packages/
+  kernel/              @wizloft/harness-kernel
+  context/             @wizloft/harness-context
+  authority/           @wizloft/harness-authority
+  memory/              @wizloft/harness-memory
+  validation/          @wizloft/harness-validation
+  evidence/            @wizloft/harness-evidence
+  commands/            @wizloft/harness-commands
+  cli-adapter/         @wizloft/harness-cli-adapter
+  harness/             @wizloft/harness
+plugins/
+  repository-files/
+  file-events/
+  file-memory/
+profiles/
+  base/
+```
+
+`@wizloft/harness` is the public consumer-facing SDK facade. This topology is a target architecture, not a requirement to scaffold empty packages. Each package should be created only when its implementation slice gives it a real responsibility.
 
 ## Durability planes
 

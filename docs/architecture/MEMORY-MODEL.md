@@ -13,25 +13,26 @@ Memory is first-class, persistent, queryable, and useful across sessions/project
 ## Memory kinds
 
 ### Working memory
+
 Current task/plan/context state. Prefer reconstruction from active plan, events, repository state, and agent session rather than durable semantic records by default.
 
 ### Episodic memory
+
 Previous work episodes: approaches tried, failures, migrations, debugging outcomes, successful implementation patterns.
 
 ### Semantic memory
+
 Learned reusable facts, conventions, gotchas, or patterns.
 
 ### Procedural knowledge
+
 Stable procedure should graduate from memory into docs, skill, policy, validator, workflow, or plugin.
 
 ## Scope
 
 ```ts
 type MemoryScope =
-  | "organization"
-  | `project:${string}`
-  | `workspace:${string}`
-  | `session:${string}`;
+  'organization' | `project:${string}` | `workspace:${string}` | `session:${string}`;
 ```
 
 Cross-project memory must preserve applicability/scope so a lesson from one stack is not promoted into an invalid organization-wide rule.
@@ -49,13 +50,13 @@ Every durable memory has provenance. Repository-backed memory should become pote
 ```ts
 interface MemoryRecord {
   id: string;
-  kind: "episodic" | "semantic";
+  kind: 'episodic' | 'semantic';
   scope: MemoryScope;
   content: string;
   tags: string[];
   provenance: MemoryProvenance;
   confidence?: number;
-  state: "candidate" | "active" | "stale" | "superseded" | "archived";
+  state: 'candidate' | 'active' | 'stale' | 'superseded' | 'archived';
   createdAt: string;
   updatedAt: string;
   expiresAt?: string;

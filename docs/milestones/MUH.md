@@ -5,6 +5,7 @@ MUH is the stop condition for initial Harness implementation. Once these pass, s
 ## Required capabilities
 
 ### Kernel
+
 - deterministic plugin host;
 - capability registry/requirements;
 - dependency graph with missing/cycle diagnostics;
@@ -12,24 +13,28 @@ MUH is the stop condition for initial Harness implementation. Once these pass, s
 - diagnostics.
 
 ### Configuration/profiles/events
+
 - typed project/profile composition;
 - deterministic layering;
 - event bus;
 - append-only file event persistence.
 
 ### Context + Authority
+
 - repository/file contributors;
 - explicit provenance;
 - authority precedence/statuses;
 - context composition that distinguishes authority/history/memory.
 
 ### Validation + Evidence
+
 - validator registration/applicability;
 - execution/result contract;
 - deterministic normalized evidence;
 - event/evidence integration.
 
 ### Memory
+
 - episodic + semantic records;
 - org/project/workspace/session scope;
 - provenance;
@@ -39,6 +44,7 @@ MUH is the stop condition for initial Harness implementation. Once these pass, s
 - repository authority wins over conflicting memory.
 
 ### SDK/command seam
+
 - define/compose/run profile;
 - inspect plugin/capability graph;
 - resolve context/authority;

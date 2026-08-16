@@ -29,3 +29,16 @@ Repository = what we have decided is true
 ```
 
 Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
+
+## Development
+
+The Slice 0 workspace requires Node.js 22.13 or newer and pnpm 11.10 or newer.
+
+```bash
+npm install --global pnpm@11.10.0 # skip when a compatible pnpm is already installed
+pnpm install --frozen-lockfile
+pnpm verify
+```
+
+`pnpm verify` is the CI-ready root contract for Biome checks, TypeScript type checking, tests,
+and builds. Use `pnpm check:fix` to apply safe formatting, lint, and import-organization fixes.

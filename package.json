@@ -1,0 +1,24 @@
+{
+  "name": "wizloft-harness-workspace",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.10.0",
+  "engines": {
+    "node": ">=22.13.0",
+    "pnpm": ">=11.10.0"
+  },
+  "scripts": {
+    "build": "pnpm workspace:check && pnpm --recursive run build",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "test": "pnpm workspace:check && node --test tests/bootstrap.test.mjs && pnpm --recursive run test",
+    "typecheck": "pnpm workspace:check && tsc --project tsconfig.json --noEmit --pretty false && pnpm --recursive run typecheck",
+    "verify": "pnpm workspace:check && pnpm check && pnpm typecheck && pnpm test && pnpm build",
+    "workspace:check": "node scripts/check-workspace.mjs"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.2",
+    "@types/node": "^22.20.1",
+    "typescript": "^5.9.3"
+  }
+}
