@@ -18,10 +18,34 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/authority:
+    dependencies:
+      '@wizloft/harness-kernel':
+        specifier: workspace:*
+        version: link:../kernel
+
+  packages/context:
+    dependencies:
+      '@wizloft/harness-kernel':
+        specifier: workspace:*
+        version: link:../kernel
+
   packages/kernel: {}
 
   plugins/file-events:
     dependencies:
+      '@wizloft/harness-kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
+
+  plugins/repository-files:
+    dependencies:
+      '@wizloft/harness-authority':
+        specifier: workspace:*
+        version: link:../../packages/authority
+      '@wizloft/harness-context':
+        specifier: workspace:*
+        version: link:../../packages/context
       '@wizloft/harness-kernel':
         specifier: workspace:*
         version: link:../../packages/kernel

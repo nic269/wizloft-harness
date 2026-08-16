@@ -1,0 +1,24 @@
+{
+  "name": "@wizloft/harness-plugin-repository-files",
+  "version": "0.0.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "test": "pnpm build && node --test tests/*.test.mjs",
+    "typecheck": "pnpm --filter @wizloft/harness-kernel build && pnpm --filter @wizloft/harness-authority build && pnpm --filter @wizloft/harness-context build && tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@wizloft/harness-authority": "workspace:*",
+    "@wizloft/harness-context": "workspace:*",
+    "@wizloft/harness-kernel": "workspace:*"
+  }
+}

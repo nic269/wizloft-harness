@@ -131,13 +131,75 @@ Proof:
 
 ## Slice 3 — Context + Authority
 
-- first-party contracts;
-- repository/file contributors;
-- deterministic merge;
-- provenance;
-- authority resolved/missing/ambiguous/conflict semantics;
-- explicit historical/supporting source labels;
-- memory cannot manufacture authority.
+Status: Complete (2026-08-16)
+
+Accepted scope:
+
+- create `packages/authority`, `packages/context`, and `plugins/repository-files` only;
+- let each capability package own its exact-major token, public service contract, default service
+  implementation, and default runtime plugin;
+- keep contributor multiplicity inside each capability service with no generic kernel multibinding;
+- resolve Authority from the highest numeric precedence candidate set and expose that set as
+  `contenders` separately from lower-precedence `shadowed` candidates;
+- use contributor-supplied optional `resolutionKey` identity rather than prose or raw-content
+  comparison: one contender resolves, matching explicit identities corroborate/resolved, distinct
+  fully explicit identities conflict, and missing/mixed identity is ambiguous;
+- use the public status strings `resolved`, `missing`, `ambiguous`, and `conflict`;
+- compose Context in `authority`, `supporting`, `historical` trust-role order while preserving
+  contributor registration order and contributor item order within each role;
+- keep Authority precedence independent from Context registration ordering;
+- retain explicit immutable provenance and content snapshots without semantic ranking or generic
+  deduplication;
+- document that Memory cannot manufacture authority without adding Memory capability/types or
+  beginning Slice 5 integration;
+- make repository-files require both capabilities and register capability-specific contributors;
+- normalize repository source paths as root-relative and refuse absolute paths, escaping traversal,
+  resolved paths outside the root, and symlinks that escape the canonical repository root;
+- cover missing/resolved/corroborated/ambiguous/conflict Authority outcomes, precedence grouping,
+  deterministic Context role ordering, lifecycle cleanup, immutable snapshots, repository reads,
+  normalized provenance, and containment regressions.
+
+Explicitly deferred:
+
+- semantic parsing, content-equality inference, AST/schema extraction, LLM interpretation, and Git
+  history analysis;
+- Validation, Evidence, Memory, replay, projections, workflows, commands, and the public Harness
+  facade.
+
+Implemented:
+
+- `@wizloft/harness-authority` with the `authority@1` token, default runtime plugin/service,
+  capability-specific contributor registration, immutable candidate snapshots, structured service
+  errors, highest-precedence contender/shadowed grouping, and explicit `resolutionKey` status
+  semantics;
+- `@wizloft/harness-context` with the `context@1` token, default runtime plugin/service,
+  capability-specific contributor registration, immutable item snapshots, structured service
+  errors, and deterministic authority/supporting/historical buckets;
+- unique active contributor ids within each capability service plus disposable registrations that
+  participate in plugin shutdown cleanup;
+- `@wizloft/harness-plugin-repository-files` with runtime plugin id
+  `@wizloft/repository-files`, exact-subject authority/context mappings, immutable file-content
+  snapshots, normalized root-relative provenance, and optional configured resolution identity;
+- canonical repository-root containment checks that reject absolute/drive paths, escaping traversal,
+  resolved paths outside the root, and symlink escapes without claiming security sandboxing;
+- no kernel multibinding, generic context dedupe/ranking, content-equality inference, semantic
+  parsing, Git history analysis, or later-slice capability implementation.
+
+Proof:
+
+- `pnpm verify` succeeds in the repository workspace on Node.js 22.13.1 with pnpm 11.10.0;
+- `pnpm install --frozen-lockfile` followed by `pnpm verify` succeeds in a fresh temporary copy on
+  exact Node.js 22.13.0 with pnpm 11.10.0;
+- bootstrap tests pass: 5 passed, 0 failed;
+- kernel tests pass: 30 passed, 0 failed;
+- file-events tests pass: 9 passed, 0 failed;
+- Authority tests pass: 8 passed, 0 failed;
+- Context tests pass: 5 passed, 0 failed;
+- repository-files tests pass: 6 passed, 0 failed;
+- total automated tests pass: 63 passed, 0 failed;
+- all five workspace packages typecheck and build from the fresh copy without relying on repository
+  `dist/` output;
+- Biome and workspace ownership checks pass, and no Slice 4 package or implementation was created.
 
 ## Slice 4 — Validation + Evidence
 
