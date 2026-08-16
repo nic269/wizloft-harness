@@ -80,11 +80,65 @@ undefined unless accepted structured configuration genuinely supplies one.
 
 Validation answers: **what executable/observable proof is required for this work?**
 
-Validators should declare applicability so a change can select focused proof rather than always running every possible command.
+Validation requests carry a non-empty correlation id, normalized immutable project-relative changed
+paths, an optional non-empty source revision, and optional immutable JSON-compatible metadata. Path
+normalization uses `/` separators, removes benign `./` segments, rejects empty/absolute/escaping
+paths, and deduplicates while preserving first occurrence. Validation does not resolve a physical
+repository root.
+
+The capability exposes selection separately from execution so callers can inspect required proof:
+
+- `select(request)` evaluates validator applicability without executing proof;
+- `run(request)` uses the same selection semantics and executes selected validators.
+
+Validators have stable unique ids and are either `focused` or `root-required`. Focused validators
+declare applicability; root-required validators are always selected while registered. Selection
+and execution are sequential and preserve validator registration order in v0. Registrations
+snapshot the validated id, kind, applicability callback, and execution callback so later mutation of
+caller-owned validator objects cannot change registered behavior.
+
+A focused applicability result of false is not selected. Applicability failures become validator
+`error` outcomes in the applicability phase, while execution failures become `error` outcomes in
+the execution phase. A normal execution result is `passed` or `failed`. Validator failed/error
+outcomes do not stop remaining validators and produce a normal report with `ok: false`.
+
+Validator execution duration uses an injectable monotonic timer and excludes evidence recording or
+event publication time. v0 adds no validator priorities, dependency graph, parallel execution,
+shell runner, or workflow semantics.
+
+Validation snapshots the validated Evidence `record` callback when its service is created. Later
+mutation of the caller-owned Evidence service object cannot change an already-created Validation
+service. Infrastructure failures retain both their structured summary and original runtime cause.
 
 ## Evidence
 
-Evidence is normalized proof produced by work/validation. It may reference command, validator, status, duration, output metadata, source revision, and correlation/work id.
+Evidence is generic normalized proof produced by work or capabilities such as Validation. The
+dependency direction is `kernel <- evidence <- validation`; Evidence does not import or encode
+Validation types.
+
+The runtime-scoped Evidence service accepts a non-empty correlation id, stable non-empty kind, and
+immutable JSON-compatible payload. Each accepted record adds a generated non-empty unique id and
+ISO-8601 UTC `recordedAt` timestamp. Id generation and wall clock are injectable, records are deeply
+immutable, and `list()` preserves acceptance order. v0 has no evidence update/delete/query database,
+replay, projection, or task-state behavior.
+
+Evidence snapshots the validated event publisher callback when its service is created. Later
+mutation of the caller-owned publisher object cannot change an already-created Evidence service.
+
+Every accepted record emits `wizloft.evidence.recorded` with the full immutable record. The record
+remains accepted and visible even if event delivery or file-events persistence later fails; event
+effects are non-transactional. Evidence publication failure is Harness infrastructure failure, not
+a validator outcome.
+
+Validation records one generic evidence item per validator outcome using a validation-specific
+evidence kind/payload containing validator id, passed/failed/error status, error phase where
+applicable, execution duration, summary, optional source revision, and optional JSON metadata. A
+successfully accepted evidence id is linked from the corresponding Validation outcome.
+
+Validation continues later selected validators and evidence attempts after an Evidence/event
+failure. After all selected work completes, infrastructure failure rejects `run()` with a structured
+error retaining the completed immutable Validation report and infrastructure causes. No
+shell/stdout/stderr/exit-code contract is standardized in Slice 4.
 
 Evidence is not a task database and does not become product authority by itself.
 

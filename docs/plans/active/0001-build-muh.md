@@ -203,13 +203,88 @@ Proof:
 
 ## Slice 4 — Validation + Evidence
 
-- validator registration/applicability;
-- execution/result contract;
-- deterministic normalized evidence ordering;
-- event/evidence integration;
-- focused vs root-required validation examples.
+Status: Complete (2026-08-16)
 
-No hidden task-state DB.
+Accepted scope:
+
+- create only `packages/evidence` and `packages/validation` with dependency direction
+  `kernel <- evidence <- validation`;
+- let each package own its exact-major capability token, public service contract, default service
+  implementation, and default runtime plugin;
+- normalize Validation requests from non-empty correlation id, project-relative changed paths,
+  optional source revision, and optional immutable JSON metadata;
+- expose `select()` independently from `run()`, with `run()` using the same selection semantics;
+- register stable unique focused/root-required validators inside ValidationService and snapshot
+  validated ids/kinds/bound callbacks at registration time;
+- always select root-required validators; select focused validators only when applicable;
+- preserve registration order and execute sequentially without priorities, dependencies, or
+  parallelism;
+- normalize false applicability as not selected, applicability/execute throws as phase-specific
+  `error`, and normal execution as `passed` or `failed`;
+- continue remaining validators after failed/error outcomes and return a normal report with
+  `ok: false`;
+- measure validator execution only with an injectable monotonic timer;
+- keep Evidence generic with immutable correlation/kind/payload records, injectable unique ids and
+  wall clock, runtime-local acceptance ordering, and `record()`/`list()` semantics;
+- emit `wizloft.evidence.recorded` for every accepted EvidenceRecord and retain accepted records if
+  event delivery later fails;
+- record each Validation outcome as generic evidence and retain accepted evidence ids on report
+  outcomes;
+- continue validation/evidence attempts after Evidence infrastructure failure, then reject with a
+  structured infrastructure error retaining the completed immutable report and causes.
+
+Explicitly deferred:
+
+- command/shell runners and stdout/stderr/exit-code contracts;
+- evidence database/update/delete/query behavior, replay, projections, and file-evidence providers;
+- workflow/task state, validator priorities/dependencies, parallel validation, Memory, commands,
+  CLI adapter, and the public Harness facade.
+
+Implemented:
+
+- `@wizloft/harness-evidence` with the `evidence@1` token, default runtime plugin/service,
+  immutable generic records, injectable id/wall-clock seams, unique runtime-local ids, and
+  acceptance-order `record()`/`list()` behavior;
+- `wizloft.evidence.recorded` publication with the full accepted record and explicit retention of
+  accepted evidence when later event delivery fails;
+- `@wizloft/harness-validation` with the `validation@1` token and default plugin requiring
+  `evidence@1`;
+- immutable Validation request normalization with `/` path separators, benign `./` cleanup,
+  traversal/absolute-path rejection, first-occurrence deduplication, and JSON metadata snapshots;
+- first-class `select()` plus `run()` sharing the same deterministic sequential applicability
+  implementation;
+- focused and root-required validator registrations with unique active ids and snapshotted bound
+  callbacks that remain stable after caller-owned validator mutation;
+- registration-order applicability/execution, phase-specific applicability/execution errors,
+  continue-after-failure behavior, and immutable completed reports;
+- injectable monotonic execution timing that excludes Evidence recording/event publication time;
+- one generic validation-outcome Evidence record per outcome, Evidence id trace links, and delayed
+  structured infrastructure rejection retaining the completed report and all observed Evidence
+  failures;
+- construction-time snapshots of the validated event-publish and Evidence-record callbacks so
+  caller-owned dependency mutation cannot change already-created services;
+- per-failure retention of the original Evidence/event infrastructure cause alongside the existing
+  structured failure summary;
+- no shell runner, evidence database, workflow/task state, parallel validation, Memory, commands,
+  CLI facade, replay, or projections.
+
+Proof:
+
+- `pnpm verify` succeeds in the repository workspace on Node.js 22.13.1 with pnpm 11.10.0;
+- `pnpm install --frozen-lockfile` followed by `pnpm verify` succeeds in a fresh temporary copy on
+  exact Node.js 22.13.0 with pnpm 11.10.0;
+- bootstrap tests pass: 5 passed, 0 failed;
+- kernel tests pass: 30 passed, 0 failed;
+- file-events tests pass: 9 passed, 0 failed;
+- Authority tests pass: 8 passed, 0 failed;
+- Context tests pass: 5 passed, 0 failed;
+- repository-files tests pass: 6 passed, 0 failed;
+- Evidence tests pass: 6 passed, 0 failed;
+- Validation tests pass: 10 passed, 0 failed;
+- total automated tests pass: 79 passed, 0 failed;
+- all seven workspace packages/plugins typecheck and build from the fresh copy without relying on
+  repository `dist/` output;
+- Biome and workspace ownership checks pass, and no Slice 5 implementation was created.
 
 ## Slice 5 — Memory
 

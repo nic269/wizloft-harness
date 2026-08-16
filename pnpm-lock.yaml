@@ -30,7 +30,22 @@ importers:
         specifier: workspace:*
         version: link:../kernel
 
+  packages/evidence:
+    dependencies:
+      '@wizloft/harness-kernel':
+        specifier: workspace:*
+        version: link:../kernel
+
   packages/kernel: {}
+
+  packages/validation:
+    dependencies:
+      '@wizloft/harness-evidence':
+        specifier: workspace:*
+        version: link:../evidence
+      '@wizloft/harness-kernel':
+        specifier: workspace:*
+        version: link:../kernel
 
   plugins/file-events:
     dependencies:
