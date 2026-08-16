@@ -38,6 +38,12 @@ importers:
 
   packages/kernel: {}
 
+  packages/memory:
+    dependencies:
+      '@wizloft/harness-kernel':
+        specifier: workspace:*
+        version: link:../kernel
+
   packages/validation:
     dependencies:
       '@wizloft/harness-evidence':
@@ -52,6 +58,37 @@ importers:
       '@wizloft/harness-kernel':
         specifier: workspace:*
         version: link:../../packages/kernel
+
+  plugins/file-memory:
+    dependencies:
+      '@wizloft/harness-kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
+      '@wizloft/harness-memory':
+        specifier: workspace:*
+        version: link:../../packages/memory
+
+  plugins/memory-context:
+    dependencies:
+      '@wizloft/harness-context':
+        specifier: workspace:*
+        version: link:../../packages/context
+      '@wizloft/harness-kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
+      '@wizloft/harness-memory':
+        specifier: workspace:*
+        version: link:../../packages/memory
+    devDependencies:
+      '@wizloft/harness-authority':
+        specifier: workspace:*
+        version: link:../../packages/authority
+      '@wizloft/harness-plugin-file-memory':
+        specifier: workspace:*
+        version: link:../file-memory
+      '@wizloft/harness-plugin-repository-files':
+        specifier: workspace:*
+        version: link:../repository-files
 
   plugins/repository-files:
     dependencies:

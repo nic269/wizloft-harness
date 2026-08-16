@@ -76,6 +76,7 @@ plugins/
   repository-files/
   file-events/
   file-memory/
+  memory-context/
 profiles/
   base/
 ```

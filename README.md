@@ -32,10 +32,10 @@ Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 
 ## Current status
 
-Slice 2 extends `@wizloft/harness-kernel` with deterministic profile/config composition and typed
-runtime events, and introduces `@wizloft/harness-plugin-file-events` for JSONL event persistence.
-The public consumer-facing `@wizloft/harness` facade remains intentionally deferred until a later
-slice gives it concrete responsibility.
+Slices 0–5 are complete. The workspace now has the deterministic kernel/plugin foundation plus
+Events, Context, Authority, Evidence, Validation, and file-backed Memory capabilities with optional
+Memory-to-Context composition. Slice 6 is next: the public `@wizloft/harness` SDK facade, reusable
+command API, and CLI adapter—without taking executable ownership from Wizloft CLI.
 
 ## Development
 

@@ -288,15 +288,111 @@ Proof:
 
 ## Slice 5 — Memory
 
-- episodic/semantic memory contract;
-- scope and provenance;
-- candidate/active/stale/superseded/archived lifecycle;
-- file/JSONL provider;
-- basic keyword/metadata recall;
-- restart persistence;
-- source-change/stale seam;
-- authority-over-conflicting-memory tests;
-- promotion metadata/seam without autonomous extraction.
+Status: Complete (2026-08-17)
+
+Accepted scope:
+
+- create only `packages/memory`, `plugins/file-memory`, and `plugins/memory-context`; do not create
+  `profiles/base` or a competing default in-memory capability plugin;
+- let `@wizloft/harness-memory` own `memory@1`, public record/query/service/store contracts, and the
+  generic MemoryService implementation/factory;
+- let `@wizloft/harness-plugin-file-memory` own the JSONL store, runtime plugin id
+  `@wizloft/file-memory`, and the standalone first-party capability plugin without requiring
+  Context;
+- let `@wizloft/harness-plugin-memory-context` own runtime plugin id `@wizloft/memory-context`,
+  require `memory@1` plus `context@1`, and own optional exact-subject Context mappings and cleanup;
+- support only episodic/semantic kinds, candidate/active/stale/superseded/archived states, and exact
+  organization/project/workspace/session scopes with non-empty suffixes;
+- retain explicit immutable provenance with non-empty source type/id plus optional source revision
+  and root-relative/path-like reference;
+- make `remember()` generate identity/timestamps through snapshotted injectable seams, default to
+  candidate, and optionally accept initial active state;
+- normalize immutable tags by trim/lowercase/drop-empty/first-occurrence deduplication;
+- enforce only the accepted lifecycle graph and require an existing distinct same-scope active
+  replacement when superseding;
+- keep `transition()` lifecycle-only: no mutation of identity, knowledge, tags, metadata,
+  provenance, or creation time;
+- recall one exact scope, default to active state, support deterministic kind/state/content-keyword/
+  all-tags/metadata-subset filters, and preserve first-seen creation order;
+- serialize service-level mutations as validate -> immutable snapshot -> persist -> in-memory
+  commit, leaving committed memory unchanged after persistence failure;
+- use one MemoryStore seam and append full snapshots to JSONL, reconstructing current state and
+  first-seen order on restart;
+- reject malformed or logically impossible persisted history, including unknown-id transitions,
+  immutable-field mutation, illegal lifecycle movement, and invalid supersession relationships;
+- expose explicit stale transition as the source-change seam without watchers or autonomous
+  invalidation;
+- allow exact-subject Context mappings only as supporting/historical and prove conflicting memory
+  cannot alter Repository Authority;
+- keep promotion as optional target/reference metadata only, with no autonomous side effects;
+- snapshot validated store/id/clock/Context dependency callbacks at construction/setup boundaries,
+  and normalize thrown/invalid id-factory and clock results into structured Memory errors retaining
+  runtime causes.
+
+Explicitly deferred:
+
+- confidence/expiration automation, autonomous extraction/promotion, embeddings/vector search,
+  semantic ranking, and generic deduplication;
+- SQLite/Postgres, store multibinding/fallback/tiering, transactional/WAL/fsync/crash durability,
+  and general event-sourcing/replay infrastructure;
+- memory events, Evidence coupling, workflows, commands, SDK/public facade, profile/base, source
+  watchers/hashing, and generic update/delete APIs;
+- any Memory registration with Authority or production of AuthorityCandidate values.
+
+Implemented:
+
+- `@wizloft/harness-memory` with the `memory@1` token, public Memory record/query/service/store
+  contracts, and one generic runtime-scoped service factory;
+- immutable episodic/semantic records with exact scopes, explicit provenance, normalized tags,
+  JSON-object metadata, optional promotion links, generated ids, and injectable UTC wall-clock
+  seams;
+- candidate-by-default creation plus explicit active creation, accepted lifecycle transitions, and
+  same-scope active replacement validation for supersession without kind coupling;
+- lifecycle-only transition snapshots that preserve identity, content, tags, metadata, provenance,
+  and creation order;
+- exact-scope active-only recall by default with deterministic kind/state, all-keyword content,
+  all-tag, and recursive metadata-subset filters;
+- service-level serialized mutations with persist-before-commit behavior and committed in-memory
+  state retained after persistence failure;
+- construction-time snapshots of validated store, id-factory, and clock callbacks so later
+  caller-owned dependency mutation cannot change an existing service;
+- dedicated `INVALID_MEMORY_ID` and `INVALID_MEMORY_CLOCK` boundaries for thrown or invalid
+  callback results, with original runtime causes retained and shared clock handling for remember and
+  transition;
+- full-snapshot history reconstruction with first-seen ordering and rejection of malformed records,
+  unknown-id/non-initial starts, illegal transitions, immutable-field mutation, invalid
+  supersession, and impossible promotion removal;
+- `@wizloft/harness-plugin-file-memory` with runtime plugin id `@wizloft/file-memory`, missing-file
+  empty startup, serialized JSONL appends, structured malformed-history/read/write errors, and no
+  Context capability requirement;
+- `@wizloft/harness-plugin-memory-context` with exact-subject `subject + query + role` mappings
+  restricted to supporting/historical, active-only by default unless states are explicit, and
+  plugin-owned contributor registration cleanup;
+- integration proof that conflicting supporting Memory cannot alter repository Authority or enter
+  the Context authority bucket;
+- no competing default in-memory plugin, profile/base, Memory events, Evidence coupling, Authority
+  registration, autonomous behavior, command surface, or Slice 6 facade implementation.
+
+Proof:
+
+- `pnpm verify` succeeds in the repository workspace on Node.js 22.13.1 with pnpm 11.10.0;
+- `pnpm install --frozen-lockfile` followed by `pnpm verify` succeeds in a fresh temporary copy on
+  exact Node.js 22.13.0 with pnpm 11.10.0;
+- bootstrap tests pass: 5 passed, 0 failed;
+- kernel tests pass: 30 passed, 0 failed;
+- Authority tests pass: 8 passed, 0 failed;
+- Context tests pass: 5 passed, 0 failed;
+- Evidence tests pass: 6 passed, 0 failed;
+- Memory tests pass: 9 passed, 0 failed;
+- file-events tests pass: 9 passed, 0 failed;
+- repository-files tests pass: 6 passed, 0 failed;
+- Validation tests pass: 10 passed, 0 failed;
+- file-memory tests pass: 5 passed, 0 failed;
+- memory-context tests pass: 3 passed, 0 failed;
+- total automated tests pass: 96 passed, 0 failed;
+- all ten workspace packages/plugins typecheck and build from the fresh copy without relying on
+  repository `dist/` output;
+- Biome and workspace ownership checks pass, and no Slice 6 implementation was created.
 
 ## Slice 6 — SDK + Command API + CLI Adapter
 
