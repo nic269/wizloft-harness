@@ -35,25 +35,37 @@ Proof:
 - `pnpm verify` succeeds;
 - `pnpm check` succeeds with formatter, recommended lint rules, and import organization enabled;
 - bootstrap tests pass: 5 passed, 0 failed;
-- `packages/`, `plugins/`, and `profiles/` still contain only their `.gitkeep` placeholders;
-- no Slice 1 plugin-host or capability behavior is implemented.
+- at Slice 0 completion, `packages/`, `plugins/`, and `profiles/` contained only their `.gitkeep` placeholders;
+- at Slice 0 completion, no plugin-host or capability behavior was implemented.
 
 ## Slice 1 — Kernel/plugin host
 
-- plugin identity;
-- unique plugin names within one resolved runtime/profile;
+Status: Complete (2026-08-16)
+
+Implemented:
+
+- `@wizloft/harness-kernel` package with public kernel contracts and runtime surface;
 - stable serializable exact-major capability ids and declarations/requirements;
 - one runtime-scoped active capability service per capability token;
-- capability registry;
-- deterministic dependency graph/topological composition;
-- declared-requirement-only capability access;
-- declared-provides-only capability service registration;
-- reproducible tie-breaking that carries no sibling-order semantics;
-- capability-specific contributor registries rather than kernel multibinding;
-- missing capability diagnostics;
-- cycle diagnostics;
+- deterministic dependency graph/topological composition with reproducible tie-breaking;
+- declared-requirement-only capability access and declared-provides-only capability service registration;
+- plugin-name uniqueness within one resolved runtime;
+- capability-specific diagnostics, missing-capability diagnostics, and capability-cycle diagnostics;
 - rollback of partial setup effects plus reverse-order lifecycle/disposer cleanup that continues after disposer failures;
-- diagnostics primitives.
+- runtime-scoped diagnostics collection;
+- kernel exports for capability tokens, declarations, requirements, runtime creation, and diagnostic primitives;
+- no generic kernel multibinding; capability-specific multiplicity remains inside capability services;
+- no empty `@wizloft/harness` facade package was scaffolded ahead of a slice that needs it.
+
+Proof:
+
+- `pnpm verify` succeeds in the repo workspace;
+- `pnpm install --frozen-lockfile` + `pnpm verify` succeeds in a fresh temporary copy;
+- the fresh proof succeeds on exact Node.js 22.13.0 with pnpm 11.10.0;
+- kernel tests pass: 19 passed, 0 failed;
+- `packages/kernel` builds to `dist/` and emits declaration files cleanly;
+- the target `@wizloft/harness` facade remains intentionally deferred;
+- no Slice 2 packages/code were scaffolded.
 
 No project-specific knowledge.
 

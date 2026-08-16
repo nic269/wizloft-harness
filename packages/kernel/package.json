@@ -1,0 +1,19 @@
+{
+  "name": "@wizloft/harness-kernel",
+  "version": "0.0.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "test": "pnpm build && node --test tests/*.test.mjs",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
+  }
+}

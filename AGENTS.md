@@ -46,6 +46,14 @@ For bounded work, use an ephemeral plan in the current Codex session.
 For work spanning slices/sessions, maintain the active plan.
 Do not create story packets, matrices, or parallel planning artifacts without independent long-term value.
 
+## Subagent Discipline
+
+- Review, audit, and debug-analysis subagents are read-only unless explicitly granted write ownership.
+- Read-only subagents report findings only.
+- Unexpected subagent modifications are unauthorized proposals, not accepted work.
+- The main agent must inspect the worktree after each read-only subagent completes.
+- The main agent explicitly implements or adopts accepted findings.
+
 ## Decision gate
 
 If a material public contract or architecture decision is genuinely unspecified, stop before encoding an arbitrary choice and surface the smallest decision needed.

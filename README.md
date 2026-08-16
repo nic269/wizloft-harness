@@ -30,9 +30,15 @@ Repository = what we have decided is true
 
 Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 
+## Current status
+
+Slice 1 currently introduces only `@wizloft/harness-kernel` as a real workspace package.
+The public consumer-facing `@wizloft/harness` facade remains intentionally deferred until a
+later slice gives it concrete responsibility.
+
 ## Development
 
-The Slice 0 workspace requires Node.js 22.13 or newer and pnpm 11.10 or newer.
+The current workspace baseline requires Node.js 22.13 or newer and pnpm 11.10 or newer.
 
 ```bash
 npm install --global pnpm@11.10.0 # skip when a compatible pnpm is already installed
