@@ -33,11 +33,11 @@ Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 ## Current status
 
 Slices 0–6, MUH, Self-host, and the External Package Release Readiness implementation are complete.
-The thirteen approved public packages now share the lockstep `0.1.0-alpha.1` identity, publishable
-metadata, MIT license artifacts, deterministic release checks, and a packed external npm consumer
-proof. No package has been published and no release Git tag or registry state has been created or
-changed. The release-ready checkpoint is complete; publication and continued `wizloft-cli`
-integration remain separately governed.
+After the removed `0.1.0-alpha.1` publication attempt, that version is burned and the thirteen
+approved public packages now share the recovery identity `0.1.0-alpha.2`, publishable metadata,
+MIT license artifacts, deterministic release checks, and a packed external npm consumer proof.
+No `alpha.2` package has been published and no `alpha.2` release Git tag has been created. Any
+future publication and continued `wizloft-cli` integration remain separately governed.
 
 ## Development
 

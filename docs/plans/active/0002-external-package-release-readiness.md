@@ -1,6 +1,6 @@
 # Execution Plan — External Package Release Readiness
 
-Status: Complete (2026-08-17)
+Status: Complete (2026-08-18 `0.1.0-alpha.2` recovery checkpoint)
 
 ## Outcome
 
@@ -23,10 +23,11 @@ registry state.
 
 - registry: public npm under `@wizloft`;
 - license: MIT;
-- first lockstep version: `0.1.0-alpha.1`;
-- prerelease consumer contract: exact `0.1.0-alpha.1` pins;
+- first lockstep version: `0.1.0-alpha.1` (historical and no longer reusable);
+- current recovery identity: `0.1.0-alpha.2`;
+- prerelease consumer contract: exact `0.1.0-alpha.2` pins;
 - final public prerelease dist-tag: `next`;
-- intended annotated Git tag: `harness-v0.1.0-alpha.1`;
+- intended future annotated Git tag: `harness-v0.1.0-alpha.2`;
 - public release allowlist: the thirteen packages below;
 - registry mutation remains separately human-authorized;
 - npm scope ownership/authentication remains a human prerequisite.
@@ -37,7 +38,7 @@ plugin inspection versions from that source. It must reject any mismatch or publ
 identity. Manual independent version edits are not an accepted release mechanism.
 
 Source `workspace:*` dependencies remain. `pnpm pack` must rewrite every packed internal dependency
-to exact `0.1.0-alpha.1`; the packed-artifact checker rejects any remaining workspace protocol,
+to exact `0.1.0-alpha.2`; the packed-artifact checker rejects any remaining workspace protocol,
 range, or mismatched internal version.
 
 The source release graph models runtime `dependencies` and non-runtime test/development
@@ -77,7 +78,7 @@ Every public manifest must contain:
 
 ```json
 {
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "license": "MIT",
   "engines": { "node": ">=22.13.0" },
   "files": ["dist", "README.md", "LICENSE"],
@@ -177,8 +178,10 @@ Status: Complete
 - commit the clean release-ready state;
 - stop before registry mutation and request explicit human publication authorization.
 
-Do not create `harness-v0.1.0-alpha.1` during readiness implementation. The annotated tag belongs
-only to the later explicitly authorized publication turn.
+The completed alpha.1 readiness phase did not create its tag. A later publication attempt created
+the local annotated `harness-v0.1.0-alpha.1` tag, but it was never pushed and is not part of the
+alpha.2 checkpoint. Do not create `harness-v0.1.0-alpha.2` until a separately authorized
+publication turn.
 
 ## Future authorized publication sequence
 
@@ -195,7 +198,7 @@ layers:
 When separately authorized:
 
 ```text
-clean release-ready commit and annotated harness-v0.1.0-alpha.1 tag
+clean release-ready commit and annotated harness-v0.1.0-alpha.2 tag
 -> build once
 -> pnpm pack all thirteen packages into one temporary release-artifact directory
 -> inspect those exact manifests, files, and dependency versions
@@ -222,6 +225,9 @@ Do not move `next` package-by-package, do not publish with `latest`, and do not 
 
 ## Partial publication recovery
 
+The following was the accepted recovery rule for the alpha.1 publication attempt. The alpha.2
+checkpoint below supersedes any path that would reuse alpha.1.
+
 - if publication stops only because of network/authentication and artifacts are byte-unchanged,
   query the registry read-only, publish only missing `0.1.0-alpha.1` packages, then rerun the full
   exact-version registry consumer proof before promoting `next`;
@@ -230,6 +236,34 @@ Do not move `next` package-by-package, do not publish with `latest`, and do not 
   complete packed and registry gates;
 - never overwrite or reuse any published version;
 - stable `latest` publication remains outside this gate.
+
+## Alpha.2 recovery checkpoint
+
+The authorized alpha.1 publication attempt was subsequently removed from npm. Regardless of its
+current registry visibility, `0.1.0-alpha.1` is burned and must never be reused. The local annotated
+`harness-v0.1.0-alpha.1` tag remains unpushed historical evidence and is not deleted or moved by
+this recovery checkpoint.
+
+The recovery changes only the lockstep release identity to `0.1.0-alpha.2` across the private root,
+all thirteen public manifests, and the eight runtime plugin inspection versions. Release contract
+tests and current documentation follow the new identity; Harness runtime behavior remains
+unchanged.
+
+The recovery-preparation checkpoint performs no npm publication, dist-tag/access mutation,
+registry write, or Git tag creation/deletion/push. Publication remains a separate operation over a
+clean committed source checkpoint.
+
+## Alpha.2 publication authorization
+
+On 2026-08-18 the human owner explicitly authorized the same bounded publication sequence used for
+alpha.1, adapted only to `0.1.0-alpha.2`: push the approved source commit, create the local annotated
+`harness-v0.1.0-alpha.2` tag after artifact proof, publish the exact proven thirteen tarballs under
+the temporary `candidate` tag, run complete registry proofs, promote the coherent graph to `next`,
+push the release tag, and commit/push observed release evidence.
+
+This authorization does not include `latest`, a stable release, another version, package deletion
+or unpublish, organization/access changes, force-pushes, unrelated source behavior, or changes in
+the `wizloft-cli` repository.
 
 ## Expected implementation file scope
 
@@ -248,7 +282,7 @@ registry state, Git tag, or committed tarball may change during readiness implem
 
 ## Implemented
 
-- private root `package.json.version` is the `0.1.0-alpha.1` lockstep source;
+- private root `package.json.version` is the `0.1.0-alpha.2` lockstep source;
 - `release:sync` deterministically aligns thirteen public manifests, eight runtime plugin versions,
   package-local MIT licenses, and the private Self-host marker;
 - `release:check` enforces the allowlist, metadata, source dependency, license, version, runtime
@@ -256,7 +290,7 @@ registry state, Git tag, or committed tarball may change during readiness implem
 - the source dependency checker models runtime and development edges independently and rejects
   unapproved internal peer or optional edges;
 - all public manifests retain source `workspace:*` dependencies while packed manifests contain
-  exact `0.1.0-alpha.1` internal versions;
+  exact `0.1.0-alpha.2` internal versions;
 - `release:prove:packed` creates and deletes thirteen tarballs outside the repository, validates
   their files/manifests, installs all thirteen as direct relative dependencies into one fresh npm
   project with scripts and registry fallback disabled, and runs `npm ls --all`;
@@ -268,6 +302,8 @@ registry state, Git tag, or committed tarball may change during readiness implem
   snapshot remains in the repository.
 
 ## Observed proof
+
+### Alpha.1 release-readiness proof (historical)
 
 - normal `pnpm release:verify` passes on Node.js 22.13.1, npm 11.7.0, pnpm 11.10.0, Darwin 25.3.0
   arm64;
@@ -287,6 +323,26 @@ registry state, Git tag, or committed tarball may change during readiness implem
   pass on both proof runtimes;
 - no npm publication, access/dist-tag mutation, registry write, or Git tag occurred.
 
+### Alpha.2 recovery proof
+
+- two consecutive `pnpm release:sync` runs are idempotent and report thirteen public packages plus
+  eight runtime plugins at `0.1.0-alpha.2`;
+- `pnpm release:check`, `pnpm verify`, and `pnpm release:verify` pass on Node.js 26.7.0, npm 11.19.0,
+  pnpm 11.10.0, Darwin 25.3.0 arm64;
+- a fresh temporary repository copy containing no inherited `node_modules` or `dist` directories
+  passes `pnpm install --frozen-lockfile --offline` and `pnpm release:verify` on exact Node.js
+  22.13.0, npm 10.9.2, pnpm 11.10.0, Darwin 25.3.0 arm64;
+- the fresh install reuses five cached toolchain packages and downloads zero packages;
+- fourteen workspace packages/plugins/profiles typecheck, test, and build;
+- total automated tests pass: 122 passed, 0 failed;
+- thirteen packed manifests and tarballs pass exact-version, content, import, install, and full
+  external-consumer scenario checks on both proof runtimes;
+- read-only npm preflight authenticates `npm whoami` as `anhn`, while `npm org ls wizloft --json`
+  returns `E403`; alpha.2 publication therefore remains unattempted pending a successful permission
+  preflight and new explicit authorization;
+- before publication authorization, no alpha.2 publication, access/dist-tag mutation, registry
+  write, Git tag creation/deletion/push, or generated review snapshot occurred.
+
 ## Success criteria
 
 - exactly thirteen packages are publishable and every other workspace is private;
@@ -297,9 +353,10 @@ registry state, Git tag, or committed tarball may change during readiness implem
 - normal and exact-minimum-Node proofs pass with recorded Node/npm/pnpm/OS versions;
 - publication and registry mutation remain separately authorized.
 
-## Remaining prerequisite
+## Publication preflight
 
-The human owner has confirmed npm `@wizloft` scope ownership and local authentication. That
-confirmation does not authorize registry mutation: no scope creation, access change, publish,
-dist-tag change, registry write, or release Git tag may occur until a separate explicit publication
-turn is approved.
+The human owner has explicitly authorized the bounded alpha.2 publication turn. Read-only preflight
+authenticates npm as `anhn`, lists `@wizloft` package access without an authorization error, and
+confirms that all thirteen `0.1.0-alpha.2` versions are absent. Registry mutation remains limited to
+the authorized exact-version `candidate` publication and coherent `next` promotion described
+above.

@@ -42,13 +42,13 @@ async function copyReleaseFixture(targetRoot) {
 }
 
 test('release contract accepts exactly the approved public package set', async () => {
-  assert.equal(isValidReleaseVersion('0.1.0-alpha.1'), true);
+  assert.equal(isValidReleaseVersion('0.1.0-alpha.2'), true);
   assert.equal(isValidReleaseVersion('not-semver'), false);
   assert.equal(isValidReleaseVersion('0.0.0'), false);
   const inspection = await inspectReleaseContract(repositoryRoot);
 
   assert.deepEqual(inspection.errors, []);
-  assert.equal(inspection.releaseVersion, '0.1.0-alpha.1');
+  assert.equal(inspection.releaseVersion, '0.1.0-alpha.2');
   assert.equal(inspection.publicPackages.length, 13);
 });
 
@@ -66,7 +66,7 @@ test('release contract rejects identity drift, plugin drift, and accidental publ
   const authoritySource = await readFile(authoritySourcePath, 'utf8');
   await writeFile(
     authoritySourcePath,
-    authoritySource.replace("version: '0.1.0-alpha.1'", "version: '9.9.9'"),
+    authoritySource.replace("version: '0.1.0-alpha.2'", "version: '9.9.9'"),
   );
 
   const unlistedRoot = path.join(fixtureRoot, 'plugins/unlisted');
@@ -89,7 +89,7 @@ test('release contract rejects identity drift, plugin drift, and accidental publ
   );
   assert.equal(
     inspection.errors.includes(
-      '@wizloft/harness-authority runtime plugin version must equal 0.1.0-alpha.1',
+      '@wizloft/harness-authority runtime plugin version must equal 0.1.0-alpha.2',
     ),
     true,
   );
@@ -147,15 +147,15 @@ test('packed internal dependencies in every section must be exact and never use 
   ]) {
     const exactManifest = {
       name: '@wizloft/test-package',
-      [section]: { '@wizloft/harness-kernel': '0.1.0-alpha.1' },
+      [section]: { '@wizloft/harness-kernel': '0.1.0-alpha.2' },
     };
-    assert.deepEqual(inspectPackedInternalDependencies(exactManifest, '0.1.0-alpha.1'), []);
+    assert.deepEqual(inspectPackedInternalDependencies(exactManifest, '0.1.0-alpha.2'), []);
 
     const workspaceManifest = {
       name: '@wizloft/test-package',
       [section]: { '@wizloft/harness-kernel': 'workspace:*' },
     };
-    const errors = inspectPackedInternalDependencies(workspaceManifest, '0.1.0-alpha.1');
+    const errors = inspectPackedInternalDependencies(workspaceManifest, '0.1.0-alpha.2');
     assert.equal(
       errors.some((error) => error.includes(`packed ${section}.`)),
       true,
