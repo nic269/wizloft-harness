@@ -32,10 +32,12 @@ Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 
 ## Current status
 
-Slices 0–6 and the Minimum Useful Harness gate are complete. The workspace now includes the
+Slices 0–6, the Minimum Useful Harness gate, and the Self-host gate are complete. The workspace now includes the
 deterministic kernel/plugin foundation, Events, Context, Authority, Evidence, Validation, file-backed
 Memory, the public `@wizloft/harness` facade, structured commands, and an IO-free CLI adapter. The
-next gated activity is self-hosting; no Wizloft CLI migration has started in this repository.
+repository-specific `profiles/self-host` composition now proves those surfaces against Harness
+itself. The Self-host checkpoint is approved, and the next implementation work belongs in the
+`wizloft-cli` repository; no Wizloft CLI migration has started here.
 
 ## Development
 

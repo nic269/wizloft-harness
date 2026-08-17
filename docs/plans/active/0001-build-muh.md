@@ -1,6 +1,6 @@
 # Execution Plan — Build Minimum Useful Harness
 
-Status: Active
+Status: Complete
 
 ## Outcome
 
@@ -496,9 +496,49 @@ added before the separately gated self-hosting evaluation.
 
 ## Gate B — Self-host
 
-Status: Not started
+Status: Complete (2026-08-17)
 
-Run `docs/milestones/SELF-HOST.md`. Fix only blocking/reliability issues.
+Implemented:
+
+- `@wizloft/harness-profile-self-host` as a real repository-specific profile using only existing
+  first-party capabilities/providers plus project-owned validation registrations;
+- exact repository Authority mappings for all accepted decisions, current architecture documents,
+  `AGENTS.md`, the active plan, and the Self-host milestone without mapping `.references` content;
+- bounded maintenance Context combining relevant repository authority/current code/tests with
+  Memory restricted to supporting evidence;
+- focused authority-document validation and root-required root-workspace validation without a shell
+  runner or workflow abstraction;
+- an executable Gate B scenario through the public facade, structured command API, and CLI adapter;
+- candidate activation, stale and superseded Memory lifecycle, exact-scope recall, Context
+  integration, JSONL persistence/restart, and proof that conflicting Memory cannot alter Authority;
+- Validation selection/run, Evidence creation, persisted event inspection, deterministic runtime
+  inspection, shutdown, and post-disposal command behavior;
+- missing-capability and dependency-cycle fixtures composed through `createHarness()` with
+  understandable structured diagnostics.
+
+Findings:
+
+- BLOCKER: none observed;
+- RELIABILITY: none observed, so no existing kernel/capability/provider/facade/command/adapter
+  implementation was changed;
+- ENHANCEMENT (deferred): a process-backed validator for invoking the full repository toolchain,
+  profile loading/discovery, and automatic Memory source watching remain outside Gate B.
+
+Proof:
+
+- repository `pnpm verify` succeeds on Node.js 22.13.1 with pnpm 11.10.0;
+- fresh `pnpm install --frozen-lockfile` plus `pnpm verify` succeeds on exact Node.js 22.13.0 with
+  pnpm 11.10.0;
+- self-host profile tests pass: 2 passed, 0 failed;
+- executable Self-host scenarios pass: 2 passed, 0 failed;
+- total automated tests pass: 118 passed, 0 failed;
+- all fourteen workspace packages/plugins/profiles typecheck and build from the fresh copy without
+  repository `dist/` output;
+- Biome and workspace ownership checks pass; no global binary, base profile, workflow engine,
+  shell/process runner, self-host agent runtime, or Wizloft CLI rewrite was added.
+
+The checklist in `docs/milestones/SELF-HOST.md` is complete. Stop for review before the Wizloft CLI
+handoff.
 
 ## Handoff — Wizloft CLI
 

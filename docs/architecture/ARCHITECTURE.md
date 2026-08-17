@@ -78,7 +78,8 @@ plugins/
   file-memory/
   memory-context/
 profiles/
-  base/
+  self-host/           @wizloft/harness-profile-self-host
+  base/                deferred until real shared responsibility exists
 ```
 
 `@wizloft/harness` is the public consumer-facing SDK facade. This topology is a target architecture, not a requirement to scaffold empty packages. Each package should be created only when its implementation slice gives it a real responsibility.
@@ -119,6 +120,10 @@ is cloned and deeply frozen before only that plugin receives it through its publ
 
 `profiles/base` remains a target location and is created only when a real base profile has
 plugins or configuration to compose.
+
+`profiles/self-host` is the repository-specific Gate B composition. It uses existing first-party
+providers plus project-owned validators to operate on Wizloft Harness itself; it is not a generic
+profile framework or implicit default.
 
 ## Events
 

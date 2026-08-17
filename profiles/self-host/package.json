@@ -1,0 +1,31 @@
+{
+  "name": "@wizloft/harness-profile-self-host",
+  "version": "0.0.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "test": "pnpm build && node --test tests/*.test.mjs",
+    "typecheck": "pnpm --filter @wizloft/harness-kernel build && pnpm --filter @wizloft/harness-authority build && pnpm --filter @wizloft/harness-context build && pnpm --filter @wizloft/harness-evidence build && pnpm --filter @wizloft/harness-memory build && pnpm --filter @wizloft/harness-validation build && pnpm --filter @wizloft/harness-plugin-file-events build && pnpm --filter @wizloft/harness-plugin-file-memory build && pnpm --filter @wizloft/harness-plugin-memory-context build && pnpm --filter @wizloft/harness-plugin-repository-files build && tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@wizloft/harness-authority": "workspace:*",
+    "@wizloft/harness-context": "workspace:*",
+    "@wizloft/harness-evidence": "workspace:*",
+    "@wizloft/harness-kernel": "workspace:*",
+    "@wizloft/harness-memory": "workspace:*",
+    "@wizloft/harness-plugin-file-events": "workspace:*",
+    "@wizloft/harness-plugin-file-memory": "workspace:*",
+    "@wizloft/harness-plugin-memory-context": "workspace:*",
+    "@wizloft/harness-plugin-repository-files": "workspace:*",
+    "@wizloft/harness-validation": "workspace:*"
+  }
+}
