@@ -1,6 +1,6 @@
 # Execution Plan — External Package Release Readiness
 
-Status: Complete (2026-08-18 `0.1.0-alpha.2` recovery checkpoint)
+Status: Complete (2026-08-18 `0.1.0-alpha.2` published)
 
 ## Outcome
 
@@ -220,8 +220,10 @@ differs from the packed gate. The current offline proof intentionally keeps all 
 direct relative dependencies with registry fallback disabled; the later registry consumer is a
 separate transitive-resolution proof and does not replace that pre-publication gate.
 
-Do not move `next` package-by-package, do not publish with `latest`, and do not use
-`--no-git-checks` as the default release contract.
+Do not move `next` package-by-package, do not intentionally publish with `latest`, and do not use
+`--no-git-checks` as the default release contract. Exact versions are authoritative and `next` is
+the supported moving prerelease channel. Observed first-publication `latest` mappings are recorded
+but are not normalized or used as prerelease proof.
 
 ## Partial publication recovery
 
@@ -235,7 +237,8 @@ checkpoint below supersedes any path that would reuse alpha.1.
   packages to `0.1.0-alpha.2`, deprecate incomplete alpha.1 artifacts as appropriate, and rerun the
   complete packed and registry gates;
 - never overwrite or reuse any published version;
-- stable `latest` publication remains outside this gate.
+- intentional management of `latest` remains outside this prerelease gate and belongs to the first
+  separately approved stable release.
 
 ## Alpha.2 recovery checkpoint
 
@@ -261,9 +264,9 @@ alpha.1, adapted only to `0.1.0-alpha.2`: push the approved source commit, creat
 the temporary `candidate` tag, run complete registry proofs, promote the coherent graph to `next`,
 push the release tag, and commit/push observed release evidence.
 
-This authorization does not include `latest`, a stable release, another version, package deletion
-or unpublish, organization/access changes, force-pushes, unrelated source behavior, or changes in
-the `wizloft-cli` repository.
+This authorization does not include intentionally targeting, removing, or normalizing `latest`; a
+stable release; another version; package deletion or unpublish; organization/access changes;
+force-pushes; unrelated source behavior; or changes in the `wizloft-cli` repository.
 
 ## Expected implementation file scope
 
@@ -343,6 +346,58 @@ registry state, Git tag, or committed tarball may change during readiness implem
 - before publication authorization, no alpha.2 publication, access/dist-tag mutation, registry
   write, Git tag creation/deletion/push, or generated review snapshot occurred.
 
+### Alpha.2 npm publication evidence
+
+- release source commit: `74fcc16391fd0d56228b11c1b69ad7dbc645cb0c`;
+- annotated tag `harness-v0.1.0-alpha.2` points to the release source commit and is pushed without
+  force; the later evidence commit does not move it;
+- npm identity is `anhn`; publication uses npm registry `https://registry.npmjs.org/`, Node.js
+  26.7.0, and npm 11.19.0;
+- actual dependency-first publication order is kernel; Authority; Context; Evidence; Memory;
+  file-events; Validation; file-memory; memory-context; repository-files; Harness facade; commands;
+  CLI adapter;
+- Kernel and Authority were reconciled from the paused partial publication by querying registry
+  truth and were not republished. The remaining eleven packages were published once from the
+  original proven tarballs with explicit `--tag candidate --access public`;
+- first-publication packuments took roughly two to four minutes to become publicly queryable. The
+  process waited for exact version and `candidate` visibility after each publish rather than
+  republishing during propagation;
+- npmjs.org was observed assigning `latest -> 0.1.0-alpha.2` on all thirteen first publications
+  even though commands explicitly used `--tag candidate`. Attempts to remove the Kernel mapping
+  were rejected by npmjs.org; no `latest` mapping was successfully or intentionally modified;
+- all thirteen packages now expose `candidate -> 0.1.0-alpha.2` and
+  `next -> 0.1.0-alpha.2`. Observed `latest -> 0.1.0-alpha.2` is recorded but is not a prerelease
+  acceptance requirement or supported consumer proof channel;
+- a clean exact-version registry consumer installs all thirteen packages directly at
+  `0.1.0-alpha.2`, imports every public package name, and verifies thirteen registry-only lockfile
+  entries with no file, workspace, tarball, link, symlink, or local package dependency;
+- a second clean consumer declares twelve representative direct dependencies at `next`; npm resolves
+  `@wizloft/harness-memory@0.1.0-alpha.2` transitively and produces the complete thirteen-package
+  registry graph;
+- both post-promotion consumers pass the full facade -> commands -> CLI adapter scenario with
+  meaningful Validation pass/fail, Authority/Context, Memory persistence/restart and lifecycle,
+  Evidence/Events, inspection, shutdown, and disposed-runtime behavior;
+- no package was unpublished, no alpha.1 version was reused, no artifact was rebuilt or repacked,
+  and no unqualified/`latest` install was used as prerelease proof.
+
+Exact proven artifacts:
+
+| Package | Published at (UTC) | SHA-256 |
+| --- | --- | --- |
+| `@wizloft/harness-kernel` | `2026-08-17T17:43:52.677Z` | `bcde657453243a68b780489bd0bdb34f66dbd875b363aa260b1c76c6f3b82417` |
+| `@wizloft/harness-authority` | `2026-08-17T17:44:13.037Z` | `29cb1685ab2381de4e15713863194b75b55174b8e7fb3e16ca19447f8268e2ae` |
+| `@wizloft/harness-context` | `2026-08-17T18:40:25.564Z` | `377676313e4bfecf6253f03891fdabcc48a75686c01f576cfdf43c3861086e8f` |
+| `@wizloft/harness-evidence` | `2026-08-17T18:44:51.245Z` | `425d367c3702e89ac4e5acd0195590be29f97e8249ce215a622c1c8184278ab9` |
+| `@wizloft/harness-memory` | `2026-08-17T18:49:58.289Z` | `a2de8abca8a2d00ed28574a412076b121fe30b94b85f6330d0c7ee3e36890467` |
+| `@wizloft/harness-plugin-file-events` | `2026-08-17T18:55:00.391Z` | `a2df9f345c5a882285ba6f96ad66d4958abf59aa65e48400afc923d01339b148` |
+| `@wizloft/harness-validation` | `2026-08-17T19:00:03.212Z` | `59406fdee58a54e1daf0e8bf55dab47139d9461e39542a1555dd9df1aa1c0d58` |
+| `@wizloft/harness-plugin-file-memory` | `2026-08-17T19:05:05.672Z` | `bb0e0fcdca367b69e3ebf55da0f680b25274029194b1a5e0ed851bb00b3fcf2d` |
+| `@wizloft/harness-plugin-memory-context` | `2026-08-17T19:10:08.366Z` | `191d707b4860bfec9fef22289ea972fb4eb17aa3ab26f2a943e0c9cbdf27ea54` |
+| `@wizloft/harness-plugin-repository-files` | `2026-08-17T19:15:10.023Z` | `d456874ae7a080cf7e0f4172b82518f191ccf4bb8be552a0b6dcd55004f30da6` |
+| `@wizloft/harness` | `2026-08-17T19:20:17.263Z` | `48e590eb9384bc84efd1260ab01b5bc3b999346d77793cff987a6177f70782db` |
+| `@wizloft/harness-commands` | `2026-08-17T19:25:24.793Z` | `826503315505effe97dc804e3d17871a78104b3af71ca037a20a6e647e7a3168` |
+| `@wizloft/harness-cli-adapter` | `2026-08-17T19:30:26.470Z` | `ddb8b0a54755ef89428b3bb49e12f9e623bb3983acf4afb06222aa081cc00386` |
+
 ## Success criteria
 
 - exactly thirteen packages are publishable and every other workspace is private;
@@ -353,10 +408,10 @@ registry state, Git tag, or committed tarball may change during readiness implem
 - normal and exact-minimum-Node proofs pass with recorded Node/npm/pnpm/OS versions;
 - publication and registry mutation remain separately authorized.
 
-## Publication preflight
+## Publication preflight (historical)
 
-The human owner has explicitly authorized the bounded alpha.2 publication turn. Read-only preflight
-authenticates npm as `anhn`, lists `@wizloft` package access without an authorization error, and
-confirms that all thirteen `0.1.0-alpha.2` versions are absent. Registry mutation remains limited to
-the authorized exact-version `candidate` publication and coherent `next` promotion described
-above.
+Before publication, the human owner explicitly authorized the bounded alpha.2 turn. Read-only
+preflight authenticated npm as `anhn`, listed `@wizloft` package access without an authorization
+error, and confirmed that all thirteen `0.1.0-alpha.2` versions were absent. Registry mutation then
+remained limited to the authorized exact-version `candidate` publication and coherent `next`
+promotion described above.

@@ -40,6 +40,10 @@ authorizing registry mutation as part of ordinary implementation.
 - Every release candidate must pass deterministic packed-manifest/tarball inspection and a fresh
   external npm consumer proof through public package imports, the Harness facade, command executor,
   CLI adapter, real providers, meaningful Validation, durability, inspection, and lifecycle.
+- Exact versions are the authoritative prerelease consumer contract. `candidate` is a temporary
+  publication/proof channel and `next` is the supported moving prerelease channel.
+- `latest` is intentionally managed only when a stable release is approved; its absence is not a
+  prerelease invariant and prerelease proof must not rely on an unqualified install.
 - Registry ownership/authentication confirmation and every registry mutation require separate
   explicit human authorization.
 
@@ -59,6 +63,11 @@ belong in the active release plan rather than this durable policy.
   package accidentally.
 - A release-ready commit or successful packed proof does not authorize npm publication, access
   changes, or dist-tag promotion.
+- During the `0.1.0-alpha.2` release, npmjs.org was observed creating `latest` on first publication
+  even though the publish command explicitly supplied `--tag candidate`, and observed attempts to
+  remove that mapping were rejected. This is recorded as observed service behavior, not a universal
+  npm API guarantee. Prerelease acceptance therefore records `latest` without normalizing it and
+  proves exact versions plus `next` instead.
 
 ## Alternatives considered
 
