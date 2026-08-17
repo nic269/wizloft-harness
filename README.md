@@ -32,12 +32,12 @@ Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 
 ## Current status
 
-Slices 0–6, the Minimum Useful Harness gate, and the Self-host gate are complete. The workspace now includes the
-deterministic kernel/plugin foundation, Events, Context, Authority, Evidence, Validation, file-backed
-Memory, the public `@wizloft/harness` facade, structured commands, and an IO-free CLI adapter. The
-repository-specific `profiles/self-host` composition now proves those surfaces against Harness
-itself. The Self-host checkpoint is approved, and the next implementation work belongs in the
-`wizloft-cli` repository; no Wizloft CLI migration has started here.
+Slices 0–6, MUH, Self-host, and the External Package Release Readiness implementation are complete.
+The thirteen approved public packages now share the lockstep `0.1.0-alpha.1` identity, publishable
+metadata, MIT license artifacts, deterministic release checks, and a packed external npm consumer
+proof. No package has been published and no release Git tag or registry state has been created or
+changed. The release-ready checkpoint is complete; publication and continued `wizloft-cli`
+integration remain separately governed.
 
 ## Development
 
@@ -51,3 +51,14 @@ pnpm verify
 
 `pnpm verify` is the CI-ready root contract for Biome checks, TypeScript type checking, tests,
 and builds. Use `pnpm check:fix` to apply safe formatting, lint, and import-organization fixes.
+
+Release-readiness commands are intentionally separate from registry publication:
+
+```bash
+pnpm release:check          # read-only source release-contract validation
+pnpm release:sync           # derive public identities/metadata from the root version
+pnpm release:prove:packed   # build, pack, and exercise a fresh offline npm consumer
+pnpm release:verify         # full workspace verification plus packed-consumer proof
+```
+
+None of these commands publishes, changes npm access/dist-tags, or creates a Git tag.

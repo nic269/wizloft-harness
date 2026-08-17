@@ -271,7 +271,7 @@ export const AUTHORITY_CAPABILITY =
 
 export const authorityPlugin: WizloftPlugin = {
   name: AUTHORITY_PLUGIN_NAME,
-  version: '0.0.0',
+  version: '0.1.0-alpha.1',
   provides: [declareCapability(AUTHORITY_CAPABILITY)],
   setup(context) {
     context.capabilities.provide(AUTHORITY_CAPABILITY, createAuthorityService());

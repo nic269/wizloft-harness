@@ -51,6 +51,8 @@ belong in the active release plan rather than this durable policy.
 - The public package graph advances together before 1.0, favoring reproducible consumer installs
   over independent package release cadence.
 - Packed artifacts, not workspace success or raw npm packing, are the release proof boundary.
+- Only the exact tarballs that passed packed inspection and external-consumer proof are eligible for
+  later authorized publication; their SHA-256 hashes must be recorded before registry mutation.
 - Package metadata, licenses, exports, exact internal versions, and runtime inspection identity must
   remain synchronized by tooling.
 - The Self-host profile can continue testing the repository without becoming a supported public

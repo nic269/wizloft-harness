@@ -1,6 +1,6 @@
 # Execution Plan — External Package Release Readiness
 
-Status: Approved (2026-08-17)
+Status: Complete (2026-08-17)
 
 ## Outcome
 
@@ -39,6 +39,11 @@ identity. Manual independent version edits are not an accepted release mechanism
 Source `workspace:*` dependencies remain. `pnpm pack` must rewrite every packed internal dependency
 to exact `0.1.0-alpha.1`; the packed-artifact checker rejects any remaining workspace protocol,
 range, or mismatched internal version.
+
+The source release graph models runtime `dependencies` and non-runtime test/development
+`devDependencies` separately. Internal `optionalDependencies` and `peerDependencies` are forbidden
+unless a future accepted release-graph change models them explicitly. This prevents unapproved
+sections from silently changing the release closure or dependency-first publication order.
 
 ## Release set
 
@@ -122,6 +127,8 @@ eight-plugin contract.
 
 ### Phase 1 — Release identity, metadata, and deterministic checks
 
+Status: Complete
+
 - set private root `version` to `0.1.0-alpha.1` as the single release source;
 - derive/update all thirteen public manifest versions and eight public runtime plugin versions;
 - add approved metadata and package-local byte-identical MIT licenses;
@@ -133,6 +140,8 @@ eight-plugin contract.
 - retain source `workspace:*` dependencies.
 
 ### Phase 2 — Packed external-consumer gate
+
+Status: Complete
 
 - run the normal complete workspace verification/build;
 - create a temporary proof root outside the repository;
@@ -160,6 +169,8 @@ committed.
 
 ### Phase 3 — Release-ready checkpoint
 
+Status: Complete
+
 - rerun the complete workspace and packed external-consumer gates from a clean checkout;
 - inspect the complete diff and packed manifests;
 - record only observed package/test/toolchain counts;
@@ -184,14 +195,27 @@ layers:
 When separately authorized:
 
 ```text
-clean release-ready commit
--> annotated harness-v0.1.0-alpha.1 tag
--> publish dependency-first with a temporary candidate dist-tag
--> fresh registry consumer installs all exact 0.1.0-alpha.1 packages
--> full registry consumer proof
+clean release-ready commit and annotated harness-v0.1.0-alpha.1 tag
+-> build once
+-> pnpm pack all thirteen packages into one temporary release-artifact directory
+-> inspect those exact manifests, files, and dependency versions
+-> run the external packed-consumer proof against those exact tarballs
+-> record SHA-256 for all thirteen tarballs
+-> publish those same tarballs dependency-first with a temporary candidate dist-tag
+-> verify all thirteen exact package versions are available
+-> fresh registry consumer installs only the representative product/profile's direct public
+   dependencies and lets npm resolve exact transitive dependencies from the registry
+-> prove no file, tarball, or workspace dependency is involved and rerun public imports plus the
+   facade -> commands -> CLI adapter scenario
 -> promote next for all thirteen packages
 -> record observed release evidence
+-> delete temporary artifacts after their hashes and proof are recorded
 ```
+
+Publication must not repack from an uninspected source-package state or use a packaging path that
+differs from the packed gate. The current offline proof intentionally keeps all thirteen tarballs as
+direct relative dependencies with registry fallback disabled; the later registry consumer is a
+separate transitive-resolution proof and does not replace that pre-publication gate.
 
 Do not move `next` package-by-package, do not publish with `latest`, and do not use
 `--no-git-checks` as the default release contract.
@@ -222,6 +246,47 @@ Do not move `next` package-by-package, do not publish with `latest`, and do not 
 No `wizloft-cli` file, Self-host profile behavior, Harness command/capability/provider semantics,
 registry state, Git tag, or committed tarball may change during readiness implementation.
 
+## Implemented
+
+- private root `package.json.version` is the `0.1.0-alpha.1` lockstep source;
+- `release:sync` deterministically aligns thirteen public manifests, eight runtime plugin versions,
+  package-local MIT licenses, and the private Self-host marker;
+- `release:check` enforces the allowlist, metadata, source dependency, license, version, runtime
+  inspection, and private-by-default contracts and is part of normal `pnpm verify`;
+- the source dependency checker models runtime and development edges independently and rejects
+  unapproved internal peer or optional edges;
+- all public manifests retain source `workspace:*` dependencies while packed manifests contain
+  exact `0.1.0-alpha.1` internal versions;
+- `release:prove:packed` creates and deletes thirteen tarballs outside the repository, validates
+  their files/manifests, installs all thirteen as direct relative dependencies into one fresh npm
+  project with scripts and registry fallback disabled, and runs `npm ls --all`;
+- the external consumer imports all public names, composes every required provider plus a real
+  consumer validator, and proves pass/fail Validation, Evidence, persisted Events, Authority,
+  Context, Memory lifecycle/restart, inspection, shutdown, and disposed-runtime behavior;
+- `release:verify` combines the complete workspace proof with the packed-consumer scenario;
+- release synchronization is idempotent and no tarball, npm cache, consumer project, or review
+  snapshot remains in the repository.
+
+## Observed proof
+
+- normal `pnpm release:verify` passes on Node.js 22.13.1, npm 11.7.0, pnpm 11.10.0, Darwin 25.3.0
+  arm64;
+- a fresh temporary repository copy passes `pnpm install --frozen-lockfile --offline` and
+  `pnpm release:verify` on exact Node.js 22.13.0, npm 10.9.2, pnpm 11.10.0, Darwin 25.3.0 arm64;
+- the fresh install reuses five cached toolchain packages, downloads zero packages, and does not
+  rely on repository `node_modules` or `dist` output;
+- fourteen workspace packages/plugins/profiles typecheck, test, and build;
+- total automated tests pass: 122 passed, 0 failed;
+- focused release-graph regressions prove modeled internal development dependencies remain valid,
+  while unapproved internal peer/optional edges fail and every packed dependency section requires
+  exact internal versions without workspace protocol;
+- thirteen packed manifests contain exact internal versions and no workspace protocol;
+- all thirteen tarballs contain their manifest, README, byte-identical MIT license, JavaScript
+  export, and declaration target;
+- the offline external npm install, `npm ls --all`, public-name imports, and full consumer scenario
+  pass on both proof runtimes;
+- no npm publication, access/dist-tag mutation, registry write, or Git tag occurred.
+
 ## Success criteria
 
 - exactly thirteen packages are publishable and every other workspace is private;
@@ -234,6 +299,7 @@ registry state, Git tag, or committed tarball may change during readiness implem
 
 ## Remaining prerequisite
 
-The human owner must confirm npm `@wizloft` scope ownership and the authentication identity/policy
-before any registry mutation. No login, scope creation, access change, publish, dist-tag change, or
-registry write is authorized by this plan.
+The human owner has confirmed npm `@wizloft` scope ownership and local authentication. That
+confirmation does not authorize registry mutation: no scope creation, access change, publish,
+dist-tag change, registry write, or release Git tag may occur until a separate explicit publication
+turn is approved.

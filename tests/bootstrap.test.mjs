@@ -26,7 +26,18 @@ test('workspace root is private and does not own executable names', async () => 
 test('workspace exposes the complete root verification contract', async () => {
   const manifest = JSON.parse(await readRepositoryFile('package.json'));
 
-  for (const script of ['check', 'typecheck', 'test', 'build', 'verify', 'workspace:check']) {
+  for (const script of [
+    'check',
+    'typecheck',
+    'test',
+    'build',
+    'verify',
+    'workspace:check',
+    'release:check',
+    'release:prove:packed',
+    'release:sync',
+    'release:verify',
+  ]) {
     assert.equal(typeof manifest.scripts[script], 'string', `missing root script: ${script}`);
   }
 });

@@ -1,9 +1,11 @@
 {
   "name": "@wizloft/harness-memory",
-  "version": "0.0.0",
+  "version": "0.1.0-alpha.1",
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "exports": {
     ".": {
@@ -18,5 +20,23 @@
   },
   "dependencies": {
     "@wizloft/harness-kernel": "workspace:*"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nic269/wizloft-harness.git",
+    "directory": "packages/memory"
+  },
+  "homepage": "https://github.com/nic269/wizloft-harness#readme",
+  "bugs": {
+    "url": "https://github.com/nic269/wizloft-harness/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

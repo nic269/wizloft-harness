@@ -1,5 +1,6 @@
 {
   "name": "wizloft-harness-workspace",
+  "version": "0.1.0-alpha.1",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.10.0",
@@ -11,9 +12,13 @@
     "build": "pnpm workspace:check && pnpm --recursive run build",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "test": "pnpm workspace:check && node --test tests/bootstrap.test.mjs && pnpm --recursive run test && node --test tests/muh.test.mjs tests/self-host.test.mjs",
+    "release:check": "node scripts/check-release-contract.mjs",
+    "release:prove:packed": "pnpm build && node scripts/prove-packed-consumer.mjs",
+    "release:sync": "node scripts/sync-release-identity.mjs",
+    "release:verify": "pnpm verify && node scripts/prove-packed-consumer.mjs",
+    "test": "pnpm workspace:check && node --test tests/bootstrap.test.mjs tests/release-contract.test.mjs && pnpm --recursive run test && node --test tests/muh.test.mjs tests/self-host.test.mjs",
     "typecheck": "pnpm workspace:check && tsc --project tsconfig.json --noEmit --pretty false && pnpm --recursive run typecheck",
-    "verify": "pnpm workspace:check && pnpm check && pnpm typecheck && pnpm test && pnpm build",
+    "verify": "pnpm workspace:check && pnpm release:check && pnpm check && pnpm typecheck && pnpm test && pnpm build",
     "workspace:check": "node scripts/check-workspace.mjs"
   },
   "devDependencies": {

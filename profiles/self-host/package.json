@@ -27,5 +27,6 @@
     "@wizloft/harness-plugin-memory-context": "workspace:*",
     "@wizloft/harness-plugin-repository-files": "workspace:*",
     "@wizloft/harness-validation": "workspace:*"
-  }
+  },
+  "private": true
 }
