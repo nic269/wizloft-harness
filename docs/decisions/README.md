@@ -17,3 +17,4 @@ execution details belong in active plans and milestone documents.
 - [0010 Dogfood Order](0010-dogfood-order.md)
 - [0011 Wizloft CLI Rewrite Strategy](0011-wizloft-cli-rewrite-strategy.md)
 - [0012 Public Package Release Contract](0012-public-package-release-contract.md)
+- [0013 Project Onboarding And Discovery](0013-project-onboarding-and-discovery.md)

@@ -37,6 +37,27 @@ authorizing registry mutation as part of ordinary implementation.
 - Public packages support Node.js `>=22.13.0`.
 - The root workspace and `@wizloft/harness-profile-self-host` remain private. Any workspace outside
   the allowlist is private by default until a later accepted decision adds it.
+- The accepted next public allowlist addition is `@wizloft/harness-project` at `packages/project`.
+  That package is not part of the implemented `0.1.0-alpha.2` graph. Release-contract scripts,
+  packed-consumer proof, and lockstep identity `0.1.0-alpha.3` transition atomically when the
+  package exists. Until then the implemented public set remains the thirteen packages above.
+- When `@wizloft/harness-project` exists, the public set is fourteen packages. Its exact direct
+  runtime dependencies are `@wizloft/harness`, `@wizloft/harness-authority`,
+  `@wizloft/harness-cli-adapter`, `@wizloft/harness-commands`, `@wizloft/harness-context`,
+  `@wizloft/harness-evidence`, `@wizloft/harness-kernel`, `@wizloft/harness-plugin-file-events`,
+  `@wizloft/harness-plugin-file-memory`, `@wizloft/harness-plugin-memory-context`,
+  `@wizloft/harness-plugin-repository-files`, and `@wizloft/harness-validation`.
+  `@wizloft/harness-memory` remains transitive, not direct. The package must not introduce peer or
+  optional internal dependencies, and packed artifacts must not retain workspace, file, or link
+  specifiers.
+- Publish order remains dependency-first. A package’s layer is `1 + max(layer of its modeled
+  runtime dependencies)`, or `1` when it has none. Independent packages share a layer. The current
+  deepest direct dependency of `@wizloft/harness-project` is `@wizloft/harness-cli-adapter` (layer
+  6), so the observed DAG places the project package in layer 7. That number is derived, not a
+  special case; if future dependencies change, the layer is recomputed.
+- Once `@wizloft/harness-project` exists, release readiness includes the same lockstep identity,
+  Node `>=22.13.0`, exports/types/build-artifact, pack, registry, and coherent candidate/next graph
+  proofs as the other public packages, plus a generated-project packed-consumer proof.
 - Every release candidate must pass deterministic packed-manifest/tarball inspection and a fresh
   external npm consumer proof through public package imports, the Harness facade, command executor,
   CLI adapter, real providers, meaningful Validation, durability, inspection, and lifecycle.
@@ -61,6 +82,9 @@ belong in the active release plan rather than this durable policy.
   remain synchronized by tooling.
 - The Self-host profile can continue testing the repository without becoming a supported public
   package accidentally.
+- The accepted fourteenth package does not change the implemented `0.1.0-alpha.2` release checker.
+  The current graph remains thirteen packages until `@wizloft/harness-project` is created and the
+  release implementation is updated with it.
 - A release-ready commit or successful packed proof does not authorize npm publication, access
   changes, or dist-tag promotion.
 - During the `0.1.0-alpha.2` release, npmjs.org was observed creating `latest` on first publication

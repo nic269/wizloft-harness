@@ -63,6 +63,31 @@ Memory may later contribute only through the supporting/historical seam and cann
 authority item. Slice 3 documents that boundary without defining a Memory capability or beginning
 Memory integration.
 
+## Project Context lifecycle
+
+Generic project initialization creates durable current-tree subjects, not a permanent task or
+migration subject.
+
+- Stable project Context is the current tree: the project-owned current-truth file and the
+  Harness instruction file, plus any explicit local source mappings.
+- Bounded task Context is active work. Init does not invent a task subject, and a finished task
+  name is not default Context.
+- Explicit plan Authority may survive completion when a repository still accepts that plan as
+  truth. Survival is an explicit Authority mapping, not automatic ingestion of `docs/plans/`.
+- History is not default Context. Git, completed plans, Events, Evidence provenance, and Memory
+  lifecycle own history.
+
+Default generated sources are only `.wizloft/PROJECT.md` and `.wizloft/harness/INSTRUCTIONS.md`.
+README, docs trees, and package manifests are not auto-discovered. Optional
+`.wizloft/harness/profile.local.mjs` may add explicit repository Authority/Context mappings only;
+it is not a generic plugin overlay.
+
+A local overlay must not manufacture Context role `authority` by assigning the role string. Every
+overlay Context item with role `authority` must have its path present as an Authority source in
+the generated defaults or the same overlay. The Context subject need not equal the Authority
+subject. Supporting and historical Context paths do not require an Authority mapping. Authority
+defines accepted truth; Context presents it.
+
 ## Repository files
 
 The first-party repository-files provider registers capability-specific contributors with both

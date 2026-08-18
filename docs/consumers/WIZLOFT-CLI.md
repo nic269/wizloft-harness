@@ -88,3 +88,12 @@ bin/
 ```
 
 The consumer may evolve this structure if tests/clarity justify a better shape.
+
+## Hardening Cycle 1 posture
+
+Wizloft CLI remains the `0.1.0-alpha.2` dogfood consumer. Its Gate H0 / product Harness layout is
+CLI-owned.
+
+Generic `@wizloft/harness-project` initialization does not retroactively migrate that layout.
+A later CLI upgrade to exact `0.1.0-alpha.3` pins is package-regression only unless a separate
+authorization requires generic init or layout migration.

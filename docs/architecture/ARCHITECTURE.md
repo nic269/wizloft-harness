@@ -72,6 +72,7 @@ packages/
   commands/            @wizloft/harness-commands
   cli-adapter/         @wizloft/harness-cli-adapter
   harness/             @wizloft/harness
+  project/             @wizloft/harness-project
 plugins/
   repository-files/
   file-events/
@@ -82,7 +83,11 @@ profiles/
   base/                deferred until real shared responsibility exists
 ```
 
-`@wizloft/harness` is the public consumer-facing SDK facade. This topology is a target architecture, not a requirement to scaffold empty packages. Each package should be created only when its implementation slice gives it a real responsibility.
+`@wizloft/harness` is the public consumer-facing SDK facade. `@wizloft/harness-project` is the
+public project-tooling package for pre-runtime repository initialization and the generated
+project-local runner. This topology is a target architecture, not a requirement to scaffold empty
+packages. Each package should be created only when its implementation slice gives it a real
+responsibility.
 
 ## Durability planes
 
@@ -187,7 +192,8 @@ CI -----------+
 
 ```text
 wizloft-harness
-  owns: command semantics, structured inputs/results, CLI adapter library
+  owns: command semantics, structured inputs/results, CLI adapter library,
+        reusable project onboarding/runner semantics
   does not own: global `wizloft` or `wizharness` executable names
 
 wizloft-cli
@@ -196,6 +202,37 @@ wizloft-cli
 ```
 
 This prevents duplicate command logic while keeping Harness embeddable by agents, CI, future UIs, and DeepSeek integration.
+
+## Project onboarding boundary
+
+Project initialization is pre-runtime scaffolding, not a kernel capability and not a live-runtime
+command.
+
+```text
+@wizloft/harness-project
+    ->
+pre-runtime repository initialization
+    ->
+generated project-local runner/profile
+    ->
+ordinary public Harness runtime
+```
+
+A repository is Harness-initialized when `.wizloft/harness/project.json` is a valid supported
+marker and the required tracked artifacts are present. That marker names the last release whose
+project contract successfully completed materialization when it was written. The marker is written
+last.
+
+A checkout is runnable only when that initialized contract can also resolve the exact
+`@wizloft/harness-project` from ignored `.wizloft/harness/node_modules`. A fresh clone with a valid
+marker is initialized and needs local `npm ci`; it is not a first-init failure or upgrade.
+
+Generic tooling lives under `.wizloft/harness/`; `.wizloft/` remains an organization namespace.
+Host application root manifests are not mutated merely to use Harness.
+
+The generic execution command is `node .wizloft/harness/run.mjs <Harness module argv>`. The tracked
+runner stays tiny, enforces Node `>=22.13.0` before importing `@wizloft/harness-project`, and
+delegates reusable runtime semantics to `runProjectHarness(...)`.
 
 ## Public SDK, commands, and CLI adapter
 
@@ -242,7 +279,11 @@ kernel + capability packages
         -> @wizloft/harness
         -> @wizloft/harness-commands
         -> @wizloft/harness-cli-adapter
+        -> @wizloft/harness-project
 ```
+
+`@wizloft/harness-project` also depends directly on the public providers and kernel contracts its
+generated profile and runner import. Publish layer remains DAG-derived, not a fixed special case.
 
 Event history/replay is not a kernel capability. Commands use only the facade's optional reader;
 file-events may be adapted structurally by the embedding application without depending on the
