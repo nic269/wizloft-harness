@@ -1,0 +1,1399 @@
+# Execution Plan — CLI Dogfood Retrospective and Hardening Cycle 1
+
+Status: Accepted governance checkpoint. Implementation is not authorized.
+
+This file owns the accepted alpha.3 onboarding contract.
+
+This revision applies the approved Cycle 1 architecture plus the four bounded corrections:
+dependency closure, marker-last initialization, runner lifecycle, and a source-only
+`profile.local.mjs` overlay. `.npmrc` is removed from the required artifact set.
+
+## Outcome
+
+Close the public onboarding contract for Harness `0.1.0-alpha.3` from the completed Wizloft CLI
+dogfood, then implement only that contract after this plan is accepted.
+
+Alpha.3 is onboarding and agent discovery only. It must make a clean or existing repository
+discoverable, runnable, and re-init-safe without copying the CLI Gate H0 layout.
+
+## Authority for this plan
+
+- Harness checkpoint: `bc778ff85468452eb8dce2c9579652c17ee6b14e` on `main`.
+- Released consumer baseline: `0.1.0-alpha.2`.
+- CLI rewrite checkpoint, inspected read-only:
+  `1a5ed8281944522751218103e1d01e52b7f817ce`.
+- CLI product pins every consumed Harness package to exact `0.1.0-alpha.2`.
+- Durable rules:
+  [0002](../../decisions/0002-small-kernel-plugin-ecosystem.md),
+  [0003](../../decisions/0003-agent-agnostic.md),
+  [0009](../../decisions/0009-cli-ownership-boundary.md),
+  [0010](../../decisions/0010-dogfood-order.md),
+  [0012](../../decisions/0012-public-package-release-contract.md).
+- Architecture:
+  [ARCHITECTURE.md](../../architecture/ARCHITECTURE.md),
+  [AUTHORITY-CONTEXT-EVIDENCE.md](../../architecture/AUTHORITY-CONTEXT-EVIDENCE.md).
+- Consumers:
+  [WIZLOFT-CLI.md](../../consumers/WIZLOFT-CLI.md),
+  [MELDMARK.md](../../consumers/MELDMARK.md).
+- Existing release DAG: `scripts/release-contract.mjs` `PUBLIC_PACKAGES`.
+- Existing import oracles: `profiles/self-host/src/index.ts`, CLI
+  `dev/harness/profile.mjs` + `dev/harness/run.mjs`.
+
+This freeze records the accepted contract only. It does not write ADR 0013, create packages,
+version packages, publish, or modify Wizloft CLI.
+
+## Approved strategic decisions
+
+These were accepted before this contract turn and remain binding:
+
+- Hardening Cycle 1 owns project onboarding and agent discovery.
+- Alpha.3 remains onboarding-only.
+- Scope-integrity is the next hardening cycle, not alpha.3.
+- Context lifecycle is documentation and init-pattern work, not a kernel API.
+- Evidence closeout and subagent ownership remain deferred.
+- No kernel capability, process framework, workflow engine, sandbox, or Git writer is added.
+- This file is the owning active plan.
+- `@wizloft/harness-project` remains the one new public package.
+
+## Accepted implementation notes
+
+These notes are accepted for the later ADR/implementation phase. They do not reopen architecture
+and do not require another plan proposal round.
+
+1. Node runtime floor. The initializer and the generated project runner must explicitly enforce
+   the Harness Node `>=22.13.0` floor with actionable errors. Initializer enforcement is
+   preflight and must happen before any repository mutation.
+2. Marker-last is a successful-materialization sentinel, not a transactional rollback of
+   already-updated Harness-owned non-marker tooling files. On a failed cross-release upgrade, the
+   old valid marker keeps the identity of the last successfully materialized release. Retry is
+   the alpha.3 recovery contract.
+
+## Current state
+
+Verified 2026-08-18:
+
+| Surface | Observed |
+|---|---|
+| Harness branch | `main` |
+| Harness HEAD | `bc778ff85468452eb8dce2c9579652c17ee6b14e` |
+| Root identity | `0.1.0-alpha.2` |
+| Public package set | thirteen allowlisted packages; no project-tooling package |
+| CLI HEAD | `1a5ed8281944522751218103e1d01e52b7f817ce` |
+| CLI Harness layout | consumer-owned `dev/harness/{profile,run,h0.test}.mjs` |
+| CLI adapter block | `<!-- HARNESS:BEGIN -->` in `AGENTS.md` |
+| CLI stable Context | `wizloft-cli:task:typescript-rewrite` retained after rewrite closeout |
+| CLI execution | `npm run harness:dev -- <argv>` or product `wizloft harness` / `wizharness` |
+
+The CLI Gate H0 layout is one consumer convention. It is not the generic alpha.3 standard.
+
+---
+
+## 1. Friction matrix
+
+| Rank | Friction | CLI evidence | Freq | Sev | Generic? | Workaround | Owner | Alpha.3 | Class |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | No released meaning of “this repo uses Harness” | Gate H0 hand-authored `dev/harness/*`, `docs/development/harness.md`, and an `AGENTS.md` block. Meldmark cannot copy a released initializer. | once per project, then permanent | high | yes | copy CLI files | Harness project-tooling | **MUST HAVE** | project initializer / onboarding |
+| 2 | Discoverable but not runnable after init | Previous proposal allowed an optional runner while requiring inspect / Authority / Context proof. CLI only became usable after `run.mjs` plus resolved packages. | every command | high | yes | host-specific runner | Harness project-tooling | **MUST HAVE** | public command / facade concern |
+| 3 | No durable post-npx runtime | H0 used sibling `npm link`. Product later pinned thirteen Harness packages in root `package.json`. Empty or non-Node repos cannot do that. | every new project | high | yes | mutate root deps or keep links | Harness project-tooling | **MUST HAVE** | provider / plugin + onboarding |
+| 4 | No single instruction source | CLI put a summary in `AGENTS.md` and the full contract in `docs/development/harness.md`. Future `CLAUDE.md` would copy it again. | every agent | high | yes | duplicate prose | Harness-owned instructions + tiny adapters | **MUST HAVE** | workflow / documentation |
+| 5 | Durable Context kept a finished task name | Profile still exports `wizloft-cli:task:typescript-rewrite` after the plan moved to `docs/plans/completed/`. | every start | med | yes | remember the stale name | init pattern + docs | **MUST HAVE** as init contract | documentation / init-pattern |
+| 6 | Init would be unsafe on brownfield files | CLI already had user `AGENTS.md`. A whole-file rewrite would destroy it. | first existing-repo init | high | yes | manual merge | initializer writer | **MUST HAVE** | project initializer / onboarding |
+| 7 | Declared vs observed Git paths | Agents edited extra technically-correct paths without approval. Validation trusts caller `changedPaths`. | repeated | high | yes | human review | next cycle | **DEFER** | Harness provider / plugin later |
+| 8 | Validation closeout is verbose | Start/closeout requires report + Evidence IDs + persisted Events + plan summary. Runtime Evidence is not a bug. | every closeout | med | yes | follow CLI handoff | commands later | **DEFER** | public command / facade later |
+| 9 | Shared-checkout subagent writes | CLI added “primary agent owns the checkout” rules after unauthorized mutation/commits. | repeated | high | yes | instruction + isolation | host runtime / workflow | **DOCUMENT ONLY** | agent-runtime outside Harness |
+| 10 | Historical task Context vs current tree | Completed plan remains explicit Authority `wizloft-cli:plan:typescript-rewrite` and is not default Context. | query-time | low | yes | explicit subjects | docs / init pattern | **DOCUMENT ONLY** | documentation |
+| 11 | Root dependency mutation | Slice 4 put thirteen Harness packages in CLI `dependencies` because CLI is a Node product host. That is not a generic project rule. | one consumer | med | no | isolated tooling tree | consumer policy vs generic init | **MUST HAVE** as non-mutation | consumer-owned policy |
+| 12 | Extra agent adapters | Only AGENTS.md and Claude were needed. No Codex/DSH/Cursor files were required to finish the rewrite. | none | low | speculative | none | later adapters | **DEFER** | workflow / documentation |
+
+Priority is consumer friction, not implementation attractiveness.
+
+---
+
+## 2. Alpha.3 scope
+
+Alpha.3 contains only:
+
+1. a released project-tooling package that can initialize a repository;
+2. a machine-readable project marker written last as the success sentinel;
+3. canonical project instructions;
+4. required project runner plus isolated runtime resolution;
+5. AGENTS.md and CLAUDE.md discovery adapters;
+6. a stable project Context / Authority template plus a source-only overlay;
+7. dry-run, idempotent re-init, and filesystem-safe apply;
+8. executable CLEAN / EXISTING / CONFLICT / marker-commit / runner / overlay proofs;
+9. ADR 0013 plus the [0012](../../decisions/0012-public-package-release-contract.md) allowlist
+   amendment, written in a later authorized turn;
+10. lockstep release-graph work so the fourteenth package publishes with `0.1.0-alpha.3`.
+
+Alpha.3 does not contain:
+
+- Git scope-integrity plugin;
+- Validation closeout envelope;
+- durable Evidence storage;
+- Context snapshots / versioned trees;
+- subagent, sandbox, or Git writer;
+- extra agent adapters;
+- CLI `PRODUCT_CONTEXT_SUBJECT` rename;
+- kernel changes;
+- process / workflow / job framework;
+- interactive setup wizard;
+- root `package.json` mutation;
+- global `wizharness` / `wizloft` binaries;
+- arbitrary plugin/profile composition through `profile.local.mjs`;
+- a generated `.npmrc`.
+
+If review must cut further, keep isolated runtime resolution and drop CLAUDE.md only. Do not ship
+marker-only init. Discoverable-but-unrunnable is the defect this contract exists to close.
+
+---
+
+## 3. Execution bootstrap
+
+### Required post-init chain
+
+```text
+agent opens repository
+  -> reads AGENTS.md and/or CLAUDE.md managed block
+  -> reads .wizloft/harness/INSTRUCTIONS.md
+  -> runs EXACT command:
+       node .wizloft/harness/run.mjs <Harness module argv>
+  -> run.mjs derives repositoryRoot from its known path
+  -> run.mjs calls runProjectHarness(argv, options)
+  -> runProjectHarness loads/validates .wizloft/harness/project.json
+  -> runProjectHarness loads .wizloft/harness/profile.mjs
+  -> createGeneratedProjectProfile composes the default profile
+  -> createHarness(generated profile)
+       -> createCommandExecutor
+       -> createHarnessCliAdapter
+  -> inspect / authority.resolve / context.resolve / validation.run
+```
+
+The runner is required. A repository is not initialized until a schema-valid `project.json` exists
+and the exact command can resolve `@wizloft/harness-project` from the isolated tree.
+
+### Comparison
+
+| Option | Empty git repo | Existing npm/pnpm/yarn | Non-Node repo | Offline after init | Reproducible | Root manifest | Verdict |
+|---|---|---|---|---|---|---|---|
+| A. Mutate root dependencies | must create `package.json` | invasive | forces Node project identity | only after root install | mixed with app deps | yes | rejected |
+| B. Isolated `.wizloft` runtime only | works | works | works | works after materialize | needs a package identity | no | necessary runtime, not a package name |
+| C. `npx` every later command | works | works | works | no | floating | no | rejected as post-init model |
+| D. One project-tooling package for init + runner | works | works | works | works after isolated install | exact pin + lockfile | no | **accepted** |
+| E. Host CLI owns init | no generic Meldmark path | host-specific | host-specific | host-specific | no | maybe | rejected for generic init |
+
+Accepted contract: **D composed with B**.
+
+- `npx @wizloft/harness-project@0.1.0-alpha.3` is only the initializer process.
+- After that process exits, later commands do not use npx and do not need network.
+- Apply writes an isolated tooling manifest under `.wizloft/harness/` and materializes
+  `@wizloft/harness-project` plus its lockstep closure there.
+- The tracked runner imports that local install.
+- Root `package.json` is never created or modified.
+- Empty repos, npm/pnpm/yarn repos, and non-Node repos receive the same isolated Node island.
+- Harness remains a Node `>=22.13.0` tool. The project language can be anything.
+- Isolated install uses npm with frozen argv, never the host pnpm/yarn graph.
+
+### Exact answers
+
+| Question | Contract |
+|---|---|
+| What command does the agent run? | `node .wizloft/harness/run.mjs <Harness module argv>` |
+| Is a tracked runner required? | Yes. `.wizloft/harness/run.mjs` is required. |
+| Where do released packages resolve from? | `.wizloft/harness/node_modules` via the runner file’s module resolution |
+| What remains after npx init exits? | tracked artifacts including the sentinel marker, isolated lockfile, isolated `node_modules`, gitignored local state dir |
+| Does every later command need network/npx? | No |
+| How does an empty git repo work? | `git init`, then init with `--root` and `--project-id`; no root package manifest |
+| How do npm/pnpm/yarn/non-Node repos work? | same isolated tree; root package manager is untouched |
+| Does init modify a package manifest? | Yes, only `.wizloft/harness/package.json`. Never the root manifest. |
+| Isolated tooling environment? | Yes. Private npm package at `.wizloft/harness/` |
+| Does apply install? | Yes. Isolated `npm install --prefix <root>/.wizloft/harness --ignore-scripts --no-audit --no-fund` is a planned apply operation. Dry-run reports it and writes nothing. |
+| Is `.npmrc` generated? | No. Frozen argv is sufficient. |
+| Offline/reproducibility after init? | Exact `0.1.0-alpha.3` pin + tracked lockfile + present `node_modules`. Fresh clone runs `npm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund`. |
+
+`npx` is not the post-init runner. Root dependency mutation is not the generic contract. The
+CLI/product host may still depend on public packages itself; that remains consumer policy.
+
+---
+
+## 4. Package ownership and exact dependency closure
+
+One new public package. No second package.
+
+| Field | Decision |
+|---|---|
+| Name | `@wizloft/harness-project` |
+| Workspace | `packages/project` |
+| After init | remains the isolated tooling dependency; not a root app dependency |
+| Bin | `wizloft-harness-project` |
+| Bin syntax | `init --root <dir> --project-id <id> [--adapters agents,claude] [--dry-run] [--json]` |
+| Bin does not run | `inspect`, `authority`, or other Harness module commands |
+| Programmatic API | `planProjectInitialization(options)`, `applyProjectInitialization(options)`, `runProjectHarness(argv, options)`, `createGeneratedProjectProfile(options)` |
+| Isolated generated manifest | depends directly on `@wizloft/harness-project@0.1.0-alpha.3` only |
+| Kernel | consumed as a public dependency; no new kernel API |
+| Commands package | no new command ids |
+| CLI adapter | reused only by `runProjectHarness` for Harness module argv |
+| Host-binary rule | bin is not `wizloft`, `wizharness`, `wizanh`, or `wizshopify` |
+
+Rejected names/boundaries:
+
+- `@wizloft/harness-init` — init-only name hides the required runner.
+- Init subpath on `@wizloft/harness` — facade is a live-runtime SDK, not a repository writer.
+- Init command on `@wizloft/harness-commands` — commands require an already-created runtime.
+- Host-owned init — Meldmark would not get a released initializer.
+
+Why this does not violate [0009](../../decisions/0009-cli-ownership-boundary.md):
+
+- reusable init/run semantics live in Harness;
+- the bin is a scaffolding/tooling executable, not the product `wizharness` UX;
+- Wizloft CLI keeps `wizloft harness` / `wizharness`;
+- the generic agent command is a repo-local `node .wizloft/harness/run.mjs`.
+
+Spawn scope: apply may `execFile` only `npm` with the frozen install argv, `shell: false`, cwd or
+`--prefix` = isolated directory. That is scaffolding, not a kernel process framework. The runner
+never spawns npm.
+
+Tests inject the install function so CLEAN/EXISTING/CONFLICT proofs do not need the public
+registry. Production CLI uses real npm.
+
+### Derived direct runtime dependencies
+
+Do not rely on `@wizloft/harness` accidentally exposing plugin constructors or kernel helpers.
+
+Import derivation from the three required surfaces, matching the existing self-host and CLI
+profile/runner oracles:
+
+| Surface | Direct imports |
+|---|---|
+| `createGeneratedProjectProfile` | `defineProfile`, `requireCapability` from `@wizloft/harness-kernel`; `authorityPlugin` from `@wizloft/harness-authority`; `contextPlugin` from `@wizloft/harness-context`; `evidencePlugin` from `@wizloft/harness-evidence`; `validationPlugin`, `VALIDATION_CAPABILITY` from `@wizloft/harness-validation`; `fileEventsPlugin` from `@wizloft/harness-plugin-file-events`; `fileMemoryPlugin` from `@wizloft/harness-plugin-file-memory`; `memoryContextPlugin` from `@wizloft/harness-plugin-memory-context`; `repositoryFilesPlugin` from `@wizloft/harness-plugin-repository-files` |
+| `runProjectHarness` | `createHarness` from `@wizloft/harness`; `createCommandExecutor` from `@wizloft/harness-commands`; `createHarnessCliAdapter` from `@wizloft/harness-cli-adapter`; `readFileEvents` from `@wizloft/harness-plugin-file-events` |
+| project health validator | `requireCapability` from `@wizloft/harness-kernel`; `VALIDATION_CAPABILITY` from `@wizloft/harness-validation` |
+
+Exact direct `dependencies` of `@wizloft/harness-project`, sorted:
+
+```text
+@wizloft/harness
+@wizloft/harness-authority
+@wizloft/harness-cli-adapter
+@wizloft/harness-commands
+@wizloft/harness-context
+@wizloft/harness-evidence
+@wizloft/harness-kernel
+@wizloft/harness-plugin-file-events
+@wizloft/harness-plugin-file-memory
+@wizloft/harness-plugin-memory-context
+@wizloft/harness-plugin-repository-files
+@wizloft/harness-validation
+```
+
+`@wizloft/harness-memory` is **not** a direct dependency. It remains transitive through:
+
+- `@wizloft/harness` (facade runtime dependency);
+- `@wizloft/harness-plugin-file-memory`;
+- `@wizloft/harness-plugin-memory-context`.
+
+The generated isolated `.wizloft/harness/package.json` still depends directly on only
+`@wizloft/harness-project@0.1.0-alpha.3`. The project package owns the reusable runtime closure.
+
+No `optionalDependencies` or `peerDependencies`. Internal `devDependencies` remain empty unless a
+later implementation proof needs a test-only public package already modeled by ADR 0012.
+
+### Derived publish layer
+
+Existing public runtime DAG from `scripts/release-contract.mjs`, with layer =
+`1 + max(layer of modeled runtime dependencies)` and independent packages sharing a layer:
+
+| Layer | Packages | Why |
+|---|---|---|
+| 1 | `@wizloft/harness-kernel` | no public runtime deps |
+| 2 | `@wizloft/harness-authority`, `@wizloft/harness-context`, `@wizloft/harness-evidence`, `@wizloft/harness-memory`, `@wizloft/harness-plugin-file-events` | kernel only |
+| 3 | `@wizloft/harness-validation`, `@wizloft/harness-plugin-file-memory`, `@wizloft/harness-plugin-memory-context`, `@wizloft/harness-plugin-repository-files` | kernel plus layer-2 capability packages |
+| 4 | `@wizloft/harness` | facade over capability packages |
+| 5 | `@wizloft/harness-commands` | facade |
+| 6 | `@wizloft/harness-cli-adapter` | commands |
+
+`@wizloft/harness-project` depends on layer 6 (`@wizloft/harness-cli-adapter`) and on earlier
+layers. It therefore publishes in **layer 7**. That number is the DAG result, not “whatever comes
+after the CLI adapter in a list.” The binding predecessor is `@wizloft/harness-cli-adapter`.
+
+Updated dependency-first publication order:
+
+```text
+1. kernel
+2. Authority, Context, Evidence, Memory, file-events
+3. Validation, file-memory, memory-context, repository-files
+4. Harness facade
+5. commands
+6. CLI adapter
+7. harness-project
+```
+
+---
+
+## 5. Path namespace
+
+Chosen layout:
+
+```text
+.wizloft/                         org namespace, not Harness-owned as a whole
+  PROJECT.md                      project-owned current-truth file
+  harness/                        Harness-owned tooling namespace
+    project.json                  completion sentinel / machine marker
+    INSTRUCTIONS.md               canonical human/agent instructions
+    profile.mjs                   generated profile entry
+    profile.local.mjs             optional source-only overlay; never created by init
+    run.mjs                       required tiny runner
+    package.json                  isolated tooling manifest
+    package-lock.json             isolated lockfile
+    node_modules/                 install output; ignored
+    local/                        Memory/Event state; ignored
+      memory.jsonl
+      events.jsonl
+```
+
+`.wizloft/harness/.npmrc` is **not** generated.
+
+Rejected flat `.wizloft/harness.json` + `.wizloft/profile.mjs`. `.wizloft/` must stay available to
+future non-Harness Wizloft tooling. Harness owns only `.wizloft/harness/` plus create-if-missing
+`.wizloft/PROJECT.md`.
+
+CLI `dev/harness/` and `.local/wizloft-harness/` stay CLI-owned. Alpha.3 does not migrate CLI.
+
+---
+
+## 6. Initialized-repository map
+
+Classification key:
+
+- `whole` — Harness-owned whole file; re-init may replace, except the marker which is last
+- `sentinel` — Harness-owned whole file written only after successful materialization
+- `block` — Harness-owned managed block only
+- `create-once` — project-owned; create if missing; never overwrite
+- `optional` — project-owned; never created by init; never overwritten
+- `adapter` — created or block-updated only when selected
+- `generated` — created by apply install, then tracked
+- `runtime` — created at runtime; ignored
+- `ignored` — must be gitignored
+
+| Path | Class | Required after successful apply |
+|---|---|---|
+| `.wizloft/harness/project.json` | sentinel | yes |
+| `.wizloft/harness/INSTRUCTIONS.md` | whole | yes |
+| `.wizloft/harness/profile.mjs` | whole | yes |
+| `.wizloft/harness/run.mjs` | whole | yes |
+| `.wizloft/harness/package.json` | whole | yes |
+| `.wizloft/harness/package-lock.json` | generated / tracked | yes after successful install |
+| `.wizloft/PROJECT.md` | create-once | yes |
+| `.gitignore` managed block | block | yes |
+| `AGENTS.md` | adapter / block | default yes |
+| `CLAUDE.md` | adapter / block | default yes |
+| `.wizloft/harness/profile.local.mjs` | optional | no |
+| `.wizloft/harness/node_modules/` | ignored | present after apply; not tracked |
+| `.wizloft/harness/local/` | runtime / ignored | created on first Memory/Event write |
+
+No `.npmrc`. No runner is “candidate”. A valid sentinel requires the runtime to resolve.
+
+---
+
+## 7. Marker schema
+
+File: `.wizloft/harness/project.json`
+
+This file is the successful-initialization commit sentinel. A schema-valid marker may exist only
+for a release that has already been materialized and resolved in the isolated tree.
+
+Schema identity and versions are separate fields. There is no single `harnessVersion`.
+
+```json
+{
+  "schema": "wizloft.harness.project",
+  "schemaVersion": 1,
+  "projectId": "example",
+  "generatedBy": {
+    "package": "@wizloft/harness-project",
+    "version": "0.1.0-alpha.3"
+  },
+  "runtime": {
+    "package": "@wizloft/harness-project",
+    "release": "0.1.0-alpha.3"
+  },
+  "subjects": {
+    "project": "example:project",
+    "harness": "example:harness"
+  },
+  "memoryScope": "project:example",
+  "paths": {
+    "instructions": ".wizloft/harness/INSTRUCTIONS.md",
+    "profile": ".wizloft/harness/profile.mjs",
+    "runner": ".wizloft/harness/run.mjs",
+    "projectTruth": ".wizloft/PROJECT.md",
+    "localState": ".wizloft/harness/local"
+  },
+  "command": {
+    "argv": ["node", ".wizloft/harness/run.mjs"]
+  },
+  "adapters": ["agents", "claude"]
+}
+```
+
+Field meanings:
+
+| Field | Meaning |
+|---|---|
+| `schema` | schema identity |
+| `schemaVersion` | marker schema integer |
+| `generatedBy.version` | initializer that last **successfully completed** apply |
+| `runtime.release` | isolated `@wizloft/harness-project` release that was proven resolvable |
+| `subjects.project` | stable Context and primary Authority subject |
+| `paths.*` | exact artifact locations |
+| `command.argv` | exact generated command prefix |
+| `adapters` | installed discovery adapters |
+
+Unsupported `schema` / `schemaVersion` is a conflict. This is a marker, not a configuration
+framework. Source overlays, not the marker, add extra Authority/Context sources.
+
+---
+
+## 8. `projectId` contract
+
+`--project-id` is required on every dry-run and apply, including re-init.
+
+Directory basename and `package.json` `name` are help suggestions only. They are never applied.
+
+Validation, no coercion:
+
+- entire value must match `^[a-z][a-z0-9-]{0,62}$`
+- lowercase ASCII only; uppercase fails
+- no `_`, `.`, `/`, `:`, `@`, or consecutive `--`
+- max 63 characters
+- rejected values fail with usage exit `2` and no writes
+
+Re-init:
+
+- supplied `--project-id` must equal the marker `projectId` when a valid marker exists
+- any other value is a conflict and writes nothing
+- Memory scope `project:<projectId>` and subjects `<id>:project` / `<id>:harness` stay bound to
+  that id
+- alpha.3 has no rename/migration command
+
+---
+
+## 9. Default Authority and Context
+
+Init does not create `<projectId>:task:*`.
+
+| Kind | Value |
+|---|---|
+| Stable Context subject | `<projectId>:project` |
+| Primary Authority subject | `<projectId>:project` |
+| Harness instruction Authority | `<projectId>:harness` |
+| Memory scope | `project:<projectId>` |
+
+### CLEAN and EXISTING source lists
+
+The same explicit lists are used. No filesystem discovery. README, docs, `package.json`, and
+user AGENTS/CLAUDE bodies are not auto-ingested.
+
+Authority, highest precedence first:
+
+| Order | Subject | Path | Precedence |
+|---|---|---|---|
+| 1 | `<projectId>:project` | `.wizloft/PROJECT.md` | 100 |
+| 2 | `<projectId>:harness` | `.wizloft/harness/INSTRUCTIONS.md` | 90 |
+
+Context `<projectId>:project`, trust-role order:
+
+| Order | Role | Source |
+|---|---|---|
+| 1 | `authority` | `.wizloft/PROJECT.md` |
+| 2 | `authority` | `.wizloft/harness/INSTRUCTIONS.md` |
+| 3 | `supporting` | Memory `project:<projectId>` states `active` |
+| 4 | `historical` | Memory `project:<projectId>` states `stale`, `superseded` |
+
+Humans add project truth by editing `.wizloft/PROJECT.md`.
+
+Humans add more repository sources only through `.wizloft/harness/profile.local.mjs` using the
+bounded overlay in section 12. Init never creates or overwrites that file.
+
+Generated `.wizloft/PROJECT.md` is never overwritten after first creation.
+
+Marker and `INSTRUCTIONS.md` both state the exact subjects and the exact command.
+
+Historical plans, Evidence, and Events are not default Context. They remain queryable when a
+consumer later adds explicit Authority subjects or reads Events.
+
+Default Validation: `@wizloft/harness-project` registers one root-required health validator that
+checks marker schema, required paths, `projectId` consistency, runner/command fields, and that the
+isolated install’s `@wizloft/harness-project` version equals `runtime.release`. CLEAN proof runs
+that validator. It is not a Git scope checker and not a shell runner.
+
+---
+
+## 10. Ownership and update table
+
+| Artifact | First init | Re-init / upgrade | User edited | Failure |
+|---|---|---|---|---|
+| `project.json` | write **last**, only after install + resolve proof | replace **last**, only after new install + resolve proof | invalid schema/id fails before writes | never written/replaced on failed apply |
+| `INSTRUCTIONS.md` | create before install | replace before install | overwritten; file is Harness-owned | may remain as partial scaffolding |
+| `profile.mjs` | create before install | replace before install | overwritten; customize via overlay | may remain as partial scaffolding |
+| `run.mjs` | create before install | replace before install | overwritten | may remain as partial scaffolding |
+| isolated `package.json` | create before install | replace before install | overwritten | may already show the target pin |
+| `package-lock.json` | created by install | rewritten only when install runs | left alone if install is skipped | may be missing or stale; marker unchanged |
+| `profile.local.mjs` | not created | never touched | preserved | n/a |
+| `.wizloft/PROJECT.md` | create template if missing | preserve forever | preserved | never rolled back |
+| `.gitignore` block | create file or insert block | update block interior | bytes outside block preserved | malformed/multiple blocks fail before writes |
+| `AGENTS.md` / `CLAUDE.md` | create or insert block | update block interior | bytes outside block preserved | malformed/multiple/legacy+new fail before writes |
+| `node_modules/` | install before marker | install before marker | not owned | may be absent or mixed; marker unchanged |
+| `local/` | not created by init | never deleted | preserved | n/a |
+
+Re-init never stages, commits, resets, or cleans Git. It never deletes user files and never rolls
+back unrelated user files.
+
+### Legacy CLI blocks
+
+Recognized legacy pair, markdown adapters only:
+
+```html
+<!-- HARNESS:BEGIN -->
+...
+<!-- HARNESS:END -->
+```
+
+Behavior:
+
+- treat as the owned block;
+- migrate in place to `<!-- wizloft-harness:start -->` / `<!-- wizloft-harness:end -->`;
+- replace interior with the schema-1 bootstrap;
+- do not insert a second Harness block;
+- if legacy and schema-1 markers both exist, fail;
+- unclosed, nested, or non-standalone marker lines fail.
+
+CLI upgrade to alpha.3 does not have to run generic init. If it later does, this migration is the
+rule.
+
+---
+
+## 11. Filesystem safety and marker-last apply
+
+- `--root` is required and is the target. Resolve once against process cwd, then treat as
+  absolute.
+- No parent search. No `git rev-parse --show-toplevel`.
+- `--root` must be an existing directory. `.git` must exist there as a non-symlink directory or
+  file (plain repo or worktree). Missing `.git` fails.
+- Every managed path must resolve inside `--root`. Absolute, escaping, or out-of-root realpaths
+  fail.
+- Reject symlinked managed files or directories, including `.wizloft`, `.wizloft/harness`, adapter
+  files, `.gitignore`, and `PROJECT.md` when those paths exist as symlinks.
+- Reject wrong types: file where a directory is required, directory where a file is required.
+- Managed markers must be the entire line. Leading/trailing text on the marker line fails.
+- Multiple, nested, or unclosed blocks fail.
+- User bytes outside owned blocks are preserved exactly.
+- Existing CRLF or LF is preserved for that file. New files use LF.
+- Planner/preflight compute the complete operation set before any write or install.
+- Dry-run uses the same planner/preflight path and writes nothing, including no lockfile and no
+  `node_modules`.
+- Apply uses atomic per-file replacement: write a sibling temp file in the destination directory,
+  then rename.
+- No `git add`, `commit`, `reset`, `restore`, `clean`, or index mutation.
+- Tests mutate only temporary repositories. No real user project is used as a fixture.
+
+### Required apply sequence
+
+```text
+complete planner / preflight
+  ->
+create/update non-marker Harness tracked files
+  (INSTRUCTIONS.md, profile.mjs, run.mjs, isolated package.json)
+  ->
+create-if-missing .wizloft/PROJECT.md
+  ->
+create/update AGENTS.md, CLAUDE.md, and .gitignore managed blocks
+  ->
+materialize isolated npm runtime
+  ->
+prove @wizloft/harness-project resolves from .wizloft/harness/node_modules
+  and its version equals the intended runtime.release
+  ->
+atomically write/update project.json LAST
+```
+
+`project.json` is the completion sentinel.
+
+Invariant:
+
+```text
+schema-valid project.json
+  + required tracked files
+  + runtime.release matching the isolated @wizloft/harness-project version
+  + locally resolvable @wizloft/harness-project
+    =>
+initialized / current
+```
+
+### First-init failure
+
+If install or runtime verification fails:
+
+- no valid new `project.json` may claim successful initialization;
+- already-applied non-marker files may remain as detectable partial state;
+- `PROJECT.md` and user bytes outside managed blocks stay as written;
+- re-init replans and may replace Harness-owned non-marker files, because they are uncommitted
+  scaffolding until a sentinel exists;
+- re-init then retries install, resolve proof, and writes the marker last.
+
+### Upgrade failure
+
+If a previously valid initialized project is upgraded by a newer initializer:
+
+- the existing valid marker continues to describe the last successfully materialized release;
+- `generatedBy` and `runtime.release` are not switched early;
+- non-marker Harness-owned files and isolated `package.json` may already show the target release;
+- isolated `node_modules` may be missing, mixed, or still old;
+- after the new install and resolve proof succeed, atomically replace the marker last;
+- until that happens, the project is not “current” for the new release.
+
+A failed upgrade may leave `node .wizloft/harness/run.mjs` unable to satisfy
+marker-vs-install consistency. Retrying apply is the recovery. Do not invent rollback of user
+files, and do not promise transactional rollback of already-updated Harness-owned non-marker
+tooling files.
+
+### Repository states
+
+| State | Detection | Behavior |
+|---|---|---|
+| Clean | no `.wizloft/harness/` and no valid marker | create full contract; marker last |
+| Existing, no Harness | user files present, no marker | create Harness files and adapter blocks; preserve user bytes; marker last |
+| Partial first init | harness files exist without a valid schema-1 marker | replan; replace uncommitted Harness-owned non-marker files; preserve `PROJECT.md` and user bytes; install; prove; write marker last. Unexpected types/symlinks/malformed blocks fail |
+| Upgrade in progress | valid old marker present; isolated pin or installed version disagrees with intended new release, or install unproven | keep old marker; rewrite non-marker harness files as needed; install; prove new runtime; replace marker last |
+| Current | valid marker, same project id, required files present, isolated package version equals `runtime.release`, package resolvable | `operations: []` |
+| Conflict | bad schema, id mismatch, symlink, malformed blocks, both marker styles, escaped paths | fail before writes |
+
+---
+
+## 12. `profile.local.mjs` overlay
+
+The optional local overlay exists because Harness-owned `profile.mjs` is replaceable on re-init
+and projects need a durable customization seam.
+
+Alpha.3 does **not** allow arbitrary plugin/profile composition through that file. A generic
+plugin overlay would be a separate public architecture decision, not an alpha.3 slipstream.
+
+### Allowed
+
+Additional explicit repository Authority mappings and additional explicit repository Context
+mappings.
+
+### Forbidden
+
+- plugins;
+- capabilities;
+- profile layers;
+- durability providers;
+- runtime lifecycle overrides;
+- replacing or deleting the two generated defaults.
+
+### Exact export
+
+File, if present: `.wizloft/harness/profile.local.mjs`
+
+```js
+export function createProjectSourceOverlay() {
+  return {
+    authority: [
+      { subject: 'example:decision:example', path: 'docs/decisions/0001.md', precedence: 80 },
+    ],
+    context: [
+      { subject: 'example:project', path: 'docs/decisions/0001.md', role: 'authority' },
+    ],
+  };
+}
+```
+
+`createGeneratedProjectProfile` loads this file. Missing file is a no-op.
+
+### Validation
+
+- `createProjectSourceOverlay` must be a function that returns a plain object.
+- `authority` and `context` are optional arrays. Unknown keys fail.
+- Authority item: non-empty `subject`, root-relative `path`, finite numeric `precedence`.
+- Context item: non-empty `subject`, root-relative `path`, `role` one of `authority`,
+  `supporting`, `historical`.
+- Paths use `/` separators, reject empty/absolute/escaping paths, and must resolve inside the
+  repository root. Symlinks that escape the root fail.
+- Overlay Authority subjects must be unique within the overlay.
+- Overlay Authority subjects must not be `<projectId>:project` or `<projectId>:harness`.
+- Overlay `subject+path` pairs must be unique within the overlay and must not duplicate a
+  generated default pair.
+- Overlay Context may add more paths to `<projectId>:project`; that is additive, not a
+  replacement of `PROJECT.md` / `INSTRUCTIONS.md`.
+
+### Ordering
+
+Generated defaults are always first, in the section 9 order. Overlay items append in array order
+after those defaults. Contributor registration remains deterministic.
+
+### Failure
+
+Malformed overlay, out-of-root path, reserved-subject override, or duplicate pair is a bootstrap
+and health-validator failure. `runProjectHarness` throws. It does not ignore the file.
+
+---
+
+## 13. Isolated tooling manifest and `.npmrc` decision
+
+### `.npmrc`: removed
+
+The frozen apply command is:
+
+```text
+npm install --prefix <root>/.wizloft/harness --ignore-scripts --no-audit --no-fund
+```
+
+The frozen clone recovery command is:
+
+```text
+npm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund
+```
+
+Those flags already own ignore-scripts, audit, and fund. A generated `.npmrc` would add a policy
+file without a remaining invariant, and must not carry auth or registry credentials. Alpha.3 does
+not write `.npmrc`.
+
+### Isolated `package.json`
+
+Harness-owned whole file. Exact shape:
+
+```json
+{
+  "name": "wizloft-harness-project-tooling",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@wizloft/harness-project": "0.1.0-alpha.3"
+  }
+}
+```
+
+| Field | Rule |
+|---|---|
+| `name` | fixed tooling metadata, not `<projectId>` and not `@wizloft/harness-project` |
+| `version` | fixed `0.0.0` tooling metadata; not the Harness release |
+| `private` | `true` |
+| `type` | `module` |
+| `dependencies` | only `@wizloft/harness-project` at the exact lockstep version |
+| scripts | omitted |
+| engines / license / repository / description | omitted |
+| root app dependencies | never mirrored |
+
+`package-lock.json` is tracked. `node_modules/` is ignored.
+
+---
+
+## 14. `.gitignore` managed block
+
+Exact schema-1 block:
+
+```gitignore
+# wizloft-harness:start
+.wizloft/harness/node_modules/
+.wizloft/harness/local/
+# wizloft-harness:end
+```
+
+Do not ignore `project.json`, `INSTRUCTIONS.md`, `profile.mjs`, `run.mjs`, isolated
+`package.json`, `package-lock.json`, or `.wizloft/PROJECT.md`.
+
+If `.gitignore` is missing, create it with only this block. If it exists, insert or update this
+block only. Preserve user bytes outside the block and the file’s existing LF/CRLF convention.
+
+---
+
+## 15. Generated `PROJECT.md` template
+
+`.wizloft/PROJECT.md` is project-owned create-once. Re-init never overwrites it. An existing file
+keeps its bytes.
+
+Init does not infer content from `package.json`, README, or the directory name. The only
+substituted token is the explicit `--project-id`.
+
+```markdown
+# example
+
+## Purpose
+
+Describe what this repository is for.
+
+## Current Architecture
+
+Describe the current system shape that agents should treat as true.
+
+## Development Constraints
+
+Record constraints that must not be silently changed.
+```
+
+That is enough for clean-repo Context to resolve a real, editable project-truth file immediately.
+
+---
+
+## 16. Runner lifecycle
+
+### `run.mjs` owns
+
+- `process.argv.slice(2)`
+- `repositoryRoot` derived from its known location:
+  `path.resolve(fileURLToPath(new URL('../..', import.meta.url)))`
+- `process.env`, `process.stdin`, `process.stdout`, `process.stderr`
+- final `process.exitCode`
+- rendering of **thrown** bootstrap errors: `stderr.write(message + '\n')`, then `exitCode = 1`
+
+It must stay tiny. It must not parse Harness commands. It must not call `process.exit()`. It must
+not install packages or mutate the repository. It must not search parent directories.
+
+Generated conceptual body:
+
+```js
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { runProjectHarness } from '@wizloft/harness-project';
+
+const repositoryRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
+
+try {
+  process.exitCode = await runProjectHarness(process.argv.slice(2), {
+    repositoryRoot,
+    env: process.env,
+    stdin: process.stdin,
+    stdout: process.stdout,
+    stderr: process.stderr,
+  });
+} catch (error) {
+  process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+  process.exitCode = 1;
+}
+```
+
+### `runProjectHarness` owns
+
+- marker loading and validation
+- required release/path consistency against the isolated install
+- generated profile loading (`profile.mjs` → `createProjectProfile` →
+  `createGeneratedProjectProfile`)
+- overlay load/validation
+- Harness runtime creation
+- command executor
+- CLI adapter
+- writing adapter `stdout` / `stderr` to the supplied streams
+- returning the adapter numeric exit code
+- `shutdown()` in `finally` after runtime creation
+
+It must copy argv and treat it as readonly. It must not call `process.exit()`. It must not install
+packages or mutate the repository. It must not search parent directories. It must not write thrown
+bootstrap errors to stderr; it throws and lets `run.mjs` render once.
+
+### Thrown-bootstrap owner
+
+**Only `run.mjs` renders thrown bootstrap errors.** `runProjectHarness` throws without writing.
+Adapter-completed help/usage/result output is already rendered by the CLI adapter and applied to
+the supplied streams by `runProjectHarness`.
+
+### Options contract
+
+```ts
+type RunProjectHarnessOptions = {
+  readonly repositoryRoot: string;
+  readonly env: Readonly<NodeJS.ProcessEnv>;
+  readonly stdin: NodeJS.ReadableStream;
+  readonly stdout: NodeJS.WritableStream;
+  readonly stderr: NodeJS.WritableStream;
+};
+```
+
+No additional options in alpha.3 unless a later proof shows a required seam. `stdin` is accepted
+so the runner does not keep a hidden process global; the current CLI adapter does not read it.
+
+### Clean-project observables
+
+| Invocation | Result |
+|---|---|
+| `node .wizloft/harness/run.mjs --help` | adapter help on stdout, exit `0` |
+| `node .wizloft/harness/run.mjs inspect --json` | inspect envelope, exit `0` |
+| invalid Harness argv | adapter usage error, exit `2` |
+| missing/invalid marker, unresolved package, malformed overlay | throw; `run.mjs` writes one message to stderr; exit `1` |
+| any of the above | no `process.exit()` |
+
+---
+
+## 17. Initializer API and CLI
+
+```ts
+planProjectInitialization(options): InitializationPlan
+applyProjectInitialization(options): Promise<InitializationResult>
+runProjectHarness(argv, options): Promise<number>
+createGeneratedProjectProfile(options): HarnessProfile
+```
+
+`applyProjectInitialization` always replans from current disk plus the supplied options. It never
+applies a previously rendered operation list. Dry-run output is informational.
+
+### CLI
+
+```text
+wizloft-harness-project init \
+  --root <dir> \
+  --project-id <id> \
+  [--adapters agents,claude] \
+  [--dry-run] \
+  [--json]
+```
+
+No wizard. No prompts.
+
+| Flag | Rule |
+|---|---|
+| `--root` | required |
+| `--project-id` | required, even on re-init |
+| `--adapters` | optional. Default `agents,claude`. Allowed tokens: `agents`, `claude`. `none` selects zero adapters. Unknown token is usage error. Order in the marker is sorted `agents` then `claude`. |
+| `--dry-run` | plan only |
+| `--json` | one JSON object on stdout |
+
+Clean and existing repos both receive AGENTS.md and CLAUDE.md by default.
+
+### Operation object
+
+```json
+{
+  "kind": "create" | "replace" | "update-block" | "install",
+  "path": ".wizloft/harness/project.json"
+}
+```
+
+Dry-run lists only mutating operations in apply order. `install` appears before the marker
+create/replace. Zero-diff means `operations: []`.
+
+JSON success also includes `root`, `projectId`, `mode`, `subjects`, `command`, and `adapters`.
+
+### Exit codes
+
+| Code | When |
+|---|---|
+| 0 | dry-run or apply succeeded, including zero-diff |
+| 1 | preflight/conflict/install/IO/resolve failure |
+| 2 | invalid argv or failed `projectId` syntax |
+
+Preflight/conflict failures write nothing.
+
+---
+
+## 18. Agent discovery
+
+One canonical instruction file: `.wizloft/harness/INSTRUCTIONS.md`.
+
+AGENTS.md and CLAUDE.md receive only a Harness-owned bootstrap block. They must not contain a
+second copy of the full rules.
+
+Bootstrap content, conceptually:
+
+- this repository uses Wizloft Harness;
+- read `.wizloft/harness/INSTRUCTIONS.md`;
+- exact command `node .wizloft/harness/run.mjs`;
+- stable Context `<projectId>:project`;
+- Authority subjects `<projectId>:project` and `<projectId>:harness`;
+- do not duplicate Harness rules in this file.
+
+No other adapters in alpha.3.
+
+---
+
+## 19. Conceptual flows
+
+### Agent work
+
+```text
+open repo
+  -> adapter block says Harness is present
+  -> canonical INSTRUCTIONS.md
+  -> node .wizloft/harness/run.mjs inspect
+  -> authority.resolve --input '{"subject":"<id>:project"}'
+  -> context.resolve --input '{"subject":"<id>:project"}'
+  -> bounded work
+  -> validation.run
+```
+
+### Init
+
+```text
+wizloft-harness-project init --root <repo> --project-id <id> --dry-run
+  -> same planner as apply, zero writes
+
+wizloft-harness-project init --root <repo> --project-id <id>
+  clean     -> non-marker files, blocks, install, resolve, marker last
+  existing  -> same; preserve user bytes; one block per selected adapter
+  re-init   -> update owned non-marker files if needed; skip install if current;
+               marker last only when a new release was proven
+  partial   -> recover uncommitted harness files; install; resolve; marker last
+  conflict  -> exit 1, no writes
+```
+
+---
+
+## 20. Deferred work
+
+Keep these out of alpha.3. Scope-integrity is the next hardening candidate.
+
+| Item | Disposition |
+|---|---|
+| Repository-scope validator (`authorizedPaths` vs observed Git changes) | next hardening cycle; read-only provider/plugin or reusable consumer utility, not kernel |
+| Validation closeout envelope | defer; runtime Evidence + durable Events are not a bug |
+| Durable Evidence store | defer |
+| Versioned Context / tree snapshots | not justified by CLI evidence |
+| Subagent / sandbox / Git writer | host runtime and workflow instructions |
+| Extra agent adapters | defer |
+| CLI subject rename `wizloft-cli:task:typescript-rewrite` | CLI-owned |
+| Arbitrary plugin overlay | not alpha.3; would need its own ADR |
+| Kernel changes | none |
+
+Scope-integrity notes for the next cycle, not implementation now:
+
+- Git observation is a provider, not kernel;
+- Validation should distinguish declared vs observed paths rather than trusting one field;
+- CREATE/MODIFY/DELETE/RENAME and untracked files need an explicit observation model;
+- unavailable Git is a structured miss, not silent success;
+- the check must not stage, reset, or mutate files.
+
+---
+
+## 21. Proposed ADR 0013 contents
+
+Do not write the ADR in this turn. When authorized, ADR 0013 should accept:
+
+1. Project initialization is pre-runtime scaffolding in `@wizloft/harness-project`, not a kernel
+   capability and not a live-runtime command.
+2. A Harness-using repository is defined by `.wizloft/harness/project.json` schema
+   `wizloft.harness.project` version 1, written last after isolated runtime proof.
+3. Canonical instructions live at `.wizloft/harness/INSTRUCTIONS.md`. Agent files may hold only a
+   managed bootstrap.
+4. The required execution command is `node .wizloft/harness/run.mjs`, which delegates to
+   `runProjectHarness`.
+5. Runtime packages resolve from an isolated `.wizloft/harness` install, not from root dependency
+   mutation and not from per-command npx.
+6. `--project-id` is explicit. Init creates `<projectId>:project` and `<projectId>:harness`, never a
+   task subject.
+7. Default Authority/Context sources are exactly `PROJECT.md` and `INSTRUCTIONS.md`.
+   `profile.local.mjs` may add explicit repository mappings only.
+8. The initializer is a bounded repository writer with dry-run, preflight, and no Git mutation.
+9. `@wizloft/harness-project` does not claim host product binaries.
+
+ADR 0012 amendment, same later turn:
+
+- add `@wizloft/harness-project` as the fourteenth public lockstep package;
+- directory `packages/project`;
+- runtime dependencies exactly the twelve packages in section 4;
+- publish after every direct dependency in the DAG, which is layer 7 after the CLI adapter;
+- packed-consumer and registry proofs include the new package and a generated-repo install proof.
+
+---
+
+## 22. Implementation phases
+
+This plan is accepted. No phase starts until a later turn is authorized to implement.
+
+### Phase 0 — Durable decisions
+
+- write ADR 0013;
+- amend ADR 0012 and `scripts/release-contract.mjs` with the exact twelve-package runtime
+  dependency list and DAG placement;
+- update architecture/consumer docs to match this contract.
+
+### Phase 1 — Planner and safety
+
+- scaffold `@wizloft/harness-project`;
+- implement options validation, `projectId` rules, planner, preflight, dry-run JSON/human output;
+- no apply writes yet.
+
+### Phase 2 — Apply writer
+
+- atomic file create/replace for non-marker files;
+- managed-block update;
+- legacy `HARNESS:BEGIN` migration;
+- ownership table behavior;
+- still no marker write.
+
+### Phase 3 — Isolated runtime and sentinel
+
+- write isolated manifest;
+- perform or inject install;
+- prove isolated resolve;
+- write `project.json` last;
+- generate tiny `run.mjs` and `profile.mjs`;
+- implement `runProjectHarness`, source-only overlay, and health validator.
+
+### Phase 4 — Proofs
+
+- CLEAN, EXISTING, CONFLICT, marker-commit, runner, overlay, and re-init fixtures in temporary
+  repos only;
+- packed-manifest dependency-closure proof;
+- isolated packed-tarball resolution proof;
+- second dry-run/apply zero-diff.
+
+### Phase 5 — Release graph
+
+- lockstep `0.1.0-alpha.3` identity;
+- packed consumer updated for fourteen packages;
+- docs synchronized with implemented contracts.
+
+### Phase 6 — External consumer sequence
+
+Separately authorized:
+
+```text
+Harness repo proof
+  -> publish complete coherent graph
+  -> clean external consumer of alpha.3
+  -> upgrade Wizloft CLI exact alpha.2 pins to exact alpha.3
+  -> run CLI Harness/package regression
+  -> fresh-project init smoke
+  -> existing-project init smoke
+  -> Meldmark init with the released initializer
+```
+
+Do not publish from an implementation turn unless a later release turn authorizes it.
+
+---
+
+## 23. Exact later CREATE / MODIFY / DELETE family
+
+Implementation, not this turn:
+
+### CREATE
+
+- `docs/decisions/0013-project-onboarding-and-discovery.md`
+- `packages/project/package.json`
+- `packages/project/README.md`
+- `packages/project/LICENSE`
+- `packages/project/tsconfig.json`
+- `packages/project/src/**`
+- `packages/project/tests/**`
+- temporary fixtures only under OS temp / test temp dirs
+
+### MODIFY
+
+- `docs/decisions/0012-public-package-release-contract.md`
+- `docs/decisions/README.md`
+- `docs/architecture/ARCHITECTURE.md`
+- `docs/consumers/MELDMARK.md`
+- `docs/consumers/WIZLOFT-CLI.md`
+- `docs/README.md` if package/docs claims change again
+- `README.md` current-status once alpha.3 exists
+- `scripts/release-contract.mjs`
+- `scripts/prove-packed-consumer.mjs`
+- `scripts/sync-release-identity.mjs` only if the new package needs the same derivation
+- `tests/release-contract.test.mjs`
+- `pnpm-lock.yaml`
+- root `package.json` version when the lockstep bump is authorized
+- this plan’s phase status
+
+### DELETE
+
+- none expected
+- specifically do not create `.npmrc` templates
+
+### Do not modify in alpha.3
+
+- kernel / capability / plugin public APIs except consuming them;
+- `@wizloft/harness-commands` command ids;
+- Wizloft CLI repository;
+- Meldmark repository;
+- self-host profile Authority list, except a later docs-only follow-up if review wants the active
+  plan pointer updated.
+
+This correction turn’s path family:
+
+- MODIFY `docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`
+- no `docs/README.md` change; the existing index already names this plan
+
+---
+
+## 24. Release and consumer proof
+
+Alpha.3 is one lockstep identity sourced from the private root manifest.
+
+Public set becomes fourteen packages. Isolated generated `package.json` depends on exact
+`@wizloft/harness-project@0.1.0-alpha.3` only.
+
+Proof after implementation, before publish:
+
+1. `pnpm verify`
+2. `pnpm release:check`
+3. packed fourteen-package consumer still proves facade → commands → CLI adapter
+4. packed `@wizloft/harness-project` manifest contains exactly the twelve direct runtime
+   dependencies at the lockstep version, with no workspace, file, or link specifiers
+5. generated-repo proof: init a temp git repo against packed tarballs, then
+   `node .wizloft/harness/run.mjs inspect` succeeds offline
+
+After authorized publish:
+
+1. clean registry consumer installs `@wizloft/harness-project@0.1.0-alpha.3`
+2. Wizloft CLI exact pin upgrade, no generic-init requirement
+3. CLI `harness:verify` / product Harness tests
+4. fresh init smoke
+5. existing init smoke
+6. Meldmark
+
+CLI alpha.3 upgrade proof is package-regression, not a layout migration.
+
+---
+
+## 25. Acceptance proofs
+
+All fixtures are temporary git repositories. No real user project is mutated.
+
+### CLEAN
+
+1. `git init` empty directory
+2. `init --dry-run --root <that dir> --project-id example` prints the mutating plan, with
+   `install` before `project.json`, and writes nothing
+3. `init --root ... --project-id example` creates the map in section 6, marker last
+4. `node .wizloft/harness/run.mjs --help` exits `0`
+5. `node .wizloft/harness/run.mjs inspect --json` succeeds
+6. `authority resolve --input '{"subject":"example:project"}'` is `resolved` to
+   `.wizloft/PROJECT.md`
+7. `authority resolve --input '{"subject":"example:harness"}'` is `resolved` to
+   `INSTRUCTIONS.md`
+8. `context resolve --input '{"subject":"example:project"}'` returns the two default authority
+   items
+9. `validation run` with a correlation id and at least one in-root path executes the health
+   validator
+10. second dry-run and apply have `operations: []` and zero tracked diff
+
+### EXISTING
+
+Start with user `AGENTS.md`, `CLAUDE.md`, `README.md`, `.gitignore`, and a source file.
+
+1. bytes outside managed blocks are unchanged
+2. one schema-1 block per selected adapter
+3. `.gitignore` user lines preserved; schema-1 block matches section 14
+4. root `package.json` absent or unchanged
+5. exact command works
+6. existing `.wizloft/PROJECT.md`, if present, is unchanged
+7. second init is zero-diff
+
+### CONFLICT
+
+Each case fails before mutation:
+
+- unclosed / nested / duplicate managed blocks
+- legacy and schema-1 blocks together
+- symlinked managed path
+- `--root` file, missing directory, or missing `.git`
+- `.wizloft/harness` is a file
+- marker schema mismatch
+- `--project-id` disagrees with a valid marker
+- escaped or absolute managed path
+
+### DEPENDENCY CLOSURE
+
+- packed `@wizloft/harness-project` manifest lists exactly the twelve direct runtime dependencies
+  at the lockstep version
+- no workspace, file, or link specifiers in that packed manifest
+- isolated generated `package.json` depends only on `@wizloft/harness-project`
+- `@wizloft/harness-memory` is absent from the project package’s direct dependencies and present
+  transitively
+
+### MARKER COMMIT
+
+- injected install or resolve failure on first init leaves no schema-valid `project.json`
+- re-init resumes that partial state, proves the runtime, then writes the marker last
+- simulated upgrade failure keeps the previous valid marker `generatedBy` / `runtime.release`
+- successful retry replaces the marker last and only then reports current
+
+### RUNNER
+
+- generated `run.mjs` invokes one `runProjectHarness` implementation
+- no duplicated Harness argv parser
+- no `process.exit()`
+- help exit `0`, inspect exit `0`, invalid argv exit `2`, bootstrap throw rendered once by
+  `run.mjs` as exit `1`
+- runtime `shutdown()` runs after adapter execution
+
+### OVERLAY
+
+- missing overlay = generated defaults only
+- valid additional Authority/Context mapping appears after the defaults
+- malformed overlay, out-of-root path, reserved-subject override, or duplicate pair fails
+- arbitrary plugin injection is not part of the alpha.3 contract or tests
+
+### RE-INIT
+
+- after a successful current installation, second dry-run and apply are `operations: []`
+
+### Package resolution
+
+After a successful initializer exit, the generated repo resolves `@wizloft/harness-project` from
+`.wizloft/harness/node_modules` with no network and no workspace/symlink back to the Harness
+source checkout. CI uses packed tarballs through the injected installer.
+
+---
+
+## 26. Meldmark readiness
+
+Meldmark may be initialized only after all of the following are true:
+
+- [ ] CLEAN fixture is green
+- [ ] EXISTING fixture is green
+- [ ] idempotent re-init is green
+- [ ] marker/discovery/commit-sentinel proof is green
+- [ ] at least AGENTS.md adapter is installed by default
+- [ ] stable Context `<projectId>:project` resolves as specified
+- [ ] `0.1.0-alpha.3` is published as a complete fourteen-package graph
+- [ ] a clean external npm consumer proves the released graph
+- [ ] Wizloft CLI exact alpha.3 pin regression is green
+- [ ] Meldmark is initialized with the released command, not a hand-copied Gate H0 tree
+
+Required Meldmark command shape:
+
+```text
+npx --yes @wizloft/harness-project@0.1.0-alpha.3 init \
+  --root <meldmark-checkout> \
+  --project-id meldmark \
+  --dry-run
+
+npx --yes @wizloft/harness-project@0.1.0-alpha.3 init \
+  --root <meldmark-checkout> \
+  --project-id meldmark
+```
+
+Do not reproduce `dev/harness/profile.mjs` by hand.
+
+---
+
+## 27. Architecture boundary check
+
+| Boundary | Alpha.3 status |
+|---|---|
+| Kernel = plugin host, registry, config, events, lifecycle, diagnostics | unchanged |
+| No LLM runtime / agent loop / sandbox / workflow / UI / vector DB | held |
+| No generic Git writer | held |
+| No process-execution framework | held; one frozen npm spawn in scaffolding apply |
+| Optional providers stay outside kernel | held |
+| Host owns product binaries | held |
+| Repository remains authority | held |
+| Memory/Events remain file-backed local state | held |
+| No generic plugin overlay | held |
+
+---
+
+## 28. Governance freeze closeout
+
+This file and the [docs/README.md](../../README.md) plan index are the accepted Cycle 1
+governance checkpoint. Implementation remains unauthorized.
+
+Not done and not authorized in this freeze:
+
+- ADR 0013;
+- package code;
+- version bump;
+- publication;
+- Wizloft CLI changes.
+
+Stop. Do not begin Phase 0 until a later turn authorizes implementation.

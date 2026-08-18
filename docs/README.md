@@ -5,9 +5,11 @@
 - `decisions/` — durable accepted choices.
 - `milestones/MUH.md` — first implementation stop condition.
 - `milestones/SELF-HOST.md` — self-host gate.
-- `plans/active/0001-build-muh.md` — implementation sequence.
-- `plans/active/0002-external-package-release-readiness.md` — current external package
+- `plans/active/0001-build-muh.md` — completed MUH implementation sequence.
+- `plans/active/0002-external-package-release-readiness.md` — completed external package
   release-readiness plan.
+- `plans/active/0003-cli-dogfood-hardening-cycle-1.md` — current CLI dogfood retrospective
+  and onboarding-only alpha.3 decision contract.
 - `consumers/WIZLOFT-CLI.md` — first external dogfood/rewrite contract.
 - `consumers/MELDMARK.md` — later domain-rich consumer.
 - `references/` — reference map and pinned baselines.
