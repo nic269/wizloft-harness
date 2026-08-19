@@ -1,12 +1,18 @@
 # Execution Plan — CLI Dogfood Retrospective and Hardening Cycle 1
 
-Status: Accepted contract. Phase 0 durable decisions written; implementation is not authorized.
+Status: Accepted contract. Phase 0 committed. Portable-wrapper versus host-CLI clarification
+accepted after Phase 0. Phase 1 planner/preflight follows this clarification.
 
 This file owns the accepted alpha.3 onboarding contract.
 
 This revision applies the approved Cycle 1 architecture plus the four bounded corrections:
 dependency closure, marker-last initialization, runner lifecycle, and a source-only
 `profile.local.mjs` overlay. `.npmrc` is removed from the required artifact set.
+
+A later externally accepted clarification, recorded after the committed Phase 0 checkpoint,
+makes the relationship between the repository-local portable wrapper and future host
+integrations explicit. It does not replace
+[0013](../../decisions/0013-project-onboarding-and-discovery.md) and does not reopen Phase 0.
 
 ## Outcome
 
@@ -40,8 +46,10 @@ discoverable, runnable, and re-init-safe without copying the CLI Gate H0 layout.
 - Existing import oracles: `profiles/self-host/src/index.ts`, CLI
   `dev/harness/profile.mjs` + `dev/harness/run.mjs`.
 
-Phase 0 writes durable decisions only. It does not create packages, version packages, publish,
-modify Wizloft CLI, or start Phase 1.
+Phase 0 wrote durable decisions only. It did not create packages, version packages, publish,
+modify Wizloft CLI, or start Phase 1. The committed Phase 0 checkpoint is
+`da3694890ae8921858070adcfa55e7d0e2651d81`. The post-Phase-0 wrapper/host clarification is
+documentation only and does not reopen that checkpoint.
 
 ## Approved strategic decisions
 
@@ -175,9 +183,18 @@ agent opens repository
   -> inspect / authority.resolve / context.resolve / validation.run
 ```
 
-The runner is required. A repository is Harness-initialized when a schema-valid `project.json`
-exists with the required tracked artifacts. A checkout is runnable only after the isolated
-`@wizloft/harness-project` matching that marker is locally resolvable.
+The runner is required as the canonical portable repository-local wrapper. A repository is
+Harness-initialized when a schema-valid `project.json` exists with the required tracked
+artifacts. A checkout is runnable only after the isolated `@wizloft/harness-project` matching
+that marker is locally resolvable.
+
+A future host such as `wizharness` / `wizloft harness` is optional convenience only. Both the
+portable wrapper and any host adapter converge on the same project-local `runProjectHarness`
+semantics. A host MAY load the repository-local harness-project package and invoke
+`runProjectHarness` directly; it SHOULD NOT spawn `run.mjs` merely to reuse Harness semantics.
+Ordinary project commands use the repository-pinned runtime, not a host-bundled Harness
+runtime. Initialization is the exception because it occurs before the project runtime exists.
+Implementing a Wizloft CLI Harness module is not part of alpha.3.
 
 ### Comparison
 
@@ -254,8 +271,10 @@ Why this does not violate [0009](../../decisions/0009-cli-ownership-boundary.md)
 
 - reusable init/run semantics live in Harness;
 - the bin is a scaffolding/tooling executable, not the product `wizharness` UX;
-- Wizloft CLI keeps `wizloft harness` / `wizharness`;
-- the generic agent command is a repo-local `node .wizloft/harness/run.mjs`.
+- Wizloft CLI keeps `wizloft harness` / `wizharness` if and when it supplies them;
+- the generic agent command is a repo-local `node .wizloft/harness/run.mjs`;
+- a future host adapter is optional convenience over the same project-local
+  `runProjectHarness`, not a second Harness implementation.
 
 Spawn scope: apply may `execFile` only `npm` with the frozen install argv, `shell: false`, cwd or
 `--prefix` = isolated directory. That is scaffolding, not a kernel process framework. The runner
@@ -1139,8 +1158,9 @@ Phase 0 wrote [0013](../../decisions/0013-project-onboarding-and-discovery.md). 
    after isolated runtime proof. A checkout is runnable only after local materialization.
 3. Canonical instructions live at `.wizloft/harness/INSTRUCTIONS.md`. Agent files may hold only a
    managed bootstrap. `--adapters` is desired state.
-4. The required execution command is `node .wizloft/harness/run.mjs`, which preflights Node, then
-   dynamically imports and delegates to `runProjectHarness`.
+4. The required portable execution command is `node .wizloft/harness/run.mjs`, which preflights
+   Node, then dynamically imports and delegates to `runProjectHarness`. A future host CLI is
+   optional convenience over the same project-local function.
 5. Runtime packages resolve from an isolated `.wizloft/harness` install, not from root dependency
    mutation and not from per-command npx. Fresh clones restore ignored `node_modules/` with
    exact `npm ci`.
@@ -1164,12 +1184,13 @@ ADR 0012 amendment, written in Phase 0 as documentation only:
 
 ## 22. Implementation phases
 
-This plan is accepted. Phase 0 durable decisions are written. Implementation phases remain
-unauthorized.
+This plan is accepted. Phase 0 durable decisions are committed. The post-Phase-0
+portable-wrapper versus host-CLI clarification is accepted. Phase 1 planner/preflight follows
+that clarification commit.
 
 ### Phase 0 — Durable decisions
 
-Status: written, uncommitted, awaiting external review.
+Status: committed at `da3694890ae8921858070adcfa55e7d0e2651d81`. Not reopened.
 
 Completed:
 
@@ -1213,7 +1234,9 @@ Phase 0 verification:
 
 - scaffold `@wizloft/harness-project`;
 - implement options validation, `projectId` rules, planner, preflight, dry-run JSON/human output;
-- no apply writes yet.
+- no apply writes yet;
+- plan creation of the future generated `run.mjs` portable wrapper;
+- do not implement a host adapter, `wizharness`, or Wizloft CLI Harness module.
 
 ### Phase 2 — Apply writer
 
@@ -1508,7 +1531,8 @@ Do not reproduce `dev/harness/profile.mjs` by hand.
 
 ## 28. Phase 0 closeout
 
-Phase 0 durable decisions are written and left unstaged for external review.
+Phase 0 durable decisions were written, reviewed, and committed as
+`da3694890ae8921858070adcfa55e7d0e2651d81` (`docs: define project onboarding architecture`).
 
 Done in Phase 0:
 
@@ -1517,7 +1541,7 @@ Done in Phase 0:
 - architecture and consumer synchronization;
 - this plan’s Phase 0 record.
 
-Not done and not authorized:
+Not done in Phase 0 and not part of that checkpoint:
 
 - Phase 1 or later implementation;
 - `packages/project`;
@@ -1526,9 +1550,62 @@ Not done and not authorized:
 - publication;
 - Wizloft CLI or Meldmark repository changes.
 
-This correction pass records the external-review deltas: initialized vs locally materialized,
-generated-runner Node/dynamic-import ownership, adapter desired-state / `remove-block`, grounded
-Context `authority` paths, bootstrap-only malformed overlay, and Phase 0 vs remaining path
-family. Implementation remains unauthorized.
+The Phase 0 correction pass recorded the external-review deltas: initialized vs locally
+materialized, generated-runner Node/dynamic-import ownership, adapter desired-state /
+`remove-block`, grounded Context `authority` paths, bootstrap-only malformed overlay, and
+Phase 0 vs remaining path family.
 
-Stop for external review. Do not begin Phase 1.
+Phase 0 is closed. It is not reopened by the later wrapper/host clarification.
+
+## 29. Portable wrapper versus host convenience
+
+Status: externally accepted after Phase 0. Does not reopen Phase 0. Does not replace
+[0013](../../decisions/0013-project-onboarding-and-discovery.md).
+
+Accepted execution model:
+
+```text
+PROJECT-LOCAL PORTABLE PATH
+
+  node .wizloft/harness/run.mjs <Harness argv>
+                       |
+                       v
+            project-local exact
+            runProjectHarness()
+
+
+OPTIONAL HOST CONVENIENCE PATH
+
+  future wizharness / wizloft harness
+                       |
+                       v
+            project-local exact
+            runProjectHarness()
+```
+
+These are not two Harness implementations.
+
+| Path | Role |
+|---|---|
+| `run.mjs` | canonical portable repository-local wrapper |
+| future host integration | optional convenience execution path |
+| both | same project-local `runProjectHarness` semantics |
+
+A host MAY load and invoke the repository-local `@wizloft/harness-project` package directly. It
+SHOULD NOT spawn `run.mjs` merely to reuse Harness semantics.
+
+Normal project command precedence:
+
+```text
+repository-pinned runtime
+  >
+host-bundled Harness runtime
+```
+
+Initialization remains the exception because it necessarily occurs before the project runtime
+exists. A future host may use a compatible initializer to materialize the repository-local
+runtime; ordinary project commands then use that local runtime.
+
+Implementing a Wizloft CLI Harness module is not part of alpha.3. That belongs to a separate
+Wizloft CLI initiative. Alpha.3 still generates the portable `run.mjs` contract and still does
+not claim `wizloft` or `wizharness`.

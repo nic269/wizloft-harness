@@ -100,6 +100,59 @@ discovery mechanism, or `process.exit()` owner. It must not auto-install, spawn 
 After a checkout is locally materialized, later Harness commands use that local runner. They do
 not use per-command npx and do not require network.
 
+### Portable wrapper versus host convenience
+
+The generated runner is not a second Harness CLI implementation. It is a repository-local portable
+wrapper, analogous to a project wrapper executable. It owns only the process boundary into the
+exact isolated Harness runtime. It does not duplicate Harness command or project semantics.
+
+Its purpose is to make a Harness-enabled repository independently operable by agents, CI, humans,
+and clean machines or checkouts without requiring Wizloft CLI or another global Harness
+executable.
+
+Host integrations are optional convenience adapters. A host such as Wizloft CLI may expose UX
+such as `wizloft harness ...` or `wizharness ...`, but a Harness-initialized project must not
+depend on that host being installed. The portable repository contract remains independently
+runnable.
+
+A host integration does not have to spawn `node .wizloft/harness/run.mjs`. It may detect the
+repository Harness contract, resolve the exact project-local
+`.wizloft/harness/node_modules/@wizloft/harness-project`, load that local package, and invoke
+`runProjectHarness(...)`. That avoids an unnecessary child process and duplicated lifecycle,
+stream, or error ownership.
+
+The project-local version wins. If a host CLI module carries Harness-project version X but the
+repository marker / isolated runtime pins version Y, ordinary project Harness commands use Y.
+The host’s own dependency must not silently replace the repository-pinned runtime.
+
+Initialization and ordinary execution are different seams. A future host integration may use its
+compatible bundled or released `@wizloft/harness-project` initializer for `wizharness init` or
+`wizloft harness init` because init is pre-runtime scaffolding. After initialization, ordinary
+project Harness commands must delegate to the repository’s exact local runtime:
+
+```text
+INIT
+  host integration
+    ->
+  compatible initializer
+    ->
+  materialize repository-local runtime
+
+NORMAL PROJECT COMMAND
+  host integration
+    ->
+  repository marker
+    ->
+  project-local exact harness-project
+    ->
+  runProjectHarness
+```
+
+`init` is not a live Harness command.
+
+This ADR still does not grant Harness ownership of `wizloft` or `wizharness`. Those remain
+host-product executable UX if and when Wizloft CLI supplies them.
+
 ### Isolated runtime
 
 Generic initialization must not create or mutate the host application’s root package manifest
@@ -220,6 +273,9 @@ This decision does not add:
   the ignored runtime without rewriting the sentinel.
 - Meldmark and later consumers wait for the released `@wizloft/harness-project` initializer instead
   of copying Wizloft CLI Gate H0.
+- `run.mjs` is the guaranteed portable path into the exact project-local runtime. A host CLI is
+  optional convenience and must not become a second Harness implementation or silently replace the
+  repository-pinned version.
 - Concrete artifact maps, marker fields, overlay export shape, and apply sequencing remain in the
   owning plan and implementation until they prove durable enough to promote further.
 

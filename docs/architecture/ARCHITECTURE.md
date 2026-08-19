@@ -230,9 +230,39 @@ marker is initialized and needs local `npm ci`; it is not a first-init failure o
 Generic tooling lives under `.wizloft/harness/`; `.wizloft/` remains an organization namespace.
 Host application root manifests are not mutated merely to use Harness.
 
-The generic execution command is `node .wizloft/harness/run.mjs <Harness module argv>`. The tracked
-runner stays tiny, enforces Node `>=22.13.0` before importing `@wizloft/harness-project`, and
-delegates reusable runtime semantics to `runProjectHarness(...)`.
+The generated `run.mjs` is the guaranteed repository-local portable path. It is a tiny wrapper into
+the exact isolated Harness runtime, not a second Harness CLI. Host integration is optional
+convenience. Both paths converge on the same project-local `runProjectHarness(...)` semantics:
+
+```text
+                           project-local exact
+                           runProjectHarness()
+                              ^          ^
+                              |          |
+                 portable     |          | optional host
+                 wrapper      |          | convenience
+                              |          |
+                  run.mjs ----+          +---- host adapter
+                                               |
+                                      future wizharness /
+                                      wizloft harness
+```
+
+`node .wizloft/harness/run.mjs <Harness module argv>` remains independently runnable by agents,
+CI, humans, and clean checkouts. Using Harness does not require Wizloft CLI to be installed.
+
+A host adapter may load the exact project-local
+`.wizloft/harness/node_modules/@wizloft/harness-project` and invoke `runProjectHarness(...)`
+directly. It must respect the repository marker and runtime identity. Ordinary project commands
+use the repository-pinned runtime, not a host-bundled Harness version. The host must not
+duplicate Harness command implementation.
+
+Initialization remains a different seam from ordinary execution. A future host may use a
+compatible initializer to materialize the repository-local runtime; after that, ordinary project
+commands delegate to the project-local package. `init` is not a live Harness command.
+
+The tracked runner stays tiny, enforces Node `>=22.13.0` before importing
+`@wizloft/harness-project`, and delegates reusable runtime semantics to `runProjectHarness(...)`.
 
 ## Public SDK, commands, and CLI adapter
 

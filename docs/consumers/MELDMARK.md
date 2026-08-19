@@ -21,6 +21,9 @@ Meldmark must not hand-copy the Wizloft CLI Gate H0 layout.
 It waits for released `0.1.0-alpha.3` and is initialized with `@wizloft/harness-project`, not a
 hand-authored `dev/harness` tree.
 
+Meldmark does not need Wizloft CLI installed to use Harness. The canonical portable project
+command remains `node .wizloft/harness/run.mjs`. A future host CLI is convenience only.
+
 Meldmark readiness remains gated on clean, existing, idempotent, and released initializer proof
 from Hardening Cycle 1. Do not initialize Meldmark from an unpublished workspace checkout unless a
 later turn explicitly authorizes that exception.
