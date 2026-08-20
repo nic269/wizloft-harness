@@ -1,0 +1,31 @@
+version: 1
+
+providers:
+  agentkit:
+    kits:
+      engineer:
+        target: codex
+
+        channel: stable
+
+        # Current resolved kit version.
+        # Control-plane can later manage upgrades explicitly.
+        version: "0.2.0"
+
+        skills:
+          - ak-agentkit
+          - ak-common
+          - ak-scout
+          - ak-brainstorm
+          - ak-plan
+          - ak-cook
+          - ak-fix
+          - ak-debug
+          - ak-code-review
+          - ak-test
+          - ak-security-scan
+          - ak-docs
+          - ak-handoff
+          - ak-watzup
+          - ak-git
+          - ak-worktree

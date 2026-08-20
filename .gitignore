@@ -6,3 +6,12 @@ coverage/
 *.tsbuildinfo
 /wizloft-harness.md
 /.local/review-snapshots/
+
+# AgentKit Engineer runtime/install root.
+/engineer/
+
+# Runtime-facing projections of AgentKit paid skills.
+/.agents/skills/ak-*/
+
+# AgentKit-generated plugin marketplace metadata.
+/.agents/plugins/marketplace.json
