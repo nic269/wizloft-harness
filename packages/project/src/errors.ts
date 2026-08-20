@@ -1,5 +1,6 @@
 export type ProjectErrorCode =
   | 'APPLY_UNAVAILABLE'
+  | 'APPLY_FORBIDDEN'
   | 'GIT_INVALID'
   | 'GIT_MISSING'
   | 'INTERNAL_ERROR'
@@ -14,6 +15,7 @@ export type ProjectErrorCode =
   | 'PROJECT_ID_CONFLICT'
   | 'ROOT_MISSING'
   | 'ROOT_NOT_DIRECTORY'
+  | 'STALE_PLAN'
   | 'UNSUPPORTED_NODE';
 
 export type ProjectErrorDetails = {
@@ -41,6 +43,16 @@ export class HarnessProjectError extends Error {
 
 export function isUsageErrorCode(code: ProjectErrorCode): boolean {
   return code === 'INVALID_ARGV' || code === 'INVALID_PROJECT_ID';
+}
+
+export function isFilesystemErrno(error: unknown): error is NodeJS.ErrnoException {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    typeof error.code === 'string' &&
+    /^E[A-Z]+$/u.test(error.code)
+  );
 }
 
 export function fail(

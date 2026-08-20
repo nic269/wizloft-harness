@@ -1,4 +1,4 @@
-import { fail, HarnessProjectError, type ProjectErrorCode } from './errors.js';
+import { fail, HarnessProjectError, isFilesystemErrno, type ProjectErrorCode } from './errors.js';
 import { assertSupportedNodeVersion } from './node-version.js';
 import { type PlanProjectInitializationOptions, parseAdapterArgument } from './options.js';
 import { type InitializationPlan, planProjectInitialization } from './plan.js';
@@ -149,20 +149,10 @@ export async function runProjectCli(
   }
 }
 
-function isErrnoFailure(error: unknown): error is NodeJS.ErrnoException {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    typeof error.code === 'string' &&
-    /^E[A-Z]+$/u.test(error.code)
-  );
-}
-
 export function toProjectError(error: unknown): HarnessProjectError {
   if (error instanceof HarnessProjectError) return error;
   const message = error instanceof Error ? error.message : String(error);
-  if (isErrnoFailure(error) && error.code !== undefined) {
+  if (isFilesystemErrno(error) && error.code !== undefined) {
     return new HarnessProjectError('IO_FAILURE', message, { errno: error.code }, error);
   }
   const code: ProjectErrorCode = 'INTERNAL_ERROR';

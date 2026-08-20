@@ -4,7 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { HarnessProjectError } from '../dist/errors.js';
-import { planProjectInitialization } from '../dist/plan.js';
+import { planProjectInitialization, prepareProjectInitialization } from '../dist/plan.js';
 import {
   adapterFile,
   cleanup,
@@ -20,6 +20,14 @@ import {
 
 async function plan(root, extra = {}) {
   return planProjectInitialization({
+    root,
+    projectId: extra.projectId ?? 'example',
+    ...extra,
+  });
+}
+
+async function prepare(root, extra = {}) {
+  return prepareProjectInitialization({
     root,
     projectId: extra.projectId ?? 'example',
     ...extra,
@@ -48,8 +56,13 @@ test('CLEAN empty git init plans create, install, and marker-last and writes not
   assert.equal(result.operations.at(-1)?.path, '.wizloft/harness/project.json');
   const install = result.operations.find((operation) => operation.kind === 'install');
   assert.equal(install?.method, 'install');
-  assert.equal(install?.argv.includes('install'), true);
-  assert.equal(install?.argv.includes('--ignore-scripts'), true);
+  assert.equal('contents' in (result.operations[0] ?? {}), false);
+  assert.equal('expected' in (result.operations[0] ?? {}), false);
+  assert.equal('argv' in (install ?? {}), false);
+  const prepared = await prepare(root);
+  const preparedInstall = prepared.operations.find((operation) => operation.kind === 'install');
+  assert.equal(preparedInstall?.argv.includes('install'), true);
+  assert.equal(preparedInstall?.argv.includes('--ignore-scripts'), true);
   assert.equal(await snapshot(root), before);
 });
 
@@ -68,13 +81,14 @@ test('EXISTING user files keep outside bytes and do not touch unrelated paths', 
   });
   const before = await snapshot(root);
   const result = await plan(root);
+  const prepared = await prepare(root);
   assert.equal(result.state, 'existing-no-harness');
-  const agentsOp = result.operations.find((operation) => operation.path === 'AGENTS.md');
+  const agentsOp = prepared.operations.find((operation) => operation.path === 'AGENTS.md');
   assert.equal(agentsOp?.kind, 'update-block');
-  assert.equal(agentsOp?.contents.startsWith(agents), true);
-  assert.equal(agentsOp?.contents.includes('please keep'), true);
-  const ignoreOp = result.operations.find((operation) => operation.path === '.gitignore');
-  assert.equal(ignoreOp?.contents.startsWith(gitignore), true);
+  assert.equal(agentsOp?.kind !== 'install' && agentsOp.contents.startsWith(agents), true);
+  assert.equal(agentsOp?.kind !== 'install' && agentsOp.contents.includes('please keep'), true);
+  const ignoreOp = prepared.operations.find((operation) => operation.path === '.gitignore');
+  assert.equal(ignoreOp?.kind !== 'install' && ignoreOp.contents.startsWith(gitignore), true);
   assert.equal(
     result.operations.some(
       (operation) => operation.path === 'README.md' || operation.path === 'src/app.ts',
@@ -225,7 +239,11 @@ test('fresh clone with valid tracked contract needs local materialization, not c
     ['install:.wizloft/harness'],
   );
   assert.equal(result.operations[0]?.method, 'ci');
-  assert.equal(result.operations[0]?.argv.includes('ci'), true);
+  const prepared = await prepare(root);
+  assert.equal(
+    prepared.operations[0]?.kind === 'install' && prepared.operations[0].argv.includes('ci'),
+    true,
+  );
   assert.equal(
     result.operations.some((operation) => operation.path === '.wizloft/harness/project.json'),
     false,

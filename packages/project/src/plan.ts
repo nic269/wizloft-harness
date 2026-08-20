@@ -52,17 +52,26 @@ export type InstallMethod = 'install' | 'ci';
 export type PlannedFileOperation = {
   readonly kind: FileOperationKind;
   readonly path: string;
-  readonly contents: string;
 };
 
 export type PlannedInstallOperation = {
   readonly kind: 'install';
   readonly path: typeof HARNESS_DIR;
   readonly method: InstallMethod;
-  readonly argv: readonly string[];
 };
 
 export type PlannedOperation = PlannedFileOperation | PlannedInstallOperation;
+
+export type PreparedFileOperation = PlannedFileOperation & {
+  readonly contents: string;
+  readonly expected?: string;
+};
+
+export type PreparedInstallOperation = PlannedInstallOperation & {
+  readonly argv: readonly string[];
+};
+
+export type PreparedOperation = PreparedFileOperation | PreparedInstallOperation;
 
 export type InitializationPlan = {
   readonly root: string;
@@ -82,7 +91,11 @@ export type InitializationPlan = {
   readonly operations: readonly PlannedOperation[];
 };
 
-function freezePlan(plan: InitializationPlan): InitializationPlan {
+export type PreparedInitializationPlan = Omit<InitializationPlan, 'operations'> & {
+  readonly operations: readonly PreparedOperation[];
+};
+
+function freezePreparedPlan(plan: PreparedInitializationPlan): PreparedInitializationPlan {
   return Object.freeze({
     ...plan,
     subjects: Object.freeze({ ...plan.subjects }),
@@ -98,17 +111,38 @@ function freezePlan(plan: InitializationPlan): InitializationPlan {
   });
 }
 
+function toPublicOperation(operation: PreparedOperation): PlannedOperation {
+  if (operation.kind === 'install') {
+    return Object.freeze({
+      kind: 'install',
+      path: operation.path,
+      method: operation.method,
+    });
+  }
+  return Object.freeze({ kind: operation.kind, path: operation.path });
+}
+
+export function toPublicInitializationPlan(plan: PreparedInitializationPlan): InitializationPlan {
+  return Object.freeze({
+    ...plan,
+    subjects: Object.freeze({ ...plan.subjects }),
+    command: Object.freeze({ argv: Object.freeze([...plan.command.argv]) }),
+    adapters: Object.freeze([...plan.adapters]),
+    operations: Object.freeze(plan.operations.map(toPublicOperation)),
+  });
+}
+
 function fileOperation(
   kind: FileOperationKind,
   relativePath: string,
   desired: string,
   existing: string | undefined,
-): PlannedFileOperation | undefined {
+): PreparedFileOperation | undefined {
   if (existing === desired) return undefined;
   if (existing === undefined) {
     return Object.freeze({ kind: 'create', path: relativePath, contents: desired });
   }
-  return Object.freeze({ kind, path: relativePath, contents: desired });
+  return Object.freeze({ kind, path: relativePath, contents: desired, expected: existing });
 }
 
 function installArgv(root: string, method: InstallMethod): readonly string[] {
@@ -139,14 +173,14 @@ function planWholeFiles(
   snapshot: RepositorySnapshot,
   projectId: string,
   release: string,
-): PlannedFileOperation[] {
+): PreparedFileOperation[] {
   const desired = new Map<string, string>([
     [INSTRUCTIONS_PATH, instructionsContents(projectId)],
     [PROFILE_PATH, profileContents()],
     [RUNNER_PATH, runnerContents()],
     [ISOLATED_MANIFEST_PATH, isolatedManifestContents(release)],
   ]);
-  const operations: PlannedFileOperation[] = [];
+  const operations: PreparedFileOperation[] = [];
   for (const relativePath of HARNESS_WHOLE_FILES) {
     const contents = desired.get(relativePath);
     if (contents === undefined) continue;
@@ -158,7 +192,10 @@ function planWholeFiles(
   return operations;
 }
 
-function planProjectTruth(snapshot: RepositorySnapshot, projectId: string): PlannedFileOperation[] {
+function planProjectTruth(
+  snapshot: RepositorySnapshot,
+  projectId: string,
+): PreparedFileOperation[] {
   if (snapshot.files[PROJECT_TRUTH_PATH] !== undefined) return [];
   return [
     Object.freeze({
@@ -174,7 +211,7 @@ function planAdapterFile(
   adapter: AdapterId,
   selected: boolean,
   projectId: string,
-): PlannedFileOperation | undefined {
+): PreparedFileOperation | undefined {
   const relativePath = adapterPath(adapter);
   const existing = snapshot.files[relativePath];
   if (!selected) {
@@ -186,28 +223,43 @@ function planAdapterFile(
       kind: 'remove-block',
       path: relativePath,
       contents: removed.contents,
+      expected: existing,
     });
   }
   const interior = adapterInterior(projectId);
   if (blockMatches(existing, relativePath, 'markdown', interior)) return undefined;
   const upserted = upsertManagedBlock(existing, relativePath, 'markdown', interior);
-  return Object.freeze({
-    kind: upserted.action,
-    path: relativePath,
-    contents: upserted.contents,
-  });
+  return existing === undefined
+    ? Object.freeze({
+        kind: upserted.action,
+        path: relativePath,
+        contents: upserted.contents,
+      })
+    : Object.freeze({
+        kind: upserted.action,
+        path: relativePath,
+        contents: upserted.contents,
+        expected: existing,
+      });
 }
 
-function planGitignore(snapshot: RepositorySnapshot): PlannedFileOperation | undefined {
+function planGitignore(snapshot: RepositorySnapshot): PreparedFileOperation | undefined {
   const existing = snapshot.files[GITIGNORE_PATH];
   const interior = gitignoreInterior();
   if (blockMatches(existing, GITIGNORE_PATH, 'gitignore', interior)) return undefined;
   const upserted = upsertManagedBlock(existing, GITIGNORE_PATH, 'gitignore', interior);
-  return Object.freeze({
-    kind: upserted.action,
-    path: GITIGNORE_PATH,
-    contents: upserted.contents,
-  });
+  return existing === undefined
+    ? Object.freeze({
+        kind: upserted.action,
+        path: GITIGNORE_PATH,
+        contents: upserted.contents,
+      })
+    : Object.freeze({
+        kind: upserted.action,
+        path: GITIGNORE_PATH,
+        contents: upserted.contents,
+        expected: existing,
+      });
 }
 
 function parseExistingAdapterBlocks(snapshot: RepositorySnapshot): void {
@@ -216,7 +268,7 @@ function parseExistingAdapterBlocks(snapshot: RepositorySnapshot): void {
   parseManagedFile(snapshot.files[GITIGNORE_PATH], GITIGNORE_PATH, 'gitignore');
 }
 
-function planInstall(state: RepositoryState, root: string): PlannedInstallOperation | undefined {
+function planInstall(state: RepositoryState, root: string): PreparedInstallOperation | undefined {
   if (state === 'current' || state === 'reconciliation-needed') return undefined;
   if (state === 'needs-local-materialization') {
     return Object.freeze({
@@ -247,20 +299,23 @@ function planMarker(
   projectId: string,
   release: string,
   adapters: readonly AdapterId[],
-): PlannedFileOperation | undefined {
+): PreparedFileOperation | undefined {
   const desired = markerContents({ projectId, release, adapters });
   const existing = snapshot.files[MARKER_PATH];
   if (existing === desired) return undefined;
-  return Object.freeze({
-    kind: existing === undefined ? 'create' : 'replace',
-    path: MARKER_PATH,
-    contents: desired,
-  });
+  return existing === undefined
+    ? Object.freeze({ kind: 'create' as const, path: MARKER_PATH, contents: desired })
+    : Object.freeze({
+        kind: 'replace' as const,
+        path: MARKER_PATH,
+        contents: desired,
+        expected: existing,
+      });
 }
 
-export async function planProjectInitialization(
+export async function prepareProjectInitialization(
   options: PlanProjectInitializationOptions,
-): Promise<InitializationPlan> {
+): Promise<PreparedInitializationPlan> {
   if (options === null || typeof options !== 'object') {
     fail('INVALID_ARGV', 'Initialization options must be an object');
   }
@@ -294,7 +349,7 @@ export async function planProjectInitialization(
     targetRelease: normalized.targetRelease,
   });
 
-  const operations: PlannedOperation[] = [];
+  const operations: PreparedOperation[] = [];
   operations.push(
     ...planWholeFiles(snapshot, normalized.projectId, normalized.targetRelease),
     ...planProjectTruth(snapshot, normalized.projectId),
@@ -339,7 +394,7 @@ export async function planProjectInitialization(
     fail('INTERNAL_ERROR', 'current repository state must have zero operations');
   }
 
-  return freezePlan({
+  return freezePreparedPlan({
     root,
     projectId: normalized.projectId,
     state: resolvedState,
@@ -351,6 +406,12 @@ export async function planProjectInitialization(
     targetRelease: normalized.targetRelease,
     operations: Object.freeze(operations),
   });
+}
+
+export async function planProjectInitialization(
+  options: PlanProjectInitializationOptions,
+): Promise<InitializationPlan> {
+  return toPublicInitializationPlan(await prepareProjectInitialization(options));
 }
 
 export function currentPackageRelease(): string {

@@ -1,5 +1,5 @@
 import { type HarnessProjectError, isUsageErrorCode } from './errors.js';
-import type { InitializationPlan, PlannedOperation } from './plan.js';
+import type { InitializationPlan, InstallMethod, PlannedOperation } from './plan.js';
 
 export type CliExecution = {
   readonly exitCode: 0 | 1 | 2;
@@ -10,11 +10,16 @@ export type CliExecution = {
 export type PublicOperation = {
   readonly kind: PlannedOperation['kind'];
   readonly path: string;
+  readonly method?: InstallMethod;
 };
 
 function publicOperations(operations: readonly PlannedOperation[]): readonly PublicOperation[] {
   return Object.freeze(
-    operations.map((operation) => Object.freeze({ kind: operation.kind, path: operation.path })),
+    operations.map((operation) =>
+      operation.kind === 'install'
+        ? Object.freeze({ kind: operation.kind, path: operation.path, method: operation.method })
+        : Object.freeze({ kind: operation.kind, path: operation.path }),
+    ),
   );
 }
 

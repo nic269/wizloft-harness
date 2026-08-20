@@ -109,6 +109,7 @@ test('library source does not call process.exit or spawn npm', async () => {
   const srcRoot = fileURLToPath(new URL('../src/', import.meta.url));
   const files = [
     'index.ts',
+    'apply.ts',
     'plan.ts',
     'cli.ts',
     'inspect.ts',

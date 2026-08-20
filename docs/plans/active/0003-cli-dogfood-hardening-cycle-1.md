@@ -1,7 +1,8 @@
 # Execution Plan — CLI Dogfood Retrospective and Hardening Cycle 1
 
 Status: Accepted contract. Phase 0 committed. Portable-wrapper versus host-CLI clarification
-committed. Phase 1 planner/preflight implemented and left uncommitted for external review.
+committed. Phase 1 committed at `fac903208236d59353a98e52158fe85b770fb8c2`. Phase 2
+filesystem writer implemented.
 
 This file owns the accepted alpha.3 onboarding contract.
 
@@ -702,7 +703,8 @@ tooling files.
 | Partial first init | harness files exist without a valid schema-1 marker | replan; replace uncommitted Harness-owned non-marker files; preserve `PROJECT.md` and user bytes; install; prove; write marker last. Unexpected types/symlinks/malformed blocks fail |
 | Needs local materialization | valid marker; tracked generated manifest/lock/files consistent with that marker; exact local `@wizloft/harness-project` absent or unresolvable | initialized, not runnable. Recovery is exact `npm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund`. Do not rewrite `project.json` when release identity is unchanged. Not first-init failure, upgrade, or conflict |
 | Upgrade in progress | valid old marker present; generated tooling/manifest targets a newer release, or the local install is mixed against that target | keep old marker; rewrite non-marker harness files as needed; install; prove new runtime; replace marker last |
-| Current | valid marker, same project id, required tracked files present, isolated package version equals `runtime.release`, package resolvable, desired adapters already match | `operations: []` |
+| Reconciliation needed | same-release runtime is locally usable, but desired Harness-owned files, adapters, or marker content differ | plan file/block/marker reconciliation only; do not plan install |
+| Current | valid marker, same project id, required tracked files present, isolated package version equals `runtime.release`, package resolvable, desired adapters and generated contract already match | `operations: []` |
 | Conflict | bad schema, id mismatch, symlink, malformed blocks, both marker styles, escaped paths | fail before writes |
 
 ---
@@ -903,8 +905,9 @@ That is enough for clean-repo Context to resolve a real, editable project-truth 
   `path.resolve(fileURLToPath(new URL('../..', import.meta.url)))`
 - `process.env`, `process.stdin`, `process.stdout`, `process.stderr`
 - Node `>=22.13.0` preflight from `process.versions.node` before any project-package import
-- dynamic import of `@wizloft/harness-project` only after that preflight
-- actionable missing-runtime recovery when the isolated package cannot be resolved
+- explicit local package resolution after that preflight; only `MODULE_NOT_FOUND` uses npm-ci recovery
+- dynamic import of `@wizloft/harness-project` after resolution succeeds
+- actual import/bootstrap errors rendered once, not as a missing-`node_modules` message
 - final `process.exitCode`
 - rendering of **thrown** bootstrap errors: `stderr.write(message + '\n')`, then `exitCode = 1`
 
@@ -915,6 +918,7 @@ directories.
 Generated conceptual body:
 
 ```js
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -930,23 +934,37 @@ if (!Number.isInteger(major) || !Number.isInteger(minor) || major < 22 || (major
   );
 } else {
   const repositoryRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
+  const require = createRequire(import.meta.url);
+  let resolved = false;
   try {
-    const { runProjectHarness } = await import('@wizloft/harness-project');
+    require.resolve('@wizloft/harness-project');
+    resolved = true;
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'MODULE_NOT_FOUND') {
+      fail(
+        'Cannot resolve @wizloft/harness-project from .wizloft/harness/node_modules. Restore the isolated runtime with:\n\nnpm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund',
+      );
+    } else {
+      fail(error instanceof Error ? error.message : String(error));
+    }
+  }
+  if (resolved) {
     try {
-      process.exitCode = await runProjectHarness(process.argv.slice(2), {
-        repositoryRoot,
-        env: process.env,
-        stdin: process.stdin,
-        stdout: process.stdout,
-        stderr: process.stderr,
-      });
+      const { runProjectHarness } = await import('@wizloft/harness-project');
+      try {
+        process.exitCode = await runProjectHarness(process.argv.slice(2), {
+          repositoryRoot,
+          env: process.env,
+          stdin: process.stdin,
+          stdout: process.stdout,
+          stderr: process.stderr,
+        });
+      } catch (error) {
+        fail(error instanceof Error ? error.message : String(error));
+      }
     } catch (error) {
       fail(error instanceof Error ? error.message : String(error));
     }
-  } catch {
-    fail(
-      'Cannot resolve @wizloft/harness-project from .wizloft/harness/node_modules. Restore the isolated runtime with:\n\nnpm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund',
-    );
   }
 }
 ```
@@ -1232,7 +1250,7 @@ Phase 0 verification:
 
 ### Phase 1 — Planner and safety
 
-Status: implemented in the working tree; unstaged and uncommitted for external review.
+Status: committed at `fac903208236d59353a98e52158fe85b770fb8c2`.
 
 Starting proof after the clarification commit:
 
@@ -1304,15 +1322,68 @@ Phase 1 verification:
 - no `process.exit()` or `child_process` in library source;
 - `git diff --check`: clean.
 
-Stop for external review. Do not begin Phase 2.
+Phase 1 is committed at `fac903208236d59353a98e52158fe85b770fb8c2`.
 
 ### Phase 2 — Apply writer
 
-- atomic file create/replace for non-marker files;
-- managed-block update and `remove-block` for deselected adapters;
-- legacy `HARNESS:BEGIN` migration;
-- ownership table behavior;
-- still no marker write.
+Status: implemented.
+
+Internal seam (not a package-root export; CLI still dry-run only):
+
+- `prepareProjectInitialization(options)` is the internal prepared plan (contents + expected bytes);
+- public `planProjectInitialization(options)` returns kind/path(/install method) only;
+- `applyProjectFilesystem(options)` internally prepares, then applies;
+- `applyProjectFilesystemPlan(plan)` is the in-memory test/writer primitive over the prepared plan.
+
+Phase 2 applies only allowlisted `create` / `replace` / `update-block` / `remove-block`
+paths. `install` and marker create/replace remain `pending`. Unexpected paths are
+`APPLY_FORBIDDEN`.
+
+Stale-plan protection: each prepared file operation carries `expected` bytes
+(`undefined` means absent). Expected state is checked before temp preparation
+and, for replace/update/remove, checked again immediately before atomic
+publication. Create publishes with `link(temp, destination)` so a destination
+that appears after planning is `EEXIST` / `STALE_PLAN` rather than clobber.
+Successful `link(temp, destination)` is the CREATE commit point; later
+`unlink(temp)` is best-effort cleanup and must not fail, roll back, or un-apply
+the already-published destination. An orphan `.wizloft-harness-*.tmp` hardlink
+may remain; alpha.3 does not require an orphan-cleanup subsystem.
+
+Temp writes use complete `FileHandle.writeFile` then fsync. Managed parents
+`.wizloft` / `.wizloft/harness` are re-lstat'd before temp creation and before
+publication. Recognizable Node fs errno values become `IO_FAILURE`.
+
+There is no multi-file transaction: later failure reports `applied` / `failed` /
+`pending` and never writes the marker.
+
+Preservation proofs:
+
+- `.wizloft/agents.yaml` remains byte-identical while `.wizloft/harness/` is created;
+- `.agentkit/` is untouched;
+- representative user/AgentKit `.gitignore` lines remain byte-identical outside
+  the managed block;
+- `.wizloft/PROJECT.md` is create-once; a concurrent create is `STALE_PLAN`.
+
+CLI `init` without `--dry-run` remains `APPLY_UNAVAILABLE` because install and
+marker-last are not implemented.
+
+Phase 2 verification:
+
+- `pnpm --filter @wizloft/harness-project test`: 57 passed;
+- CLEAN apply leaves `project.json`, `package-lock.json`, and `node_modules` absent;
+- concurrent PROJECT.md / AGENTS.md / run.mjs edits fail with `STALE_PLAN`;
+- create publication uses no-clobber `link`; replace rechecks expected bytes before rename;
+- CREATE remains applied if temp-name cleanup fails after successful `link`;
+- no `child_process` / npm / npx in the writer.
+
+Not implemented in Phase 2:
+
+- npm / npx / `child_process`;
+- `package-lock.json` generation;
+- `node_modules` materialization;
+- marker write;
+- `runProjectHarness`;
+- overlay / health validator.
 
 ### Phase 3 — Isolated runtime and sentinel
 
