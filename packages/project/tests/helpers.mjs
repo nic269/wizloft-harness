@@ -2,6 +2,8 @@ import { execFileSync } from 'node:child_process';
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { Writable } from 'node:stream';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { renderManagedBlock } from '../dist/managed-blocks.js';
 import { currentPackageRelease } from '../dist/plan.js';
 import {
@@ -81,6 +83,51 @@ export async function writeLocalPackage(root, version = RELEASE) {
       2,
     )}\n`,
   });
+}
+
+export async function writeIsolatedRuntimePackage(root, version = RELEASE) {
+  const workspaceEntry = fileURLToPath(new URL('../dist/index.js', import.meta.url));
+  await writeFileTree(root, {
+    '.wizloft/harness/node_modules/@wizloft/harness-project/package.json': `${JSON.stringify(
+      {
+        name: '@wizloft/harness-project',
+        version,
+        type: 'module',
+        exports: { '.': './dist/index.js' },
+      },
+      undefined,
+      2,
+    )}\n`,
+    '.wizloft/harness/node_modules/@wizloft/harness-project/dist/index.js': `export * from ${JSON.stringify(
+      pathToFileURL(workspaceEntry).href,
+    )};\n`,
+  });
+}
+
+export function collectStream() {
+  let text = '';
+  const stream = new Writable({
+    write(chunk, _encoding, callback) {
+      text += String(chunk);
+      callback();
+    },
+  });
+  return {
+    stream,
+    text() {
+      return text;
+    },
+  };
+}
+
+export function failingStream(message = 'injected stream write failure') {
+  const stream = new Writable({
+    write(_chunk, _encoding, callback) {
+      callback(new Error(message));
+    },
+  });
+  stream.on('error', () => undefined);
+  return stream;
 }
 
 export async function snapshot(root) {

@@ -109,7 +109,7 @@ Do not mutate the host application package manifest merely to use Harness.
 export function profileContents(): string {
   return `import { createGeneratedProjectProfile } from '@wizloft/harness-project';
 
-export function createProjectProfile(options) {
+export async function createProjectProfile(options) {
   return createGeneratedProjectProfile(options);
 }
 `;

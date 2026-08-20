@@ -10,3 +10,8 @@ export {
   type PlannedOperation,
   planProjectInitialization,
 } from './plan.js';
+export {
+  type CreateGeneratedProjectProfileOptions,
+  createGeneratedProjectProfile,
+} from './profile.js';
+export { type RunProjectHarnessOptions, runProjectHarness } from './run.js';

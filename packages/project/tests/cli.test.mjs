@@ -7,10 +7,12 @@ import { parseProjectCliArgv, runProjectCli } from '../dist/cli.js';
 import * as projectApi from '../dist/index.js';
 import { cleanup, gitInit, snapshot, tempRepo } from './helpers.mjs';
 
-test('root package export surface is the Phase 1 planner only', () => {
+test('root package export surface is planner plus Phase 3A runtime', () => {
   assert.deepEqual(Object.keys(projectApi).sort(), [
     'HarnessProjectError',
+    'createGeneratedProjectProfile',
     'planProjectInitialization',
+    'runProjectHarness',
   ]);
 });
 
@@ -122,6 +124,11 @@ test('library source does not call process.exit or spawn npm', async () => {
     'node-version.ts',
     'project-id.ts',
     'errors.ts',
+    'overlay.ts',
+    'identity.ts',
+    'health.ts',
+    'profile.ts',
+    'run.ts',
   ];
   for (const file of files) {
     const source = await readFile(path.join(srcRoot, file), 'utf8');

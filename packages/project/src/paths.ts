@@ -7,7 +7,10 @@ export const HARNESS_DIR = '.wizloft/harness';
 export const MARKER_PATH = '.wizloft/harness/project.json';
 export const INSTRUCTIONS_PATH = '.wizloft/harness/INSTRUCTIONS.md';
 export const PROFILE_PATH = '.wizloft/harness/profile.mjs';
+export const PROFILE_LOCAL_PATH = '.wizloft/harness/profile.local.mjs';
 export const RUNNER_PATH = '.wizloft/harness/run.mjs';
+export const EVENTS_PATH = '.wizloft/harness/local/events.jsonl';
+export const MEMORY_PATH = '.wizloft/harness/local/memory.jsonl';
 export const ISOLATED_MANIFEST_PATH = '.wizloft/harness/package.json';
 export const ISOLATED_LOCKFILE_PATH = '.wizloft/harness/package-lock.json';
 export const LOCAL_NODE_MODULES_PATH = '.wizloft/harness/node_modules';
@@ -151,6 +154,53 @@ export async function inspectPath(root: string, relativePath: string): Promise<P
     }
     throw error;
   }
+}
+
+const RUNTIME_PARENTS = Object.freeze([WIZLOFT_DIR, HARNESS_DIR]);
+
+export type RuntimeParentInspection =
+  | { readonly ok: true }
+  | {
+      readonly ok: false;
+      readonly relativePath: string;
+      readonly symlink: boolean;
+    };
+
+export async function inspectRuntimeParents(
+  root: string,
+  options: { readonly required?: boolean } = {},
+): Promise<RuntimeParentInspection> {
+  const required = options.required !== false;
+  for (const relativePath of RUNTIME_PARENTS) {
+    const inspection = await inspectPath(root, relativePath);
+    if (!inspection.exists) {
+      if (!required) continue;
+      return Object.freeze({ ok: false, relativePath, symlink: false });
+    }
+    if (inspection.isSymbolicLink) {
+      return Object.freeze({ ok: false, relativePath, symlink: true });
+    }
+    if (!inspection.isDirectory) {
+      return Object.freeze({ ok: false, relativePath, symlink: false });
+    }
+  }
+  return Object.freeze({ ok: true });
+}
+
+export async function assertRuntimeParents(
+  root: string,
+  options: { readonly required?: boolean } = {},
+): Promise<void> {
+  const inspection = await inspectRuntimeParents(root, options);
+  if (inspection.ok) return;
+  if (inspection.symlink) {
+    fail('MANAGED_PATH_SYMLINK', `Managed path must not be a symlink: ${inspection.relativePath}`, {
+      path: inspection.relativePath,
+    });
+  }
+  fail('MANAGED_PATH_WRONG_TYPE', `Managed path must be a directory: ${inspection.relativePath}`, {
+    path: inspection.relativePath,
+  });
 }
 
 export async function assertManagedPathSafety(

@@ -20,7 +20,21 @@
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "test": "pnpm build && node --test tests/*.test.mjs",
-    "typecheck": "tsc --project tsconfig.json --noEmit"
+    "typecheck": "pnpm --filter @wizloft/harness-project^... build && tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@wizloft/harness": "workspace:*",
+    "@wizloft/harness-authority": "workspace:*",
+    "@wizloft/harness-cli-adapter": "workspace:*",
+    "@wizloft/harness-commands": "workspace:*",
+    "@wizloft/harness-context": "workspace:*",
+    "@wizloft/harness-evidence": "workspace:*",
+    "@wizloft/harness-kernel": "workspace:*",
+    "@wizloft/harness-plugin-file-events": "workspace:*",
+    "@wizloft/harness-plugin-file-memory": "workspace:*",
+    "@wizloft/harness-plugin-memory-context": "workspace:*",
+    "@wizloft/harness-plugin-repository-files": "workspace:*",
+    "@wizloft/harness-validation": "workspace:*"
   },
   "license": "MIT",
   "engines": {

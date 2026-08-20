@@ -5,8 +5,11 @@ export type ProjectErrorCode =
   | 'GIT_MISSING'
   | 'INTERNAL_ERROR'
   | 'INVALID_ARGV'
+  | 'INVALID_OVERLAY'
+  | 'INVALID_PROFILE'
   | 'INVALID_PROJECT_ID'
   | 'IO_FAILURE'
+  | 'LOCAL_RUNTIME_INVALID'
   | 'MANAGED_BLOCK_CONFLICT'
   | 'MANAGED_PATH_OUTSIDE_ROOT'
   | 'MANAGED_PATH_SYMLINK'
@@ -45,14 +48,21 @@ export function isUsageErrorCode(code: ProjectErrorCode): boolean {
   return code === 'INVALID_ARGV' || code === 'INVALID_PROJECT_ID';
 }
 
-export function isFilesystemErrno(error: unknown): error is NodeJS.ErrnoException {
-  return (
+export function errorCode(error: unknown): string | undefined {
+  if (
     typeof error === 'object' &&
     error !== null &&
     'code' in error &&
-    typeof error.code === 'string' &&
-    /^E[A-Z]+$/u.test(error.code)
-  );
+    typeof error.code === 'string'
+  ) {
+    return error.code;
+  }
+  return undefined;
+}
+
+export function isFilesystemErrno(error: unknown): error is NodeJS.ErrnoException {
+  const code = errorCode(error);
+  return code !== undefined && /^E[A-Z]+$/u.test(code);
 }
 
 export function fail(

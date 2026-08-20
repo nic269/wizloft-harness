@@ -1,8 +1,10 @@
 # Execution Plan — CLI Dogfood Retrospective and Hardening Cycle 1
 
 Status: Accepted contract. Phase 0 committed. Portable-wrapper versus host-CLI clarification
-committed. Phase 1 committed at `fac903208236d59353a98e52158fe85b770fb8c2`. Phase 2
-filesystem writer implemented.
+committed. Phase 1 committed at `fac903208236d59353a98e52158fe85b770fb8c2`. Phase 2 committed
+at `feb372e62c295c43fe234282b9371e4e5e6af985`. Phase 3 is split into review gates 3A
+(runtime composition) and 3B (materialization + sentinel). Phase 3A is implemented and left
+uncommitted for external review. Phase 3B has not started.
 
 This file owns the accepted alpha.3 onboarding contract.
 
@@ -1028,7 +1030,7 @@ so the runner does not keep a hidden process global; the current CLI adapter doe
 planProjectInitialization(options): InitializationPlan
 applyProjectInitialization(options): Promise<InitializationResult>
 runProjectHarness(argv, options): Promise<number>
-createGeneratedProjectProfile(options): HarnessProfile
+createGeneratedProjectProfile(options): Promise<HarnessProfile>
 ```
 
 `applyProjectInitialization` always replans from current disk plus the supplied options. It never
@@ -1326,7 +1328,7 @@ Phase 1 is committed at `fac903208236d59353a98e52158fe85b770fb8c2`.
 
 ### Phase 2 — Apply writer
 
-Status: implemented.
+Status: committed at `feb372e62c295c43fe234282b9371e4e5e6af985`.
 
 Internal seam (not a package-root export; CLI still dry-run only):
 
@@ -1387,12 +1389,88 @@ Not implemented in Phase 2:
 
 ### Phase 3 — Isolated runtime and sentinel
 
+This is a review partition of the accepted Phase 3 work, not a new architecture
+decision and not a reopening of ADR 0013.
+
+#### Phase 3A — Project runtime composition
+
+Status: implemented in the working tree; unstaged and uncommitted for external review.
+
+Owns the real private `@wizloft/harness-project` runtime dependency closure and the
+generated-profile / overlay / health / `runProjectHarness` composition. Direct
+dependencies, using the workspace source-manifest convention:
+
+```text
+@wizloft/harness
+@wizloft/harness-authority
+@wizloft/harness-cli-adapter
+@wizloft/harness-commands
+@wizloft/harness-context
+@wizloft/harness-evidence
+@wizloft/harness-kernel
+@wizloft/harness-plugin-file-events
+@wizloft/harness-plugin-file-memory
+@wizloft/harness-plugin-memory-context
+@wizloft/harness-plugin-repository-files
+@wizloft/harness-validation
+```
+
+`@wizloft/harness-memory` remains transitive.
+
+Implemented:
+
+- optional `.wizloft/harness/profile.local.mjs` source overlay: missing is a no-op;
+  present malformed overlay is a bootstrap `INVALID_OVERLAY` / symlink failure;
+  Authority/Context additions append after generated defaults; Context `authority`
+  role must be path-backed by generated or overlay Authority;
+- `createGeneratedProjectProfile({ repositoryRoot, projectId })` is async
+  (`Promise<HarnessProfile>`) because optional `.mjs` overlay/profile loading is
+  async. It composes the accepted MUH providers plus one root-required health
+  validator `@wizloft/harness-project:runtime-health` whose plugin version is
+  `packageRelease()`;
+- generated `profile.mjs` stays a tiny factory over that function;
+- `runProjectHarness(argv, options)` validates Node/root/runtime parents/marker/
+  local identity, loads overlay through the generated profile factory, creates
+  Harness + command executor + CLI adapter, writes completed adapter streams,
+  returns the adapter exit code, and makes one `shutdown()` attempt in a single
+  `finally`;
+- `.wizloft` and `.wizloft/harness` must exist as real in-repository directories
+  before marker/profile/local runtime are read;
+- overlay source containment walks existing ancestors so intermediate escaping
+  symlinks fail as `INVALID_OVERLAY`; in-root source symlinks remain allowed;
+- local runtime identity is `createRequire`-anchored to `.wizloft/harness/` and
+  diagnoses `MODULE_NOT_FOUND` as inability to resolve
+  `@wizloft/harness-project` from `.wizloft/harness/node_modules`;
+- event history uses `readFileEvents(.wizloft/harness/local/events.jsonl)`;
+- public root exports add `createGeneratedProjectProfile` and `runProjectHarness`
+  only; `HarnessProfile` is not re-exported.
+
+Phase 3A verification:
+
+- `pnpm --filter @wizloft/harness-project test`: 92 passed;
+- package remains `private: true` at `0.1.0-alpha.2`;
+- public graph remains 13 packages at `0.1.0-alpha.2`;
+- no `child_process` / npm install / marker write.
+
+Not implemented in Phase 3A:
+
+- npm / `child_process` / isolated materialization;
+- `package-lock.json` generation;
+- initializer `node_modules` creation;
+- `project.json` write/replace;
+- `applyProjectInitialization`;
+- successful non-dry-run initializer CLI;
+- public graph / alpha.3 transition.
+
+#### Phase 3B — Isolated materialization + sentinel
+
+Not started.
+
 - write isolated manifest;
 - perform or inject install;
 - prove isolated resolve;
 - write `project.json` last;
-- generate tiny `run.mjs` and `profile.mjs`;
-- implement `runProjectHarness`, source-only overlay, and health validator.
+- enable non-dry-run initializer apply.
 
 ### Phase 4 — Proofs
 
