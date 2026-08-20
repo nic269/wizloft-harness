@@ -331,6 +331,14 @@ export async function assertLocalRuntimeSafety(root: string): Promise<void> {
         path: relativePath,
       });
     }
+    const expectedFile = relativePath === LOCAL_PACKAGE_MANIFEST_PATH;
+    if (expectedFile ? !inspection.isFile : !inspection.isDirectory) {
+      fail(
+        'MANAGED_PATH_WRONG_TYPE',
+        `Isolated runtime path must be a ${expectedFile ? 'file' : 'directory'}: ${relativePath}`,
+        { path: relativePath },
+      );
+    }
   }
 }
 

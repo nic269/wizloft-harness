@@ -67,9 +67,7 @@ export type PreparedFileOperation = PlannedFileOperation & {
   readonly expected?: string;
 };
 
-export type PreparedInstallOperation = PlannedInstallOperation & {
-  readonly argv: readonly string[];
-};
+export type PreparedInstallOperation = PlannedInstallOperation;
 
 export type PreparedOperation = PreparedFileOperation | PreparedInstallOperation;
 
@@ -101,13 +99,7 @@ function freezePreparedPlan(plan: PreparedInitializationPlan): PreparedInitializ
     subjects: Object.freeze({ ...plan.subjects }),
     command: Object.freeze({ argv: Object.freeze([...plan.command.argv]) }),
     adapters: Object.freeze([...plan.adapters]),
-    operations: Object.freeze(
-      plan.operations.map((operation) =>
-        operation.kind === 'install'
-          ? Object.freeze({ ...operation, argv: Object.freeze([...operation.argv]) })
-          : Object.freeze({ ...operation }),
-      ),
-    ),
+    operations: Object.freeze(plan.operations.map((operation) => Object.freeze({ ...operation }))),
   });
 }
 
@@ -143,30 +135,6 @@ function fileOperation(
     return Object.freeze({ kind: 'create', path: relativePath, contents: desired });
   }
   return Object.freeze({ kind, path: relativePath, contents: desired, expected: existing });
-}
-
-function installArgv(root: string, method: InstallMethod): readonly string[] {
-  const prefix = `${root}/${HARNESS_DIR}`.replaceAll('\\', '/');
-  if (method === 'ci') {
-    return Object.freeze([
-      'npm',
-      '--prefix',
-      prefix,
-      'ci',
-      '--ignore-scripts',
-      '--no-audit',
-      '--no-fund',
-    ]);
-  }
-  return Object.freeze([
-    'npm',
-    'install',
-    '--prefix',
-    prefix,
-    '--ignore-scripts',
-    '--no-audit',
-    '--no-fund',
-  ]);
 }
 
 function planWholeFiles(
@@ -268,14 +236,13 @@ function parseExistingAdapterBlocks(snapshot: RepositorySnapshot): void {
   parseManagedFile(snapshot.files[GITIGNORE_PATH], GITIGNORE_PATH, 'gitignore');
 }
 
-function planInstall(state: RepositoryState, root: string): PreparedInstallOperation | undefined {
+function planInstall(state: RepositoryState): PreparedInstallOperation | undefined {
   if (state === 'current' || state === 'reconciliation-needed') return undefined;
   if (state === 'needs-local-materialization') {
     return Object.freeze({
       kind: 'install',
       path: HARNESS_DIR,
       method: 'ci',
-      argv: installArgv(root, 'ci'),
     });
   }
   if (
@@ -288,7 +255,6 @@ function planInstall(state: RepositoryState, root: string): PreparedInstallOpera
       kind: 'install',
       path: HARNESS_DIR,
       method: 'install',
-      argv: installArgv(root, 'install'),
     });
   }
   return undefined;
@@ -372,7 +338,7 @@ export async function prepareProjectInitialization(
   if (claude !== undefined) operations.push(claude);
   if (gitignore !== undefined) operations.push(gitignore);
 
-  const install = planInstall(state, root);
+  const install = planInstall(state);
   if (install !== undefined) operations.push(install);
 
   const marker = planMarker(

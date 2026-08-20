@@ -3,6 +3,7 @@ export type ProjectErrorCode =
   | 'APPLY_FORBIDDEN'
   | 'GIT_INVALID'
   | 'GIT_MISSING'
+  | 'INSTALL_FAILED'
   | 'INTERNAL_ERROR'
   | 'INVALID_ARGV'
   | 'INVALID_OVERLAY'

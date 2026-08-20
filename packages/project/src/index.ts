@@ -1,4 +1,9 @@
 export { HarnessProjectError, type ProjectErrorCode, type ProjectErrorDetails } from './errors.js';
+export {
+  type AppliedOperation,
+  applyProjectInitialization,
+  type InitializationResult,
+} from './initialize.js';
 export type { RepositoryState } from './inspect.js';
 export type { AdapterId, PlanProjectInitializationOptions } from './options.js';
 export {

@@ -23,7 +23,7 @@ export type LocalRuntimeIdentity = {
 
 export type LocalRuntimeInspection =
   | { readonly ok: true; readonly identity: LocalRuntimeIdentity }
-  | { readonly ok: false; readonly reason: string };
+  | { readonly ok: false; readonly kind: 'unavailable' | 'unsafe'; readonly reason: string };
 
 function staysInside(root: string, candidate: string): boolean {
   const relative = path.relative(root, candidate);
@@ -35,6 +35,7 @@ export async function inspectLocalProjectRuntime(root: string): Promise<LocalRun
   if (!parents.ok) {
     return Object.freeze({
       ok: false,
+      kind: parents.symlink ? 'unsafe' : 'unavailable',
       reason: parents.symlink
         ? `Managed path must not be a symlink: ${parents.relativePath}`
         : `Managed path must be a directory: ${parents.relativePath}`,
@@ -46,6 +47,7 @@ export async function inspectLocalProjectRuntime(root: string): Promise<LocalRun
   } catch (error) {
     return Object.freeze({
       ok: false,
+      kind: 'unsafe',
       reason: error instanceof Error ? error.message : String(error),
     });
   }
@@ -54,7 +56,58 @@ export async function inspectLocalProjectRuntime(root: string): Promise<LocalRun
   if (!isolatedManifest.exists || isolatedManifest.isSymbolicLink || !isolatedManifest.isFile) {
     return Object.freeze({
       ok: false,
+      kind: 'unavailable',
       reason: 'Isolated harness package.json is missing or unsafe',
+    });
+  }
+
+  const manifestInspection = await inspectPath(root, LOCAL_PACKAGE_MANIFEST_PATH);
+  if (!manifestInspection.exists) {
+    return Object.freeze({
+      ok: false,
+      kind: 'unavailable',
+      reason: `Cannot resolve ${PACKAGE_NAME} from ${HARNESS_DIR}/node_modules`,
+    });
+  }
+  if (manifestInspection.isSymbolicLink || !manifestInspection.isFile) {
+    return Object.freeze({
+      ok: false,
+      kind: 'unsafe',
+      reason: `Isolated ${PACKAGE_NAME} package.json is unsafe`,
+    });
+  }
+
+  let version: string;
+  try {
+    const parsed = JSON.parse(await readFile(manifestInspection.absolutePath, 'utf8')) as {
+      name?: unknown;
+      version?: unknown;
+      exports?: unknown;
+    };
+    if (
+      parsed.name !== PACKAGE_NAME ||
+      typeof parsed.version !== 'string' ||
+      parsed.version === ''
+    ) {
+      return Object.freeze({
+        ok: false,
+        kind: 'unsafe',
+        reason: `Isolated ${PACKAGE_NAME} package identity is invalid`,
+      });
+    }
+    version = parsed.version;
+    if (parsed.exports === undefined) {
+      return Object.freeze({
+        ok: false,
+        kind: 'unavailable',
+        reason: `Cannot resolve ${PACKAGE_NAME} from ${HARNESS_DIR}/node_modules`,
+      });
+    }
+  } catch (error) {
+    return Object.freeze({
+      ok: false,
+      kind: 'unsafe',
+      reason: `Isolated ${PACKAGE_NAME} package.json is unreadable: ${error instanceof Error ? error.message : String(error)}`,
     });
   }
 
@@ -68,6 +121,7 @@ export async function inspectLocalProjectRuntime(root: string): Promise<LocalRun
     const code = errorCode(error);
     return Object.freeze({
       ok: false,
+      kind: code === 'MODULE_NOT_FOUND' ? 'unavailable' : 'unsafe',
       reason:
         code === 'MODULE_NOT_FOUND'
           ? `Cannot resolve ${PACKAGE_NAME} from ${HARNESS_DIR}/node_modules`
@@ -85,6 +139,7 @@ export async function inspectLocalProjectRuntime(root: string): Promise<LocalRun
   } catch (error) {
     return Object.freeze({
       ok: false,
+      kind: 'unsafe',
       reason: `Cannot canonicalize isolated ${PACKAGE_NAME} path: ${error instanceof Error ? error.message : String(error)}`,
     });
   }
@@ -95,43 +150,8 @@ export async function inspectLocalProjectRuntime(root: string): Promise<LocalRun
   ) {
     return Object.freeze({
       ok: false,
+      kind: 'unsafe',
       reason: `Resolved ${PACKAGE_NAME} escaped the isolated project runtime`,
-    });
-  }
-
-  const manifestInspection = await inspectPath(root, LOCAL_PACKAGE_MANIFEST_PATH);
-  if (
-    !manifestInspection.exists ||
-    manifestInspection.isSymbolicLink ||
-    !manifestInspection.isFile
-  ) {
-    return Object.freeze({
-      ok: false,
-      reason: `Isolated ${PACKAGE_NAME} package.json is missing or unsafe`,
-    });
-  }
-
-  let version: string;
-  try {
-    const parsed = JSON.parse(await readFile(manifestInspection.absolutePath, 'utf8')) as {
-      name?: unknown;
-      version?: unknown;
-    };
-    if (
-      parsed.name !== PACKAGE_NAME ||
-      typeof parsed.version !== 'string' ||
-      parsed.version === ''
-    ) {
-      return Object.freeze({
-        ok: false,
-        reason: `Isolated ${PACKAGE_NAME} package identity is invalid`,
-      });
-    }
-    version = parsed.version;
-  } catch (error) {
-    return Object.freeze({
-      ok: false,
-      reason: `Isolated ${PACKAGE_NAME} package.json is unreadable: ${error instanceof Error ? error.message : String(error)}`,
     });
   }
 

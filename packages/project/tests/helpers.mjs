@@ -159,6 +159,37 @@ export function operationList(plan) {
   return plan.operations.map((operation) => `${operation.kind}:${operation.path}`);
 }
 
+export function simulateIsolatedInstall({
+  fail = false,
+  skipLockfile = false,
+  skipPackage = false,
+  version = RELEASE,
+  after,
+} = {}) {
+  const calls = [];
+  return {
+    calls,
+    async installRuntime({ root, method }) {
+      calls.push(method);
+      if (typeof after === 'function') await after(root, method);
+      if (fail) {
+        const error = new Error('injected isolated npm failure');
+        error.code = 1;
+        throw error;
+      }
+      if (!skipLockfile) {
+        const lockPath = path.join(root, '.wizloft/harness/package-lock.json');
+        try {
+          await readFile(lockPath);
+        } catch {
+          await writeFileTree(root, { '.wizloft/harness/package-lock.json': stubLockfile() });
+        }
+      }
+      if (!skipPackage) await writeIsolatedRuntimePackage(root, version);
+    },
+  };
+}
+
 export async function cleanup(root) {
   await rm(root, { force: true, recursive: true });
 }

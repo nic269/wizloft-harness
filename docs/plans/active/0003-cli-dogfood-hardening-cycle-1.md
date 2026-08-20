@@ -2,9 +2,9 @@
 
 Status: Accepted contract. Phase 0 committed. Portable-wrapper versus host-CLI clarification
 committed. Phase 1 committed at `fac903208236d59353a98e52158fe85b770fb8c2`. Phase 2 committed
-at `feb372e62c295c43fe234282b9371e4e5e6af985`. Phase 3 is split into review gates 3A
-(runtime composition) and 3B (materialization + sentinel). Phase 3A is implemented and left
-uncommitted for external review. Phase 3B has not started.
+at `feb372e62c295c43fe234282b9371e4e5e6af985`. Phase 3A committed at
+`29dd040293419eba5bbc72195ac2eeec62b2a92c`. Phase 3B materialization + sentinel
+is implemented and left uncommitted for external review.
 
 This file owns the accepted alpha.3 onboarding contract.
 
@@ -626,8 +626,10 @@ rule.
 - Planner/preflight compute the complete operation set before any write or install.
 - Dry-run uses the same planner/preflight path and writes nothing, including no lockfile and no
   `node_modules`.
-- Apply uses atomic per-file replacement: write a sibling temp file in the destination directory,
-  then rename.
+- CREATE writes and fsyncs a sibling temp file, then publishes with an atomic no-clobber
+  `link(temp, destination)`.
+- REPLACE / `update-block` / `remove-block` and marker replacement write and fsync a sibling temp
+  file, perform the final expected-state recheck, then publish with atomic `rename`.
 - No `git add`, `commit`, `reset`, `restore`, `clean`, or index mutation.
 - Tests mutate only temporary repositories. No real user project is used as a fixture.
 
@@ -1394,7 +1396,7 @@ decision and not a reopening of ADR 0013.
 
 #### Phase 3A — Project runtime composition
 
-Status: implemented in the working tree; unstaged and uncommitted for external review.
+Status: committed at `29dd040293419eba5bbc72195ac2eeec62b2a92c`.
 
 Owns the real private `@wizloft/harness-project` runtime dependency closure and the
 generated-profile / overlay / health / `runProjectHarness` composition. Direct
@@ -1464,13 +1466,65 @@ Not implemented in Phase 3A:
 
 #### Phase 3B — Isolated materialization + sentinel
 
-Not started.
+Status: implemented in the working tree; unstaged and uncommitted for external review.
 
-- write isolated manifest;
-- perform or inject install;
-- prove isolated resolve;
-- write `project.json` last;
-- enable non-dry-run initializer apply.
+Owns `applyProjectInitialization(options)` and non-dry-run `init`. Sequence:
+
+1. prepare/replan current disk;
+2. apply non-marker filesystem operations;
+3. if planned, execute bounded isolated npm (`execFile`, `shell: false`);
+4. prove lockfile + exact resolvable local `@wizloft/harness-project`, including current and
+   reconciliation paths that do not run npm;
+5. prepare/replan again from disk (certification plan);
+6. certify the fresh plan against the initial repository-state matrix;
+7. take zero or one marker operation from that fresh plan and publish it last.
+
+Installer commands, derived at execution time from `method` + absolute prefix:
+
+- first-init / existing / partial / upgrade: `npm install --prefix <root>/.wizloft/harness --ignore-scripts --no-audit --no-fund`
+- needs-local-materialization: `npm --prefix <root>/.wizloft/harness ci --ignore-scripts --no-audit --no-fund`
+
+Repository classification reuses the Phase-3A isolated runtime identity inspector. A valid tracked
+contract with an absent or unresolvable local `@wizloft/harness-project` is
+`needs-local-materialization` and plans `ci`; only a safely resolvable exact runtime may classify as
+`current` / `reconciliation-needed`. Unsafe symlink, wrong-type, or escaped local runtime identity
+remains an error and never invokes npm.
+
+The public API is exactly `applyProjectInitialization(options): Promise<InitializationResult>`.
+Tests and the internal CLI adapter use `applyProjectInitializationWithRuntime(...)`; installer and
+marker hooks are not root exports and unit tests never hit the public registry.
+
+An install operation becomes applied only after npm, isolated lockfile proof, and exact resolvable
+runtime proof all succeed. If npm exits zero but proof fails, `failed` is the install operation and
+that identity is absent from `applied`. Post-materialization planner/certification failures preserve
+their specific safe error code and add compact `applied` / `failed` / `pending` context with cause
+chaining.
+
+Certification:
+
+- current: no writes, no npm, no marker rewrite;
+- reconciliation-needed: file/block ops, no npm, marker replace only if metadata changed;
+- needs-local-materialization: `ci` and runtime proof, then accept only `current` / `[]` for pure
+  materialization or `reconciliation-needed` / one marker `replace` when the caller also requested
+  an intentional adapter desired-state metadata change; pure materialization preserves marker bytes;
+- clean / existing / partial: scaffold, `install`, prove, `project.json` CREATE last;
+- upgrade: keep old marker through files/install; replace marker last; install/resolve/certification failure leaves old marker bytes.
+
+Marker publication reuses Phase-2 atomic create/replace. Successful `link`/`rename` is the sentinel commit point. `INSTALL_FAILED` does not write a new marker.
+
+Phase 3B verification:
+
+- `pnpm --filter @wizloft/harness-project typecheck`: passed;
+- `pnpm --filter @wizloft/harness-project build`: passed;
+- `pnpm --filter @wizloft/harness-project test`: 124 passed;
+- `pnpm verify`: passed;
+- `pnpm release:check`: 13 public packages at `0.1.0-alpha.2`;
+- exactly one production `node:child_process` import, in `packages/project/src/install.ts`;
+- no library `process.exit()` calls;
+- host package-manager files, `.agentkit`, `.wizloft/agents.yaml`, Git index, and Git history remain
+  unchanged by full apply fixtures.
+
+No release-graph transition. Public graph remains 13 packages at `0.1.0-alpha.2`. Phase 4 not started.
 
 ### Phase 4 — Proofs
 

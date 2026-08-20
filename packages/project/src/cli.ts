@@ -1,8 +1,19 @@
 import { fail, HarnessProjectError, isFilesystemErrno, type ProjectErrorCode } from './errors.js';
+import {
+  applyProjectInitializationWithRuntime,
+  type InitializationResult,
+  type InitializationRuntime,
+} from './initialize.js';
+import type { IsolatedInstaller } from './install.js';
 import { assertSupportedNodeVersion } from './node-version.js';
 import { type PlanProjectInitializationOptions, parseAdapterArgument } from './options.js';
 import { type InitializationPlan, planProjectInitialization } from './plan.js';
-import { type CliExecution, executionFromError, executionFromPlan } from './render.js';
+import {
+  type CliExecution,
+  executionFromApply,
+  executionFromError,
+  executionFromPlan,
+} from './render.js';
 
 export type ParsedProjectCli =
   | {
@@ -95,7 +106,9 @@ export function parseProjectCliArgv(argv: readonly string[]): ParsedProjectCli {
 }
 
 export type ProjectCliRuntime = {
+  readonly applier?: (options: PlanProjectInitializationOptions) => Promise<InitializationResult>;
   readonly cwd?: string;
+  readonly installRuntime?: IsolatedInstaller;
   readonly nodeVersion?: string;
   readonly planner?: (
     options: PlanProjectInitializationOptions,
@@ -128,12 +141,6 @@ export async function runProjectCli(
   try {
     const nodeVersion = runtime.nodeVersion ?? process.versions.node;
     assertSupportedNodeVersion(nodeVersion);
-    if (!parsed.dryRun) {
-      fail(
-        'APPLY_UNAVAILABLE',
-        'Apply is not available in this implementation phase. Re-run with --dry-run.',
-      );
-    }
     const request: PlanProjectInitializationOptions = {
       ...parsed.options,
       nodeVersion,
@@ -141,9 +148,22 @@ export async function runProjectCli(
     if (runtime.cwd !== undefined) {
       Object.assign(request, { cwd: runtime.cwd });
     }
-    const planner = runtime.planner ?? planProjectInitialization;
-    const plan = await planner(request);
-    return executionFromPlan(plan, parsed.json);
+    if (parsed.dryRun) {
+      const planner = runtime.planner ?? planProjectInitialization;
+      const plan = await planner(request);
+      return executionFromPlan(plan, parsed.json);
+    }
+    const apply =
+      runtime.applier ??
+      ((options: PlanProjectInitializationOptions) => {
+        const applyRuntime: InitializationRuntime = {};
+        if (runtime.installRuntime !== undefined) {
+          Object.assign(applyRuntime, { installRuntime: runtime.installRuntime });
+        }
+        return applyProjectInitializationWithRuntime(options, applyRuntime);
+      });
+    const result = await apply(request);
+    return executionFromApply(result, parsed.json);
   } catch (error) {
     return executionFromError(toProjectError(error), parsed.json);
   }

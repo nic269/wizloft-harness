@@ -306,6 +306,44 @@ async function writeAtomicFile(
   }
 }
 
+export async function publishProjectMarker(
+  root: string,
+  operation: PreparedFileOperation,
+  hooks: FilesystemApplyHooks = {},
+): Promise<void> {
+  if (operation.path !== MARKER_PATH) {
+    fail('INTERNAL_ERROR', 'Marker publication requires the sentinel path', {
+      path: operation.path,
+    });
+  }
+  if (operation.kind !== 'create' && operation.kind !== 'replace') {
+    fail('INTERNAL_ERROR', `Marker publication cannot use ${operation.kind}`, {
+      path: operation.path,
+    });
+  }
+  await assertManagedPathSafety(root, operation.path);
+  const actual = await currentFileBytes(root, operation.path);
+  assertExpectedState(operation.path, operation.expected, actual);
+  if (operation.kind === 'create' && actual !== undefined) {
+    fail('STALE_PLAN', `Refusing to create ${operation.path}; destination already exists`, {
+      path: operation.path,
+    });
+  }
+  if (operation.kind === 'replace' && actual === undefined) {
+    fail('STALE_PLAN', `Refusing to replace ${operation.path}; destination is absent`, {
+      path: operation.path,
+    });
+  }
+  await writeAtomicFile(
+    root,
+    operation.path,
+    operation.contents,
+    operation.kind,
+    operation.expected,
+    hooks,
+  );
+}
+
 async function applyFileOperation(
   root: string,
   operation: PreparedFileOperation,

@@ -14,6 +14,7 @@ import {
   snapshot,
   tempRepo,
   writeFileTree,
+  writeIsolatedRuntimePackage,
   writeLocalPackage,
   writeTrackedContract,
 } from './helpers.mjs';
@@ -61,8 +62,8 @@ test('CLEAN empty git init plans create, install, and marker-last and writes not
   assert.equal('argv' in (install ?? {}), false);
   const prepared = await prepare(root);
   const preparedInstall = prepared.operations.find((operation) => operation.kind === 'install');
-  assert.equal(preparedInstall?.argv.includes('install'), true);
-  assert.equal(preparedInstall?.argv.includes('--ignore-scripts'), true);
+  assert.equal(preparedInstall?.method, 'install');
+  assert.equal('argv' in (preparedInstall ?? {}), false);
   assert.equal(await snapshot(root), before);
 });
 
@@ -103,7 +104,7 @@ test('CURRENT matching contract plans zero operations', async (context) => {
   context.after(() => cleanup(root));
   gitInit(root);
   await writeTrackedContract(root);
-  await writeLocalPackage(root);
+  await writeIsolatedRuntimePackage(root);
   const before = await snapshot(root);
   const result = await plan(root);
   assert.equal(result.state, 'current');
@@ -117,7 +118,7 @@ test('current runtime with adapter desired-state drift is reconciliation-needed'
   context.after(() => cleanup(root));
   gitInit(root);
   await writeTrackedContract(root, { adapters: ['agents', 'claude'] });
-  await writeLocalPackage(root);
+  await writeIsolatedRuntimePackage(root);
   const result = await plan(root, { adapters: ['agents'] });
   assert.equal(result.state, 'reconciliation-needed');
   assert.equal(
@@ -136,7 +137,7 @@ test('current runtime with generated runner drift is reconciliation-needed, not 
   context.after(() => cleanup(root));
   gitInit(root);
   await writeTrackedContract(root);
-  await writeLocalPackage(root);
+  await writeIsolatedRuntimePackage(root);
   await writeFile(path.join(root, '.wizloft/harness/run.mjs'), 'console.log("drift");\n');
   const result = await plan(root);
   assert.equal(result.state, 'reconciliation-needed');
@@ -156,7 +157,7 @@ test('adapter desired-state add, remove-block, none, and idempotent planning', a
   context.after(() => cleanup(root));
   gitInit(root);
   await writeTrackedContract(root, { adapters: ['agents'] });
-  await writeLocalPackage(root);
+  await writeIsolatedRuntimePackage(root);
 
   const addClaude = await plan(root, { adapters: ['agents', 'claude'] });
   assert.equal(addClaude.state, 'reconciliation-needed');
@@ -174,7 +175,7 @@ test('adapter desired-state add, remove-block, none, and idempotent planning', a
 
   await writeFileTree(root, { 'CLAUDE.md': adapterFile('example') });
   await writeTrackedContract(root, { adapters: ['agents', 'claude'] });
-  await writeLocalPackage(root);
+  await writeIsolatedRuntimePackage(root);
   const both = await plan(root, { adapters: ['agents', 'claude'] });
   assert.equal(both.state, 'current');
   assert.deepEqual(both.operations, []);
@@ -240,10 +241,27 @@ test('fresh clone with valid tracked contract needs local materialization, not c
   );
   assert.equal(result.operations[0]?.method, 'ci');
   const prepared = await prepare(root);
+  assert.equal(prepared.operations[0]?.kind, 'install');
+  assert.equal(prepared.operations[0]?.kind === 'install' && prepared.operations[0].method, 'ci');
   assert.equal(
-    prepared.operations[0]?.kind === 'install' && prepared.operations[0].argv.includes('ci'),
-    true,
+    result.operations.some((operation) => operation.path === '.wizloft/harness/project.json'),
+    false,
   );
+  assert.equal(await snapshot(root), before);
+});
+
+test('incomplete unresolvable local package still needs ci materialization', async (context) => {
+  const root = await tempRepo();
+  context.after(() => cleanup(root));
+  gitInit(root);
+  await writeTrackedContract(root);
+  await writeLocalPackage(root);
+  const before = await snapshot(root);
+  const result = await plan(root);
+  assert.equal(result.state, 'needs-local-materialization');
+  assert.deepEqual(operationList(result), ['install:.wizloft/harness']);
+  assert.equal(result.operations[0]?.kind, 'install');
+  assert.equal(result.operations[0]?.kind === 'install' && result.operations[0].method, 'ci');
   assert.equal(
     result.operations.some((operation) => operation.path === '.wizloft/harness/project.json'),
     false,

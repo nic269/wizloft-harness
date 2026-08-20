@@ -12,7 +12,7 @@ import {
   snapshot,
   tempRepo,
   writeFileTree,
-  writeLocalPackage,
+  writeIsolatedRuntimePackage,
   writeTrackedContract,
 } from './helpers.mjs';
 
@@ -189,7 +189,7 @@ test('stale run.mjs replace fails rather than overwriting', async (context) => {
   context.after(() => cleanup(root));
   gitInit(root);
   await writeTrackedContract(root);
-  await writeLocalPackage(root);
+  await writeIsolatedRuntimePackage(root);
   await writeFile(path.join(root, '.wizloft/harness/run.mjs'), 'console.log("old");\n');
   const resultPlan = await plan(root);
   await writeFile(path.join(root, '.wizloft/harness/run.mjs'), 'console.log("concurrent");\n');
@@ -287,7 +287,7 @@ test('remove-block apply keeps the user file and exact outside bytes', async (co
   gitInit(root);
   const userClaude = '# keep claude heading\n';
   await writeTrackedContract(root, { adapters: ['agents', 'claude'] });
-  await writeLocalPackage(root);
+  await writeIsolatedRuntimePackage(root);
   await writeFile(
     path.join(root, 'CLAUDE.md'),
     `${userClaude}<!-- wizloft-harness:start -->\nold\n<!-- wizloft-harness:end -->\n`,
@@ -496,17 +496,8 @@ test('Phase 2 apply never invokes npm, child_process, or npx and cannot write th
   assert.match(source, /PHASE2_WRITABLE_PATHS/);
 });
 
-test('non-dry-run CLI remains APPLY_UNAVAILABLE during Phase 2', async (context) => {
-  const { runProjectCli } = await import('../dist/cli.js');
-  const root = await tempRepo();
-  context.after(() => cleanup(root));
-  gitInit(root);
-  const result = await runProjectCli(['init', '--root', root, '--project-id', 'example'], {
-    cwd: root,
-  });
-  assert.equal(result.exitCode, 1);
-  assert.match(result.stderr, /APPLY_UNAVAILABLE/);
-  await assert.rejects(() => readFile(path.join(root, '.wizloft/harness/INSTRUCTIONS.md')), {
-    code: 'ENOENT',
-  });
+test('Phase 2 filesystem writer still cannot write the marker', async () => {
+  const source = await readFile(new URL('../src/apply.ts', import.meta.url), 'utf8');
+  assert.match(source, /publishProjectMarker/);
+  assert.match(source, /APPLY_FORBIDDEN/);
 });

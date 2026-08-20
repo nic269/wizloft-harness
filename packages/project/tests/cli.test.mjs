@@ -5,15 +5,32 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { parseProjectCliArgv, runProjectCli } from '../dist/cli.js';
 import * as projectApi from '../dist/index.js';
-import { cleanup, gitInit, snapshot, tempRepo } from './helpers.mjs';
+import {
+  cleanup,
+  gitInit,
+  simulateIsolatedInstall,
+  snapshot,
+  tempRepo,
+  writeIsolatedRuntimePackage,
+  writeTrackedContract,
+} from './helpers.mjs';
 
-test('root package export surface is planner plus Phase 3A runtime', () => {
+test('root package export surface includes applyProjectInitialization', () => {
   assert.deepEqual(Object.keys(projectApi).sort(), [
     'HarnessProjectError',
+    'applyProjectInitialization',
     'createGeneratedProjectProfile',
     'planProjectInitialization',
     'runProjectHarness',
   ]);
+});
+
+test('public applyProjectInitialization declaration accepts exactly options', async () => {
+  const declaration = await readFile(new URL('../dist/initialize.d.ts', import.meta.url), 'utf8');
+  assert.match(
+    declaration,
+    /export declare function applyProjectInitialization\(options: PlanProjectInitializationOptions\): Promise<InitializationResult>;/,
+  );
 });
 
 test('CLI usage errors use exit 2 and invalid projectId is not coerced', async () => {
@@ -35,17 +52,78 @@ test('CLI usage errors use exit 2 and invalid projectId is not coerced', async (
   assert.throws(() => parseProjectCliArgv(['init', '--root', 'repo']), /--project-id is required/);
 });
 
-test('non-dry-run is rejected without mutating and without pretending apply exists', async (context) => {
+test('non-dry-run apply succeeds with injected installer and writes marker last', async (context) => {
   const root = await tempRepo();
   context.after(() => cleanup(root));
   gitInit(root);
-  const before = await snapshot(root);
+  const installer = simulateIsolatedInstall();
+  const result = await runProjectCli(
+    ['init', '--root', root, '--project-id', 'example', '--json'],
+    {
+      cwd: root,
+      installRuntime: installer.installRuntime,
+    },
+  );
+  assert.equal(result.exitCode, 0);
+  const envelope = JSON.parse(result.stdout);
+  assert.equal(envelope.ok, true);
+  assert.equal(envelope.mode, 'apply');
+  assert.equal(envelope.initialState, 'clean');
+  assert.equal(envelope.finalState, 'current');
+  assert.equal(envelope.applied.at(-1).path, '.wizloft/harness/project.json');
+  assert.equal(installer.calls.length, 1);
+  assert.equal(installer.calls[0], 'install');
+  await readFile(path.join(root, '.wizloft/harness/project.json'), 'utf8');
+});
+
+test('non-dry-run human apply reports successful current state', async (context) => {
+  const root = await tempRepo();
+  context.after(() => cleanup(root));
+  gitInit(root);
+  const installer = simulateIsolatedInstall();
   const result = await runProjectCli(['init', '--root', root, '--project-id', 'example'], {
     cwd: root,
+    installRuntime: installer.installRuntime,
+  });
+  assert.equal(result.exitCode, 0);
+  assert.match(result.stdout, /Wizloft Harness project init/);
+  assert.match(result.stdout, /initial state: clean/);
+  assert.match(result.stdout, /final state: current/);
+  assert.match(result.stdout, /create\s+\.wizloft\/harness\/project\.json/);
+});
+
+test('zero-diff current apply does not install or mutate', async (context) => {
+  const root = await tempRepo();
+  context.after(() => cleanup(root));
+  gitInit(root);
+  await writeTrackedContract(root);
+  await writeIsolatedRuntimePackage(root);
+  const before = await snapshot(root);
+  const installer = simulateIsolatedInstall();
+  const result = await runProjectCli(
+    ['init', '--root', root, '--project-id', 'example', '--json'],
+    { cwd: root, installRuntime: installer.installRuntime },
+  );
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(JSON.parse(result.stdout).applied, []);
+  assert.equal(installer.calls.length, 0);
+  assert.equal(await snapshot(root), before);
+});
+
+test('non-dry-run install failure is exit 1 INSTALL_FAILED without a marker', async (context) => {
+  const root = await tempRepo();
+  context.after(() => cleanup(root));
+  gitInit(root);
+  const installer = simulateIsolatedInstall({ fail: true });
+  const result = await runProjectCli(['init', '--root', root, '--project-id', 'example'], {
+    cwd: root,
+    installRuntime: installer.installRuntime,
   });
   assert.equal(result.exitCode, 1);
-  assert.match(result.stderr, /APPLY_UNAVAILABLE/);
-  assert.equal(await snapshot(root), before);
+  assert.match(result.stderr, /INSTALL_FAILED/);
+  await assert.rejects(() => readFile(path.join(root, '.wizloft/harness/project.json')), {
+    code: 'ENOENT',
+  });
 });
 
 test('dry-run JSON is deterministic, writes nothing, and does not install', async (context) => {
@@ -71,6 +149,28 @@ test('dry-run JSON is deterministic, writes nothing, and does not install', asyn
   assert.deepEqual(envelope.command, { argv: ['node', '.wizloft/harness/run.mjs'] });
   assert.equal(envelope.operations.at(-1).path, '.wizloft/harness/project.json');
   assert.equal(await snapshot(root), before);
+});
+
+test('dry-run never invokes the applier or installer seam', async (context) => {
+  const root = await tempRepo();
+  context.after(() => cleanup(root));
+  gitInit(root);
+  let applied = false;
+  const result = await runProjectCli(
+    ['init', '--root', root, '--project-id', 'example', '--dry-run'],
+    {
+      cwd: root,
+      applier: async () => {
+        applied = true;
+        throw new Error('applier must not run');
+      },
+      installRuntime: async () => {
+        throw new Error('installer must not run');
+      },
+    },
+  );
+  assert.equal(result.exitCode, 0);
+  assert.equal(applied, false);
 });
 
 test('human dry-run lists mutating operations only', async (context) => {
@@ -129,6 +229,7 @@ test('library source does not call process.exit or spawn npm', async () => {
     'health.ts',
     'profile.ts',
     'run.ts',
+    'initialize.ts',
   ];
   for (const file of files) {
     const source = await readFile(path.join(srcRoot, file), 'utf8');

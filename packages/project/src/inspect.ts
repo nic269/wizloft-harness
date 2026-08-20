@@ -1,5 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 
+import { fail } from './errors.js';
+import { inspectLocalProjectRuntime } from './identity.js';
 import { type MarkerRead, parseProjectMarker } from './marker.js';
 import {
   assertGitBoundary,
@@ -10,7 +12,6 @@ import {
   HARNESS_WHOLE_FILES,
   ISOLATED_MANIFEST_PATH,
   inspectPath,
-  LOCAL_PACKAGE_MANIFEST_PATH,
   MARKER_PATH,
   preflightManagedPaths,
   REQUIRED_TRACKED_FILES,
@@ -71,23 +72,12 @@ export async function inspectRepository(root: string): Promise<RepositorySnapsho
       : parseProjectMarker(markerText);
 
   let localPackageVersion: string | undefined;
-  const localPackage = await inspectPath(root, LOCAL_PACKAGE_MANIFEST_PATH);
-  if (localPackage.exists) {
-    if (localPackage.isSymbolicLink || !localPackage.isFile) {
-      localPackageVersion = undefined;
-    } else {
-      try {
-        const parsed = JSON.parse(await readFile(localPackage.absolutePath, 'utf8')) as {
-          name?: unknown;
-          version?: unknown;
-        };
-        if (parsed.name === '@wizloft/harness-project' && typeof parsed.version === 'string') {
-          localPackageVersion = parsed.version;
-        }
-      } catch {
-        localPackageVersion = undefined;
-      }
+  if (harnessDir.exists) {
+    const localRuntime = await inspectLocalProjectRuntime(root);
+    if (!localRuntime.ok && localRuntime.kind === 'unsafe') {
+      fail('LOCAL_RUNTIME_INVALID', localRuntime.reason);
     }
+    if (localRuntime.ok) localPackageVersion = localRuntime.identity.version;
   }
 
   return Object.freeze({

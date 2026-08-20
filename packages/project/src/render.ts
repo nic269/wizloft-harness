@@ -1,4 +1,5 @@
 import { type HarnessProjectError, isUsageErrorCode } from './errors.js';
+import type { InitializationResult } from './initialize.js';
 import type { InitializationPlan, InstallMethod, PlannedOperation } from './plan.js';
 
 export type CliExecution = {
@@ -95,6 +96,62 @@ export function executionFromPlan(plan: InitializationPlan, json: boolean): CliE
   return Object.freeze({
     exitCode: 0,
     stdout: json ? renderDryRunJson(plan) : renderDryRunHuman(plan),
+    stderr: '',
+  });
+}
+
+function publicApplied(result: InitializationResult): readonly PublicOperation[] {
+  return Object.freeze(
+    result.applied.map((operation) => {
+      if (operation.kind === 'install' && operation.method !== undefined) {
+        return Object.freeze({
+          kind: operation.kind,
+          path: operation.path,
+          method: operation.method,
+        });
+      }
+      return Object.freeze({ kind: operation.kind, path: operation.path });
+    }),
+  );
+}
+
+export function renderApplyJson(result: InitializationResult): string {
+  return `${JSON.stringify({
+    ok: true,
+    mode: 'apply',
+    root: result.root,
+    projectId: result.projectId,
+    initialState: result.initialState,
+    finalState: result.finalState,
+    applied: publicApplied(result),
+  })}\n`;
+}
+
+export function renderApplyHuman(result: InitializationResult): string {
+  const lines = [
+    'Wizloft Harness project init',
+    `root: ${result.root}`,
+    `projectId: ${result.projectId}`,
+    `initial state: ${result.initialState}`,
+    `final state: ${result.finalState}`,
+    '',
+  ];
+  if (result.applied.length === 0) {
+    lines.push('applied: []');
+  } else {
+    lines.push('applied:');
+    for (const operation of result.applied) {
+      lines.push(`  ${padKind(operation.kind)}${operation.path}`);
+    }
+  }
+  lines.push('');
+  return lines.join('\n');
+}
+
+export function executionFromApply(result: InitializationResult, json: boolean): CliExecution {
+  return Object.freeze({
+    exitCode: 0,
+    stdout: json ? renderApplyJson(result) : renderApplyHuman(result),
     stderr: '',
   });
 }
