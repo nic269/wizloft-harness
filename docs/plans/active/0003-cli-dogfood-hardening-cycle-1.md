@@ -1,7 +1,7 @@
 # Execution Plan — CLI Dogfood Retrospective and Hardening Cycle 1
 
 Status: Accepted contract. Phase 0 committed. Portable-wrapper versus host-CLI clarification
-accepted after Phase 0. Phase 1 planner/preflight follows this clarification.
+committed. Phase 1 planner/preflight implemented and left uncommitted for external review.
 
 This file owns the accepted alpha.3 onboarding contract.
 
@@ -1232,11 +1232,79 @@ Phase 0 verification:
 
 ### Phase 1 — Planner and safety
 
-- scaffold `@wizloft/harness-project`;
-- implement options validation, `projectId` rules, planner, preflight, dry-run JSON/human output;
-- no apply writes yet;
-- plan creation of the future generated `run.mjs` portable wrapper;
-- do not implement a host adapter, `wizharness`, or Wizloft CLI Harness module.
+Status: implemented in the working tree; unstaged and uncommitted for external review.
+
+Starting proof after the clarification commit:
+
+- branch `main`
+- HEAD `c9fe35ee1140dc2ec899046fa0f6990559732357`
+- parent `da3694890ae8921858070adcfa55e7d0e2651d81`
+- clean worktree/index before this phase’s files were created
+
+Implemented:
+
+- package boundary `packages/project` for `@wizloft/harness-project`;
+- options validation, `projectId` grammar, Node `>=22.13.0` predicate, repository inspection,
+  state classification, managed-block parse/plan, filesystem preflight, deterministic
+  `InitializationPlan`, and `init --dry-run` human/JSON CLI;
+- non-dry-run requests fail with `APPLY_UNAVAILABLE` and write nothing;
+- planned operations include future `run.mjs` bytes, but no generated runtime is applied.
+
+External-review correction, still Phase 1:
+
+- `current` now means the desired project contract already matches, so `operations: []`.
+  Same-release local runtime with drifted generated files, adapters, or marker content is
+  `reconciliation-needed` and does not plan install. `upgrade-in-progress` remains a
+  cross-release/mixed-runtime state. `needs-local-materialization` remains missing local
+  package recovery.
+- root npm exports are only `planProjectInitialization` plus plan/options/state/operation
+  and error types. CLI parsing, managed-block helpers, templates, and predicates stay
+  internal.
+- `project.json` parsing requires the schema-1 canonical paths and command argv, and
+  accepts only `[]`, `["agents"]`, `["claude"]`, or `["agents","claude"]`.
+- managed-block add/remove is byte-reversible for files with no final newline.
+- unknown filesystem/runtime errors map to `IO_FAILURE` or `INTERNAL_ERROR` (exit 1),
+  never `INVALID_ARGV`.
+- unexpected symlinks on the isolated `node_modules/@wizloft/harness-project` path are
+  conflicts, not `current`.
+- planned `run.mjs` resolves the local package before import and only prints the npm-ci
+  recovery when resolution fails with `MODULE_NOT_FOUND`.
+- a `.git` file must be a `gitdir: <path>` worktree marker whose path exists as a
+  non-symlink directory.
+
+Not implemented, as required:
+
+- apply writer / marker writer;
+- `runProjectHarness`;
+- generated on-disk `run.mjs` / `profile.mjs`;
+- npm install execution;
+- host adapter / `wizharness` / Wizloft CLI Harness module.
+
+D11 release-contract decision:
+
+The current checker treats any workspace outside `PUBLIC_PACKAGES` as private. Creating
+`packages/project` as `private: true` therefore does **not** require expanding the public
+allowlist or bumping to `0.1.0-alpha.3` in this phase. ADR 0012 still says the public set
+becomes fourteen packages when the package is release-ready and the release implementation
+transitions with it. Phase 1 keeps that transition for Phase 5.
+
+Bounded Phase 1 release state:
+
+- implemented public graph remains **13 packages at `0.1.0-alpha.2`**;
+- `@wizloft/harness-project` exists as a **private, non-release-ready** implementation package;
+- `scripts/release-contract.mjs`, packed-consumer proof, and release tests are unchanged;
+- lockstep identity is unchanged;
+- `pnpm-lock.yaml` only gains the empty `packages/project:` importer.
+
+Phase 1 verification:
+
+- `pnpm --filter @wizloft/harness-project test`: 37 passed;
+- `current => operations.length === 0`;
+- dry-run writes zero bytes, including no `project.json` and no npm install;
+- no `process.exit()` or `child_process` in library source;
+- `git diff --check`: clean.
+
+Stop for external review. Do not begin Phase 2.
 
 ### Phase 2 — Apply writer
 

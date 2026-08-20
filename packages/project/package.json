@@ -1,0 +1,30 @@
+{
+  "name": "@wizloft/harness-project",
+  "version": "0.1.0-alpha.2",
+  "private": true,
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "bin": {
+    "wizloft-harness-project": "./dist/bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "test": "pnpm build && node --test tests/*.test.mjs",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "types": "./dist/index.d.ts"
+}
