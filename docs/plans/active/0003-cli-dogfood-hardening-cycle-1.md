@@ -4,7 +4,8 @@ Status: Accepted contract. Phase 0 committed. Portable-wrapper versus host-CLI c
 committed. Phase 1 committed at `fac903208236d59353a98e52158fe85b770fb8c2`. Phase 2 committed
 at `feb372e62c295c43fe234282b9371e4e5e6af985`. Phase 3A committed at
 `29dd040293419eba5bbc72195ac2eeec62b2a92c`. Phase 3B materialization + sentinel
-is implemented and left uncommitted for external review.
+committed at `a23f34ff885e88c9686a0523a7492b8da87fcd67`. Phase 4A repository acceptance
+matrix is implemented and left uncommitted for external review. Phases 4B and 4C are not started.
 
 This file owns the accepted alpha.3 onboarding contract.
 
@@ -1466,7 +1467,7 @@ Not implemented in Phase 3A:
 
 #### Phase 3B — Isolated materialization + sentinel
 
-Status: implemented in the working tree; unstaged and uncommitted for external review.
+Status: committed at `a23f34ff885e88c9686a0523a7492b8da87fcd67`.
 
 Owns `applyProjectInitialization(options)` and non-dry-run `init`. Sequence:
 
@@ -1524,15 +1525,50 @@ Phase 3B verification:
 - host package-manager files, `.agentkit`, `.wizloft/agents.yaml`, Git index, and Git history remain
   unchanged by full apply fixtures.
 
-No release-graph transition. Public graph remains 13 packages at `0.1.0-alpha.2`. Phase 4 not started.
+No release-graph transition. Public graph remains 13 packages at `0.1.0-alpha.2`.
 
 ### Phase 4 — Proofs
 
-- CLEAN, EXISTING, CONFLICT, marker-commit, runner, overlay, fresh-clone, adapter
-  desired-state, and re-init fixtures in temporary repos only;
-- packed-manifest dependency-closure proof;
-- isolated packed-tarball resolution proof;
-- second dry-run/apply zero-diff.
+Phase 4 is partitioned for proof bookkeeping only. This partition does not add architecture or
+change the accepted alpha.3 contract.
+
+#### Phase 4A — Repository acceptance matrix
+
+Status: implemented in the working tree; unstaged and uncommitted for external review.
+
+The dedicated `packages/project/tests/acceptance.test.mjs` suite contains 11 acceptance tests using
+temporary Git repositories and the injected isolated-installer seam. It proves:
+
+- CLEAN and EXISTING initialization, marker-last publication, host/Git byte preservation,
+  in-root-path Validation, and top-level second dry-run/apply zero-diff;
+- the full non-dry-run apply conflict matrix, proving no filesystem mutation or installer call;
+- first-init failure/retry, upgrade failure/success with both sentinel identities and final current
+  state, and marker create/replace race behavior;
+- fresh-clone `ci` recovery, including desired adapter-state change;
+- the adapter desired-state matrix, including canonical sorting from noncanonical request order;
+- exact default Authority, Context, and Memory roles; no implicit repository ingestion; and the
+  bounded overlay acceptance/rejection matrix;
+- generated runner help, inspect, Authority, Context, Validation select/run, invalid argv,
+  bootstrap rendering, missing-runtime recovery, no `process.exit()`, and shutdown behavior.
+
+Phase 4A verification:
+
+- dedicated acceptance suite: 11 passed;
+- `pnpm --filter @wizloft/harness-project test`: 135 passed;
+- no production source or release-graph change;
+- no registry install or package packing.
+
+#### Phase 4B — Packed package closure
+
+Status: not started.
+
+Owns packed-manifest dependency-closure proof only.
+
+#### Phase 4C — Generated-repository packaged runtime proof
+
+Status: not started.
+
+Owns isolated packed-tarball resolution and generated-repository packaged-runtime proof only.
 
 ### Phase 5 — Release graph
 
