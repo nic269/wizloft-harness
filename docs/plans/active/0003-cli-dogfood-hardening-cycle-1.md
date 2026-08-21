@@ -5,7 +5,8 @@ committed. Phase 1 committed at `fac903208236d59353a98e52158fe85b770fb8c2`. Phas
 at `feb372e62c295c43fe234282b9371e4e5e6af985`. Phase 3A committed at
 `29dd040293419eba5bbc72195ac2eeec62b2a92c`. Phase 3B materialization + sentinel
 committed at `a23f34ff885e88c9686a0523a7492b8da87fcd67`. Phase 4A repository acceptance
-matrix is implemented and left uncommitted for external review. Phases 4B and 4C are not started.
+matrix committed at `4612359ba5d6204af140b6a4eb4cbf795d406ce4`. Phase 4B packed package closure
+is implemented and left uncommitted for external review. Phase 4C is not started.
 
 This file owns the accepted alpha.3 onboarding contract.
 
@@ -1534,7 +1535,7 @@ change the accepted alpha.3 contract.
 
 #### Phase 4A — Repository acceptance matrix
 
-Status: implemented in the working tree; unstaged and uncommitted for external review.
+Status: committed at `4612359ba5d6204af140b6a4eb4cbf795d406ce4`.
 
 The dedicated `packages/project/tests/acceptance.test.mjs` suite contains 11 acceptance tests using
 temporary Git repositories and the injected isolated-installer seam. It proves:
@@ -1560,9 +1561,31 @@ Phase 4A verification:
 
 #### Phase 4B — Packed package closure
 
-Status: not started.
+Status: implemented in the working tree; unstaged and uncommitted for external review.
 
-Owns packed-manifest dependency-closure proof only.
+The dedicated `packages/project/tests/project-pack-contract.test.mjs` proof reuses the current
+`PUBLIC_PACKAGES` release oracle and the established local `pnpm pack --pack-destination` plus
+`tar -xzf` extraction convention. It packs actual `.tgz` artifacts into an operating-system
+temporary directory for the current 13 public packages plus the still-private project package,
+forming the intended temporary 14-artifact proof set without changing the public allowlist.
+
+The extracted packed manifests prove:
+
+- all 14 package names are unique and all versions equal the current lockstep identity
+  `0.1.0-alpha.2`;
+- the packed project remains `private: true` and has exactly the accepted 12 direct runtime
+  dependencies, each rewritten from source `workspace:*` to exact `0.1.0-alpha.2`;
+- no packed runtime dependency spec uses `workspace:`, `file:`, or `link:`;
+- every internal runtime dependency targets an artifact in the proof set at its exact packed
+  version; memory is transitively reachable but is not project-direct;
+- the packed runtime graph is acyclic and dependency-derived layering places the project in
+  layer 7 through the CLI adapter;
+- the packed project export, declaration, top-level types, bin, README, and LICENSE surfaces
+  exist, and its manifest contains no absolute checkout path.
+
+Phase 4B performs no publish, registry access, install, generated-repository creation, or packed
+runtime execution. It does not start Phase 4C or change release identity, package privacy, or the
+13-package public graph.
 
 #### Phase 4C — Generated-repository packaged runtime proof
 
