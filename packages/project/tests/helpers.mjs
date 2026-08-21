@@ -43,13 +43,17 @@ export function gitignoreFile() {
   return renderManagedBlock('gitignore', gitignoreInterior(), '\n');
 }
 
-export function stubLockfile() {
+export function stubLockfile({ release = RELEASE, packageEntries = {} } = {}) {
   return `${JSON.stringify(
     {
       name: 'wizloft-harness-project-tooling',
       lockfileVersion: 3,
       requires: true,
-      packages: {},
+      packages: {
+        '': { dependencies: { '@wizloft/harness-project': release } },
+        'node_modules/@wizloft/harness-project': { version: release },
+        ...packageEntries,
+      },
     },
     undefined,
     2,
@@ -65,7 +69,7 @@ export async function writeTrackedContract(
     '.wizloft/harness/profile.mjs': profileContents(),
     '.wizloft/harness/run.mjs': runnerContents(),
     '.wizloft/harness/package.json': isolatedManifestContents(release),
-    '.wizloft/harness/package-lock.json': stubLockfile(),
+    '.wizloft/harness/package-lock.json': stubLockfile({ release }),
     '.wizloft/harness/project.json': markerContents({ projectId, release, adapters }),
     '.wizloft/PROJECT.md': projectTruthContents(projectId),
     '.gitignore': gitignoreFile(),
@@ -164,6 +168,7 @@ export function simulateIsolatedInstall({
   skipLockfile = false,
   skipPackage = false,
   version = RELEASE,
+  lockfile = stubLockfile({ release: version }),
   after,
 } = {}) {
   const calls = [];
@@ -178,12 +183,7 @@ export function simulateIsolatedInstall({
         throw error;
       }
       if (!skipLockfile) {
-        const lockPath = path.join(root, '.wizloft/harness/package-lock.json');
-        try {
-          await readFile(lockPath);
-        } catch {
-          await writeFileTree(root, { '.wizloft/harness/package-lock.json': stubLockfile() });
-        }
+        await writeFileTree(root, { '.wizloft/harness/package-lock.json': lockfile });
       }
       if (!skipPackage) await writeIsolatedRuntimePackage(root, version);
     },

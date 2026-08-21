@@ -6,8 +6,11 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { HarnessProjectError } from '../dist/errors.js';
-import { applyProjectInitializationWithRuntime } from '../dist/initialize.js';
-import { isolatedNpmArgv } from '../dist/install.js';
+import {
+  applyProjectInitializationWithRuntime,
+  proveIsolatedLockfile,
+} from '../dist/initialize.js';
+import { isolatedNpmInvocation } from '../dist/install.js';
 import { planProjectInitialization } from '../dist/plan.js';
 import { runProjectHarness } from '../dist/run.js';
 import {
@@ -17,6 +20,7 @@ import {
   RELEASE,
   simulateIsolatedInstall,
   snapshot,
+  stubLockfile,
   tempRepo,
   writeFileTree,
   writeIsolatedRuntimePackage,
@@ -25,6 +29,7 @@ import {
 } from './helpers.mjs';
 
 const OLD = '0.0.0-old';
+const PROJECT_NAME = '@wizloft/harness-project';
 const AGENTS_YAML = `version: 1
 
 providers:
@@ -41,6 +46,12 @@ function apply(root, extra = {}) {
     { root, projectId: extra.projectId ?? 'example', ...extra },
     extra.runtime ?? {},
   );
+}
+
+function lockfileWith(mutator, release = RELEASE) {
+  const lockfile = JSON.parse(stubLockfile({ release }));
+  mutator(lockfile);
+  return `${JSON.stringify(lockfile, undefined, 2)}\n`;
 }
 
 test('CLEAN apply materializes, writes marker last, and a second apply is zero-diff', async (context) => {
@@ -626,21 +637,160 @@ test('upgrade success replaces the marker last with the target release', async (
   assert.deepEqual(planned.operations, []);
 });
 
-test('production npm argv is derived from method and never includes a shell', async () => {
-  const argv = isolatedNpmArgv('/repo', 'install');
-  assert.deepEqual(argv, [
-    'install',
-    '--prefix',
-    path.resolve('/repo', '.wizloft/harness'),
-    '--ignore-scripts',
-    '--no-audit',
-    '--no-fund',
-  ]);
-  const ci = isolatedNpmArgv('/repo', 'ci');
-  assert.equal(ci.includes('ci'), true);
-  assert.equal(ci.includes('install'), false);
+test('portable isolated lockfile accepts canonical and nested node_modules locations', async (context) => {
+  const root = await tempRepo();
+  context.after(() => cleanup(root));
+  await writeFileTree(root, {
+    '.wizloft/harness/package-lock.json': stubLockfile({
+      packageEntries: {
+        'node_modules/example': { version: '1.0.0' },
+        'node_modules/example/node_modules/nested': { version: '1.0.0' },
+        'node_modules/@scope/scoped': { version: '1.0.0' },
+      },
+    }),
+  });
+  await proveIsolatedLockfile(root, RELEASE);
+});
+
+test('isolated lockfile rejects non-portable locations and invalid project identity', async (context) => {
+  const cases = [
+    {
+      name: 'original checkout location',
+      mutate(lockfile) {
+        lockfile.packages[
+          '../../some-original-checkout/.wizloft/harness/node_modules/@wizloft/harness-project'
+        ] = { version: RELEASE };
+      },
+    },
+    {
+      name: 'absolute package location',
+      mutate(lockfile) {
+        lockfile.packages['/tmp/original/node_modules/example'] = { version: '1.0.0' };
+      },
+    },
+    {
+      name: 'single parent escape',
+      mutate(lockfile) {
+        lockfile.packages['../node_modules/example'] = { version: '1.0.0' };
+      },
+    },
+    {
+      name: 'multiple parent escape',
+      mutate(lockfile) {
+        lockfile.packages['../../node_modules/example'] = { version: '1.0.0' };
+      },
+    },
+    {
+      name: 'wrong root dependency',
+      mutate(lockfile) {
+        lockfile.packages[''].dependencies[PROJECT_NAME] = OLD;
+      },
+    },
+    {
+      name: 'extra root dependency',
+      mutate(lockfile) {
+        lockfile.packages[''].dependencies.example = '1.0.0';
+      },
+    },
+    {
+      name: 'missing canonical project entry',
+      mutate(lockfile) {
+        delete lockfile.packages[`node_modules/${PROJECT_NAME}`];
+      },
+    },
+    {
+      name: 'wrong project package version',
+      mutate(lockfile) {
+        lockfile.packages[`node_modules/${PROJECT_NAME}`].version = OLD;
+      },
+    },
+    {
+      name: 'linked project package',
+      mutate(lockfile) {
+        lockfile.packages[`node_modules/${PROJECT_NAME}`].link = true;
+      },
+    },
+  ];
+
+  for (const entry of cases) {
+    await context.test(entry.name, async () => {
+      const root = await tempRepo();
+      try {
+        await writeFileTree(root, {
+          '.wizloft/harness/package-lock.json': lockfileWith(entry.mutate),
+        });
+        await assert.rejects(
+          () => proveIsolatedLockfile(root, RELEASE),
+          (error) => error instanceof HarnessProjectError && error.code === 'LOCAL_RUNTIME_INVALID',
+        );
+      } finally {
+        await cleanup(root);
+      }
+    });
+  }
+});
+
+test('non-portable lockfile withholds first-init marker and failed install accounting', async (context) => {
+  const root = await tempRepo();
+  context.after(() => cleanup(root));
+  gitInit(root);
+  const lockfile = lockfileWith((value) => {
+    value.packages[
+      '../../some-original-checkout/.wizloft/harness/node_modules/@wizloft/harness-project'
+    ] = { version: RELEASE };
+  });
+  const installer = simulateIsolatedInstall({ lockfile });
+  await assert.rejects(
+    () => apply(root, { runtime: { installRuntime: installer.installRuntime } }),
+    (error) =>
+      error instanceof HarnessProjectError &&
+      error.code === 'LOCAL_RUNTIME_INVALID' &&
+      error.details?.failed === 'install:.wizloft/harness' &&
+      !error.details.applied.includes('install:.wizloft/harness') &&
+      error.details.pending.includes('create:.wizloft/harness/project.json'),
+  );
+  await assert.rejects(() => readFile(path.join(root, '.wizloft/harness/project.json')), {
+    code: 'ENOENT',
+  });
+});
+
+test('non-portable upgrade lockfile preserves the previous marker', async (context) => {
+  const root = await tempRepo();
+  context.after(() => cleanup(root));
+  gitInit(root);
+  await writeTrackedContract(root, { release: OLD });
+  await writeLocalPackage(root, OLD);
+  const markerBefore = await readFile(path.join(root, '.wizloft/harness/project.json'), 'utf8');
+  const lockfile = lockfileWith((value) => {
+    value.packages['C:\\original\\node_modules\\@wizloft\\harness-project'] = {
+      version: RELEASE,
+    };
+  });
+  await assert.rejects(
+    () =>
+      apply(root, {
+        runtime: { installRuntime: simulateIsolatedInstall({ lockfile }).installRuntime },
+      }),
+    (error) => error instanceof HarnessProjectError && error.code === 'LOCAL_RUNTIME_INVALID',
+  );
+  assert.equal(
+    await readFile(path.join(root, '.wizloft/harness/project.json'), 'utf8'),
+    markerBefore,
+  );
+});
+
+test('production npm invocation is cwd-bound and derived only from install method', async () => {
+  const install = isolatedNpmInvocation('/repo', 'install');
+  assert.equal(install.cwd, path.resolve('/repo', '.wizloft/harness'));
+  assert.deepEqual(install.argv, ['install', '--ignore-scripts', '--no-audit', '--no-fund']);
+  assert.equal(install.argv.includes('--prefix'), false);
+  const ci = isolatedNpmInvocation('/repo', 'ci');
+  assert.equal(ci.cwd, path.resolve('/repo', '.wizloft/harness'));
+  assert.deepEqual(ci.argv, ['ci', '--ignore-scripts', '--no-audit', '--no-fund']);
+  assert.equal(ci.argv.includes('--prefix'), false);
   const source = await readFile(new URL('../src/install.ts', import.meta.url), 'utf8');
   assert.match(source, /execFile/);
+  assert.match(source, /cwd: invocation\.cwd/);
   assert.match(source, /shell: false/);
   assert.equal(source.includes('npx'), false);
   assert.equal(source.includes('exec('), false);

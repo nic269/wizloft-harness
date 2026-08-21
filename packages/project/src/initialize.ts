@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 
 import {
   applyProjectFilesystemPlan,
@@ -11,7 +12,7 @@ import type { RepositoryState } from './inspect.js';
 import { executeIsolatedNpmInstall, type IsolatedInstaller } from './install.js';
 import { parseProjectMarker } from './marker.js';
 import type { PlanProjectInitializationOptions } from './options.js';
-import { ISOLATED_LOCKFILE_PATH, inspectPath, MARKER_PATH } from './paths.js';
+import { ISOLATED_LOCKFILE_PATH, inspectPath, MARKER_PATH, PACKAGE_NAME } from './paths.js';
 import {
   type InstallMethod,
   type PlannedOperation,
@@ -113,17 +114,86 @@ function pendingAfter(
   );
 }
 
-async function proveIsolatedLockfile(root: string): Promise<void> {
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function invalidLockfile(message: string): never {
+  fail('LOCAL_RUNTIME_INVALID', message, { path: ISOLATED_LOCKFILE_PATH });
+}
+
+function assertPortablePackageLocation(packageLocation: string): void {
+  const segments = packageLocation.split(/[\\/]/u);
+  if (
+    packageLocation.includes('\\') ||
+    path.posix.isAbsolute(packageLocation) ||
+    path.win32.isAbsolute(packageLocation) ||
+    segments.includes('..') ||
+    !packageLocation.startsWith('node_modules/')
+  ) {
+    invalidLockfile(
+      `Isolated package-lock.json has a non-portable package location: ${packageLocation}`,
+    );
+  }
+}
+
+export async function proveIsolatedLockfile(root: string, targetRelease: string): Promise<void> {
   const inspection = await inspectPath(root, ISOLATED_LOCKFILE_PATH);
   if (!inspection.exists || inspection.isSymbolicLink || !inspection.isFile) {
-    fail('LOCAL_RUNTIME_INVALID', 'Isolated package-lock.json is missing or unsafe', {
-      path: ISOLATED_LOCKFILE_PATH,
-    });
+    invalidLockfile('Isolated package-lock.json is missing or unsafe');
+  }
+
+  let lockfile: unknown;
+  try {
+    lockfile = JSON.parse(await readFile(inspection.absolutePath, 'utf8'));
+  } catch (error) {
+    fail(
+      'LOCAL_RUNTIME_INVALID',
+      'Isolated package-lock.json is not valid JSON',
+      { path: ISOLATED_LOCKFILE_PATH },
+      error,
+    );
+  }
+  if (!isPlainObject(lockfile)) invalidLockfile('Isolated package-lock.json must be an object');
+  if (typeof lockfile.lockfileVersion !== 'number' || lockfile.lockfileVersion < 2) {
+    invalidLockfile('Isolated package-lock.json uses an unsupported lockfile version');
+  }
+  if (!isPlainObject(lockfile.packages)) {
+    invalidLockfile('Isolated package-lock.json packages must be an object');
+  }
+
+  const rootPackage = lockfile.packages[''];
+  if (!isPlainObject(rootPackage) || !isPlainObject(rootPackage.dependencies)) {
+    invalidLockfile('Isolated package-lock.json root package is invalid');
+  }
+  const rootDependencies = Object.entries(rootPackage.dependencies);
+  if (
+    rootDependencies.length !== 1 ||
+    rootDependencies[0]?.[0] !== PACKAGE_NAME ||
+    rootDependencies[0]?.[1] !== targetRelease
+  ) {
+    invalidLockfile('Isolated package-lock.json root dependency does not match the target release');
+  }
+
+  for (const packageLocation of Object.keys(lockfile.packages)) {
+    if (packageLocation !== '') assertPortablePackageLocation(packageLocation);
+  }
+  const projectPackage = lockfile.packages[`node_modules/${PACKAGE_NAME}`];
+  if (!isPlainObject(projectPackage)) {
+    invalidLockfile('Isolated package-lock.json is missing the canonical project package entry');
+  }
+  if (projectPackage.version !== targetRelease) {
+    invalidLockfile(
+      'Isolated package-lock.json project package version does not match the target release',
+    );
+  }
+  if (projectPackage.link === true) {
+    invalidLockfile('Isolated package-lock.json project package must not be a local link');
   }
 }
 
 async function proveLocalMaterialization(root: string, targetRelease: string): Promise<void> {
-  await proveIsolatedLockfile(root);
+  await proveIsolatedLockfile(root, targetRelease);
   await assertLocalProjectRuntime(root, targetRelease);
 }
 

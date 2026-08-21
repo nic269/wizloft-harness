@@ -7,8 +7,10 @@ at `feb372e62c295c43fe234282b9371e4e5e6af985`. Phase 3A committed at
 committed at `a23f34ff885e88c9686a0523a7492b8da87fcd67`. Phase 4A repository acceptance
 matrix committed at `4612359ba5d6204af140b6a4eb4cbf795d406ce4`. Phase 4B packed package closure
 committed at `a116899ebcd20c5ee111f828f32cb412e5cd0af3`. Phase 4C real packed execution
-exposed an ESM-resolution defect and remains blocked pending a clean rerun after the bounded
-correction.
+exposed and corrected an ESM-resolution defect at
+`cabe413e29adb30d56400cf8f6ed76b1ee476cf2`, then exposed a non-portable npm lockfile defect.
+The second correction is implemented and externally approved as a dedicated correction. Phase 4C
+remains blocked pending a dedicated clean rerun from the correction checkpoint.
 
 This file owns the accepted alpha.3 onboarding contract.
 
@@ -239,7 +241,7 @@ Accepted contract: **D composed with B**.
 | How do npm/pnpm/yarn/non-Node repos work? | same isolated tree; root package manager is untouched |
 | Does init modify a package manifest? | Yes, only `.wizloft/harness/package.json`. Never the root manifest. |
 | Isolated tooling environment? | Yes. Private npm package at `.wizloft/harness/` |
-| Does apply install? | Yes. Isolated `npm install --prefix <root>/.wizloft/harness --ignore-scripts --no-audit --no-fund` is a planned apply operation. Dry-run reports it and writes nothing. |
+| Does apply install? | Yes. Internal apply runs `npm install --ignore-scripts --no-audit --no-fund` with `cwd = <root>/.wizloft/harness`. Dry-run reports the planned install and writes nothing. |
 | Is `.npmrc` generated? | No. Frozen argv is sufficient. |
 | Offline/reproducibility after init? | Exact `0.1.0-alpha.3` pin + tracked lockfile. Fresh clone is initialized and needs `npm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund`. |
 
@@ -283,9 +285,11 @@ Why this does not violate [0009](../../decisions/0009-cli-ownership-boundary.md)
 - a future host adapter is optional convenience over the same project-local
   `runProjectHarness`, not a second Harness implementation.
 
-Spawn scope: apply may `execFile` only `npm` with the frozen install argv, `shell: false`, cwd or
-`--prefix` = isolated directory. That is scaffolding, not a kernel process framework. The runner
-never spawns npm.
+Spawn scope: apply may `execFile` only `npm` with the frozen install/ci argv, `shell: false`, and
+`cwd = <root>/.wizloft/harness`. Internal production materialization does not use `--prefix`.
+That is scaffolding, not a kernel process framework. The runner never spawns npm. The separate
+repository-root recovery instruction remains
+`npm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund`.
 
 Tests inject the install function so CLEAN/EXISTING/CONFLICT proofs do not need the public
 registry. Production CLI uses real npm.
@@ -571,7 +575,7 @@ bootstrap failures such as a malformed overlay or missing `node_modules/`.
 
 | Artifact | First init | Re-init / upgrade | User edited | Failure |
 |---|---|---|---|---|
-| `project.json` | write **last**, only after install + resolve proof | replace **last**, only after new install + resolve proof | invalid schema/id fails before writes | never written/replaced on failed apply |
+| `project.json` | write **last**, only after install + portable lockfile certification + exact runtime proof | replace **last**, only after the same new-release proofs | invalid schema/id fails before writes | never written/replaced on failed apply |
 | `INSTRUCTIONS.md` | create before install | replace before install | overwritten; file is Harness-owned | may remain as partial scaffolding |
 | `profile.mjs` | create before install | replace before install | overwritten; customize via overlay | may remain as partial scaffolding |
 | `run.mjs` | create before install | replace before install | overwritten | may remain as partial scaffolding |
@@ -652,8 +656,14 @@ create/update selected AGENTS.md / CLAUDE.md / .gitignore managed blocks
   ->
 materialize isolated npm runtime when this apply must prove a new or first release
   ->
+certify the portable isolated package-lock:
+  modern parseable format, exact root dependency, canonical exact project entry,
+  no project link, and only portable node_modules/... package locations
+  ->
 prove @wizloft/harness-project resolves from .wizloft/harness/node_modules
   and its version equals the intended runtime.release
+  ->
+fresh planner / certification
   ->
 atomically write/update project.json LAST when marker content changes
 ```
@@ -677,14 +687,15 @@ runnable / locally materialized
 
 ### First-init failure
 
-If install or runtime verification fails:
+If install, portable lockfile certification, or runtime verification fails:
 
 - no valid new `project.json` may claim successful initialization;
 - already-applied non-marker files may remain as detectable partial state;
 - `PROJECT.md` and user bytes outside managed blocks stay as written;
 - re-init replans and may replace Harness-owned non-marker files, because they are uncommitted
   scaffolding until a sentinel exists;
-- re-init then retries install, resolve proof, and writes the marker last.
+- re-init then retries install, portable lockfile certification, exact runtime proof, and writes
+  the marker last.
 
 ### Upgrade failure
 
@@ -694,7 +705,8 @@ If a previously valid initialized project is upgraded by a newer initializer:
 - `generatedBy` and `runtime.release` are not switched early;
 - non-marker Harness-owned files and isolated `package.json` may already show the target release;
 - isolated `node_modules` may be missing, mixed, or still old;
-- after the new install and resolve proof succeed, atomically replace the marker last;
+- after the new install, portable lockfile certification, and exact runtime proof succeed,
+  atomically replace the marker last;
 - until that happens, the project is not “current” for the new release.
 
 A failed upgrade may leave `node .wizloft/harness/run.mjs` unable to satisfy
@@ -708,9 +720,9 @@ tooling files.
 |---|---|---|
 | Clean | no `.wizloft/harness/` and no valid marker | create full contract; marker last |
 | Existing, no Harness | user files present, no marker | create Harness files and adapter blocks; preserve user bytes; marker last |
-| Partial first init | harness files exist without a valid schema-1 marker | replan; replace uncommitted Harness-owned non-marker files; preserve `PROJECT.md` and user bytes; install; prove; write marker last. Unexpected types/symlinks/malformed blocks fail |
+| Partial first init | harness files exist without a valid schema-1 marker | replan; replace uncommitted Harness-owned non-marker files; preserve `PROJECT.md` and user bytes; install; certify portable lock; prove exact runtime; write marker last. Unexpected types/symlinks/malformed blocks fail |
 | Needs local materialization | valid marker; tracked generated manifest/lock/files consistent with that marker; exact local `@wizloft/harness-project` absent or unresolvable | initialized, not runnable. Recovery is exact `npm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund`. Do not rewrite `project.json` when release identity is unchanged. Not first-init failure, upgrade, or conflict |
-| Upgrade in progress | valid old marker present; generated tooling/manifest targets a newer release, or the local install is mixed against that target | keep old marker; rewrite non-marker harness files as needed; install; prove new runtime; replace marker last |
+| Upgrade in progress | valid old marker present; generated tooling/manifest targets a newer release, or the local install is mixed against that target | keep old marker; rewrite non-marker harness files as needed; install; certify portable lock; prove exact new runtime; replace marker last |
 | Reconciliation needed | same-release runtime is locally usable, but desired Harness-owned files, adapters, or marker content differ | plan file/block/marker reconciliation only; do not plan install |
 | Current | valid marker, same project id, required tracked files present, isolated package version equals `runtime.release`, package resolvable, desired adapters and generated contract already match | `operations: []` |
 | Conflict | bad schema, id mismatch, symlink, malformed blocks, both marker styles, escaped paths | fail before writes |
@@ -810,13 +822,15 @@ occurs before Harness exists.
 
 ### `.npmrc`: removed
 
-The frozen apply command is:
+The internal production apply invocation is:
 
 ```text
-npm install --prefix <root>/.wizloft/harness --ignore-scripts --no-audit --no-fund
+cwd = <root>/.wizloft/harness
+npm install --ignore-scripts --no-audit --no-fund
 ```
 
-The frozen clone recovery command is:
+Internal `ci` uses the same cwd-bound execution model. The public fresh-clone recovery command
+remains:
 
 ```text
 npm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund
@@ -1135,14 +1149,16 @@ wizloft-harness-project init --root <repo> --project-id <id> --dry-run
   -> same planner as apply, zero writes
 
 wizloft-harness-project init --root <repo> --project-id <id>
-  clean     -> non-marker files, blocks, install, resolve, marker last
+  clean     -> non-marker files, blocks, install, portable-lock certification,
+               exact runtime proof, marker last
   existing  -> same; preserve user bytes; one block per selected adapter
   re-init   -> update owned non-marker files if needed; remove-block deselected
                adapters; skip install if current; marker last only when marker
                content or a new release changes
   clone     -> valid marker + missing node_modules is not init work;
                recover with exact npm ci; do not rewrite marker
-  partial   -> recover uncommitted harness files; install; resolve; marker last
+  partial   -> recover uncommitted harness files; install; portable-lock
+               certification; exact runtime proof; marker last
   conflict  -> exit 1, no writes
 ```
 
@@ -1488,10 +1504,17 @@ Owns `applyProjectInitialization(options)` and non-dry-run `init`. Sequence:
 6. certify the fresh plan against the initial repository-state matrix;
 7. take zero or one marker operation from that fresh plan and publish it last.
 
-Installer commands, derived at execution time from `method` + absolute prefix:
+At the frozen Phase 3B checkpoint, installer commands were derived from `method` plus the absolute
+isolated directory:
 
-- first-init / existing / partial / upgrade: `npm install --prefix <root>/.wizloft/harness --ignore-scripts --no-audit --no-fund`
-- needs-local-materialization: `npm --prefix <root>/.wizloft/harness ci --ignore-scripts --no-audit --no-fund`
+- first-init / existing / partial / upgrade:
+  `npm install --prefix <absolute isolated dir> --ignore-scripts --no-audit --no-fund`;
+- needs-local-materialization:
+  `npm --prefix <absolute isolated dir> ci --ignore-scripts --no-audit --no-fund`.
+
+The Phase-4C portable-lock correction supersedes that internal invocation detail by executing npm
+with `cwd = <root>/.wizloft/harness` and no internal `--prefix`. The repository-root public recovery
+instruction remains `npm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund`.
 
 Repository classification reuses the Phase-3A isolated runtime identity inspector. A valid tracked
 contract with an absent or unresolvable local `@wizloft/harness-project` is
@@ -1607,9 +1630,29 @@ between the project package's ESM import-only root export and CommonJS
 The bounded correction preserves the import-only package contract: identity now performs
 non-executing inspection of the owned root `import` entry with path/type/containment checks, and
 the generated runner uses `import.meta.resolve()` before importing the resolved URL. The Node
-floor remains `>=22.13.0`. Phase 4C is not green until its packed-runtime proof is rerun in a
-subsequent turn. That rerun must make package-resolution probes dependency-context-aware and must
-not assume every transitive package is top-level-hoisted.
+floor remains `>=22.13.0`. That first correction is committed at
+`cabe413e29adb30d56400cf8f6ed76b1ee476cf2` (`fix: align project runtime with ESM resolution`).
+
+The resumed real proof used dependency-context-aware resolution for all fourteen packed packages,
+reached a real fresh clone, and then exposed a second production defect: the generated
+`package-lock.json` contained original-checkout-relative package keys rather than portable
+package-root-relative `node_modules/...` keys. Real npm 11.17.0 `ci` in the clone consequently
+reported all fourteen packages missing from the lockfile.
+
+The bounded second correction is implemented and externally approved as a dedicated correction.
+Production npm materialization now executes with `cwd = <root>/.wizloft/harness` and argv beginning
+with only `install` or `ci`; it no longer relies on an absolute `--prefix` while inheriting the
+initializer cwd. Before marker publication, lockfile certification now requires a modern JSON
+lockfile, the exact isolated root dependency, the canonical exact project entry, no project-package
+link, and only portable root-relative `node_modules/...` package locations while allowing nested
+`node_modules`. Invalid lock output remains `LOCAL_RUNTIME_INVALID`, the install operation remains
+unapplied, first-init markers remain absent, and upgrade markers remain unchanged. The public
+recovery command remains
+`npm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund`.
+
+Phase 4C remains blocked and not completed. A later dedicated turn must rerun the untracked real
+packed-runtime proof from the frozen second-correction checkpoint; this correction turn does not
+start Phase 5.
 
 ### Phase 5 — Release graph
 
@@ -1836,8 +1879,9 @@ Proof layering is explicit:
 - Phase 4A uses the injected installer seam to prove repository classification, mutation,
   marker-last, recovery, and idempotency behavior without registry npm or package packing.
 - Phase 4C owns actual packed artifacts, the real production initializer, real npm install, real
-  fresh-clone npm ci, and a loopback-only package source. It remains blocked pending the clean
-  rerun with dependency-context-aware package-resolution probes.
+  fresh-clone npm ci, and a loopback-only package source. It remains blocked pending a dedicated
+  clean rerun from the portable-lockfile correction checkpoint; dependency-context-aware package
+  resolution remains required and must not assume top-level hoisting.
 
 ---
 

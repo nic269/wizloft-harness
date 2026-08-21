@@ -12,22 +12,19 @@ export type IsolatedInstallRequest = {
 
 export type IsolatedInstaller = (request: IsolatedInstallRequest) => Promise<void>;
 
-export function isolatedNpmArgv(root: string, method: InstallMethod): readonly string[] {
+export type IsolatedNpmInvocation = {
+  readonly argv: readonly string[];
+  readonly cwd: string;
+};
+
+export function isolatedNpmInvocation(root: string, method: InstallMethod): IsolatedNpmInvocation {
   if (method !== 'install' && method !== 'ci') {
     fail('INTERNAL_ERROR', `Unsupported isolated install method: ${String(method)}`);
   }
-  const prefix = path.resolve(root, HARNESS_DIR);
-  if (method === 'ci') {
-    return Object.freeze(['--prefix', prefix, 'ci', '--ignore-scripts', '--no-audit', '--no-fund']);
-  }
-  return Object.freeze([
-    'install',
-    '--prefix',
-    prefix,
-    '--ignore-scripts',
-    '--no-audit',
-    '--no-fund',
-  ]);
+  return Object.freeze({
+    argv: Object.freeze([method, '--ignore-scripts', '--no-audit', '--no-fund']),
+    cwd: path.resolve(root, HARNESS_DIR),
+  });
 }
 
 export async function executeIsolatedNpmInstall(request: IsolatedInstallRequest): Promise<void> {
@@ -37,9 +34,9 @@ export async function executeIsolatedNpmInstall(request: IsolatedInstallRequest)
   if (typeof request.root !== 'string' || request.root.length === 0) {
     fail('INTERNAL_ERROR', 'Isolated install requires a repository root');
   }
-  const argv = isolatedNpmArgv(request.root, request.method);
+  const invocation = isolatedNpmInvocation(request.root, request.method);
   await new Promise<void>((resolve, reject) => {
-    execFile('npm', [...argv], { shell: false }, (error) => {
+    execFile('npm', [...invocation.argv], { cwd: invocation.cwd, shell: false }, (error) => {
       if (error) reject(error);
       else resolve();
     });
