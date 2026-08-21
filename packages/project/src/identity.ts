@@ -1,5 +1,4 @@
-import { readFile, realpath } from 'node:fs/promises';
-import { createRequire } from 'node:module';
+import { lstat, readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 
 import { errorCode, fail } from './errors.js';
@@ -28,6 +27,35 @@ export type LocalRuntimeInspection =
 function staysInside(root: string, candidate: string): boolean {
   const relative = path.relative(root, candidate);
   return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+}
+
+function missingRuntime(): LocalRuntimeInspection {
+  return Object.freeze({
+    ok: false,
+    kind: 'unavailable',
+    reason: `Cannot resolve ${PACKAGE_NAME} from ${HARNESS_DIR}/node_modules`,
+  });
+}
+
+function rootImportTarget(exportsValue: unknown): {
+  readonly found: boolean;
+  readonly value?: unknown;
+} {
+  if (exportsValue === null || typeof exportsValue !== 'object' || Array.isArray(exportsValue)) {
+    return Object.freeze({ found: false });
+  }
+  const rootExport = (exportsValue as Record<string, unknown>)['.'];
+  if (typeof rootExport === 'string') {
+    return Object.freeze({ found: true, value: rootExport });
+  }
+  if (rootExport === null || typeof rootExport !== 'object' || Array.isArray(rootExport)) {
+    return Object.freeze({ found: false });
+  }
+  if (!Object.hasOwn(rootExport, 'import')) return Object.freeze({ found: false });
+  return Object.freeze({
+    found: true,
+    value: (rootExport as Record<string, unknown>).import,
+  });
 }
 
 export async function inspectLocalProjectRuntime(root: string): Promise<LocalRuntimeInspection> {
@@ -63,11 +91,7 @@ export async function inspectLocalProjectRuntime(root: string): Promise<LocalRun
 
   const manifestInspection = await inspectPath(root, LOCAL_PACKAGE_MANIFEST_PATH);
   if (!manifestInspection.exists) {
-    return Object.freeze({
-      ok: false,
-      kind: 'unavailable',
-      reason: `Cannot resolve ${PACKAGE_NAME} from ${HARNESS_DIR}/node_modules`,
-    });
+    return missingRuntime();
   }
   if (manifestInspection.isSymbolicLink || !manifestInspection.isFile) {
     return Object.freeze({
@@ -78,6 +102,8 @@ export async function inspectLocalProjectRuntime(root: string): Promise<LocalRun
   }
 
   let version: string;
+  let exportTarget: unknown;
+  let hasExportTarget = false;
   try {
     const parsed = JSON.parse(await readFile(manifestInspection.absolutePath, 'utf8')) as {
       name?: unknown;
@@ -96,13 +122,9 @@ export async function inspectLocalProjectRuntime(root: string): Promise<LocalRun
       });
     }
     version = parsed.version;
-    if (parsed.exports === undefined) {
-      return Object.freeze({
-        ok: false,
-        kind: 'unavailable',
-        reason: `Cannot resolve ${PACKAGE_NAME} from ${HARNESS_DIR}/node_modules`,
-      });
-    }
+    const target = rootImportTarget(parsed.exports);
+    hasExportTarget = target.found;
+    exportTarget = target.value;
   } catch (error) {
     return Object.freeze({
       ok: false,
@@ -111,21 +133,45 @@ export async function inspectLocalProjectRuntime(root: string): Promise<LocalRun
     });
   }
 
-  const packageRoot = resolveManagedPath(root, LOCAL_PACKAGE_PATH);
-  const harnessDir = resolveManagedPath(root, HARNESS_DIR);
-  let resolvedPath: string;
-  try {
-    const require = createRequire(isolatedManifest.absolutePath);
-    resolvedPath = require.resolve(PACKAGE_NAME);
-  } catch (error) {
-    const code = errorCode(error);
+  if (!hasExportTarget) return missingRuntime();
+  if (
+    typeof exportTarget !== 'string' ||
+    exportTarget.length === 0 ||
+    !exportTarget.startsWith('./')
+  ) {
     return Object.freeze({
       ok: false,
-      kind: code === 'MODULE_NOT_FOUND' ? 'unavailable' : 'unsafe',
-      reason:
-        code === 'MODULE_NOT_FOUND'
-          ? `Cannot resolve ${PACKAGE_NAME} from ${HARNESS_DIR}/node_modules`
-          : `Cannot resolve ${PACKAGE_NAME}: ${error instanceof Error ? error.message : String(error)}`,
+      kind: 'unsafe',
+      reason: `Isolated ${PACKAGE_NAME} root import export target is invalid`,
+    });
+  }
+
+  const packageRoot = resolveManagedPath(root, LOCAL_PACKAGE_PATH);
+  const harnessDir = resolveManagedPath(root, HARNESS_DIR);
+  const resolvedPath = path.resolve(packageRoot, exportTarget.slice(2));
+  if (!staysInside(packageRoot, resolvedPath)) {
+    return Object.freeze({
+      ok: false,
+      kind: 'unsafe',
+      reason: `Resolved ${PACKAGE_NAME} root import entry escaped the local package`,
+    });
+  }
+
+  try {
+    const entryStats = await lstat(resolvedPath);
+    if (entryStats.isSymbolicLink() || !entryStats.isFile()) {
+      return Object.freeze({
+        ok: false,
+        kind: 'unsafe',
+        reason: `Isolated ${PACKAGE_NAME} root import entry is unsafe`,
+      });
+    }
+  } catch (error) {
+    if (errorCode(error) === 'ENOENT') return missingRuntime();
+    return Object.freeze({
+      ok: false,
+      kind: 'unsafe',
+      reason: `Cannot inspect isolated ${PACKAGE_NAME} root import entry: ${error instanceof Error ? error.message : String(error)}`,
     });
   }
 
@@ -157,7 +203,7 @@ export async function inspectLocalProjectRuntime(root: string): Promise<LocalRun
 
   return Object.freeze({
     ok: true,
-    identity: Object.freeze({ resolvedPath, version }),
+    identity: Object.freeze({ resolvedPath: resolvedCanonical, version }),
   });
 }
 

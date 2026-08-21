@@ -125,7 +125,6 @@ export function runnerContents(): string {
   const missingRuntime =
     "      'Cannot resolve @wizloft/harness-project from .wizloft/harness/node_modules. Restore the isolated runtime with:\\n\\nnpm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund',";
   return [
-    "import { createRequire } from 'node:module';",
     "import path from 'node:path';",
     "import { fileURLToPath } from 'node:url';",
     '',
@@ -141,13 +140,11 @@ export function runnerContents(): string {
     '  );',
     '} else {',
     "  const repositoryRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));",
-    '  const require = createRequire(import.meta.url);',
-    '  let resolved = false;',
+    '  let resolved;',
     '  try {',
-    "    require.resolve('@wizloft/harness-project');",
-    '    resolved = true;',
+    "    resolved = import.meta.resolve('@wizloft/harness-project');",
     '  } catch (error) {',
-    "    if (error && typeof error === 'object' && 'code' in error && error.code === 'MODULE_NOT_FOUND') {",
+    "    if (error && typeof error === 'object' && 'code' in error && error.code === 'ERR_MODULE_NOT_FOUND') {",
     '      fail(',
     missingRuntime,
     '      );',
@@ -157,7 +154,7 @@ export function runnerContents(): string {
     '  }',
     '  if (resolved) {',
     '    try {',
-    "      const { runProjectHarness } = await import('@wizloft/harness-project');",
+    '      const { runProjectHarness } = await import(resolved);',
     '      try {',
     '        process.exitCode = await runProjectHarness(process.argv.slice(2), {',
     '          repositoryRoot,',

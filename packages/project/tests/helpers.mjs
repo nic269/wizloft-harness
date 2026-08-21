@@ -93,7 +93,7 @@ export async function writeIsolatedRuntimePackage(root, version = RELEASE) {
         name: '@wizloft/harness-project',
         version,
         type: 'module',
-        exports: { '.': './dist/index.js' },
+        exports: { '.': { import: './dist/index.js' } },
       },
       undefined,
       2,

@@ -800,6 +800,7 @@ test('acceptance: overlay rejection matrix blocks unsafe or expanded configurati
 });
 
 test('acceptance: runner command boundary and generated wrapper render failures once', async (context) => {
+  const recovery = 'npm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund';
   const root = await tempRepo('wizloft-accept-runner-');
   context.after(() => cleanup(root));
   gitInit(root);
@@ -812,7 +813,16 @@ test('acceptance: runner command boundary and generated wrapper render failures 
 
   const source = await readFile(path.join(root, '.wizloft/harness/run.mjs'), 'utf8');
   assert.equal(source.includes('process.exit('), false);
-  assert.equal(count(source, "await import('@wizloft/harness-project')"), 1);
+  assert.equal(source.includes('createRequire'), false);
+  assert.equal(source.includes('require.resolve'), false);
+  assert.equal(count(source, "import.meta.resolve('@wizloft/harness-project')"), 1);
+  assert.equal(count(source, 'await import(resolved)'), 1);
+
+  const importOnly = spawnSync(process.execPath, ['.wizloft/harness/run.mjs', '--help'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  assert.equal(importOnly.status, 0, importOnly.stderr);
 
   await writeFile(
     path.join(root, '.wizloft/harness/profile.local.mjs'),
@@ -850,6 +860,46 @@ test('acceptance: runner command boundary and generated wrapper render failures 
   });
   assert.equal(result.status, 1);
   assert.equal(count(result.stderr, 'Cannot resolve @wizloft/harness-project'), 1);
+
+  const badExport = await tempRepo('wizloft-accept-runner-bad-export-');
+  context.after(() => cleanup(badExport));
+  gitInit(badExport);
+  await writeTrackedContract(badExport);
+  await writeFileTree(badExport, {
+    '.wizloft/harness/node_modules/@wizloft/harness-project/package.json': `${JSON.stringify({
+      name: '@wizloft/harness-project',
+      version: RELEASE,
+      type: 'module',
+      exports: { '.': { types: './dist/index.d.ts' } },
+    })}\n`,
+  });
+  const badExportResult = spawnSync(process.execPath, ['.wizloft/harness/run.mjs', '--help'], {
+    cwd: badExport,
+    encoding: 'utf8',
+  });
+  assert.equal(badExportResult.status, 1);
+  assert.equal(count(badExportResult.stderr, recovery), 0);
+  assert.equal(count(badExportResult.stderr, 'No "exports" main defined'), 1);
+
+  const badImport = await tempRepo('wizloft-accept-runner-bad-import-');
+  context.after(() => cleanup(badImport));
+  gitInit(badImport);
+  await writeTrackedContract(badImport);
+  await writeFileTree(badImport, {
+    '.wizloft/harness/node_modules/@wizloft/harness-project/package.json': `${JSON.stringify({
+      name: '@wizloft/harness-project',
+      version: RELEASE,
+      type: 'module',
+      exports: { '.': { import: './dist/missing.js' } },
+    })}\n`,
+  });
+  const badImportResult = spawnSync(process.execPath, ['.wizloft/harness/run.mjs', '--help'], {
+    cwd: badImport,
+    encoding: 'utf8',
+  });
+  assert.equal(badImportResult.status, 1);
+  assert.equal(count(badImportResult.stderr, recovery), 0);
+  assert.equal(count(badImportResult.stderr, 'dist/missing.js'), 1);
 
   const bootstrap = await tempRepo('wizloft-accept-runner-bootstrap-');
   context.after(() => cleanup(bootstrap));

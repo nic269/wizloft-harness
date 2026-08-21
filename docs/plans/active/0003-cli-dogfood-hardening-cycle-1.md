@@ -6,7 +6,9 @@ at `feb372e62c295c43fe234282b9371e4e5e6af985`. Phase 3A committed at
 `29dd040293419eba5bbc72195ac2eeec62b2a92c`. Phase 3B materialization + sentinel
 committed at `a23f34ff885e88c9686a0523a7492b8da87fcd67`. Phase 4A repository acceptance
 matrix committed at `4612359ba5d6204af140b6a4eb4cbf795d406ce4`. Phase 4B packed package closure
-is implemented and left uncommitted for external review. Phase 4C is not started.
+committed at `a116899ebcd20c5ee111f828f32cb412e5cd0af3`. Phase 4C real packed execution
+exposed an ESM-resolution defect and remains blocked pending a clean rerun after the bounded
+correction.
 
 This file owns the accepted alpha.3 onboarding contract.
 
@@ -911,20 +913,23 @@ That is enough for clean-repo Context to resolve a real, editable project-truth 
   `path.resolve(fileURLToPath(new URL('../..', import.meta.url)))`
 - `process.env`, `process.stdin`, `process.stdout`, `process.stderr`
 - Node `>=22.13.0` preflight from `process.versions.node` before any project-package import
-- explicit local package resolution after that preflight; only `MODULE_NOT_FOUND` uses npm-ci recovery
-- dynamic import of `@wizloft/harness-project` after resolution succeeds
-- actual import/bootstrap errors rendered once, not as a missing-`node_modules` message
+- ESM `import.meta.resolve('@wizloft/harness-project')` after that preflight, naturally based at
+  the runner's own location inside `.wizloft/harness`
+- exact npm-ci recovery only when genuine package absence reports `ERR_MODULE_NOT_FOUND`
+- actual bad-export, invalid-target, and other resolution errors rendered once with their own
+  message
+- `await import(resolved)` of the successfully resolved URL
+- actual import/evaluation/bootstrap errors rendered once, not as a missing-`node_modules` message
 - final `process.exitCode`
 - rendering of **thrown** bootstrap errors: `stderr.write(message + '\n')`, then `exitCode = 1`
 
 It must stay tiny. It must not parse Harness commands. It must not call `process.exit()`. It must
-not install packages, spawn npm, use npx, or mutate the repository. It must not search parent
-directories.
+not use `createRequire` or `require.resolve`. It must not install packages, spawn npm, use npx, or
+mutate the repository. It must not search parent directories.
 
 Generated conceptual body:
 
 ```js
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -940,13 +945,11 @@ if (!Number.isInteger(major) || !Number.isInteger(minor) || major < 22 || (major
   );
 } else {
   const repositoryRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
-  const require = createRequire(import.meta.url);
-  let resolved = false;
+  let resolved;
   try {
-    require.resolve('@wizloft/harness-project');
-    resolved = true;
+    resolved = import.meta.resolve('@wizloft/harness-project');
   } catch (error) {
-    if (error && typeof error === 'object' && 'code' in error && error.code === 'MODULE_NOT_FOUND') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'ERR_MODULE_NOT_FOUND') {
       fail(
         'Cannot resolve @wizloft/harness-project from .wizloft/harness/node_modules. Restore the isolated runtime with:\n\nnpm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund',
       );
@@ -956,7 +959,7 @@ if (!Number.isInteger(major) || !Number.isInteger(minor) || major < 22 || (major
   }
   if (resolved) {
     try {
-      const { runProjectHarness } = await import('@wizloft/harness-project');
+      const { runProjectHarness } = await import(resolved);
       try {
         process.exitCode = await runProjectHarness(process.argv.slice(2), {
           repositoryRoot,
@@ -1466,6 +1469,10 @@ Not implemented in Phase 3A:
 - successful non-dry-run initializer CLI;
 - public graph / alpha.3 transition.
 
+Historical note: the CommonJS resolution details above accurately describe the frozen Phase 1
+and Phase 3A checkpoints. The current runner and identity contract supersedes that implementation
+detail through the bounded Phase-4C ESM-resolution correction.
+
 #### Phase 3B — Isolated materialization + sentinel
 
 Status: committed at `a23f34ff885e88c9686a0523a7492b8da87fcd67`.
@@ -1561,7 +1568,7 @@ Phase 4A verification:
 
 #### Phase 4B — Packed package closure
 
-Status: implemented in the working tree; unstaged and uncommitted for external review.
+Status: committed at `a116899ebcd20c5ee111f828f32cb412e5cd0af3`.
 
 The dedicated `packages/project/tests/project-pack-contract.test.mjs` proof reuses the current
 `PUBLIC_PACKAGES` release oracle and the established local `pnpm pack --pack-destination` plus
@@ -1589,9 +1596,20 @@ runtime execution. It does not start Phase 4C or change release identity, packag
 
 #### Phase 4C — Generated-repository packaged runtime proof
 
-Status: not started.
+Status: blocked; not completed. A clean rerun is required from the dedicated correction
+checkpoint.
 
 Owns isolated packed-tarball resolution and generated-repository packaged-runtime proof only.
+
+The first real packed execution reached isolated npm materialization, then exposed a mismatch
+between the project package's ESM import-only root export and CommonJS
+`createRequire(...).resolve()` preflight in local identity inspection and generated `run.mjs`.
+The bounded correction preserves the import-only package contract: identity now performs
+non-executing inspection of the owned root `import` entry with path/type/containment checks, and
+the generated runner uses `import.meta.resolve()` before importing the resolved URL. The Node
+floor remains `>=22.13.0`. Phase 4C is not green until its packed-runtime proof is rerun in a
+subsequent turn. That rerun must make package-resolution probes dependency-context-aware and must
+not assume every transitive package is top-level-hoisted.
 
 ### Phase 5 — Release graph
 
@@ -1774,14 +1792,18 @@ Each case fails before mutation:
 
 ### RUNNER
 
-- generated `run.mjs` dynamically imports one `runProjectHarness` implementation after Node
-  preflight
+- generated `run.mjs` resolves from its own `.wizloft/harness` location with
+  `import.meta.resolve()`, then dynamically imports one `runProjectHarness` implementation with
+  `await import(resolved)` after Node preflight
 - no duplicated Harness argv parser
-- no `process.exit()`, auto-install, npm spawn, npx, or parent search
+- no `createRequire`, `require.resolve`, `process.exit()`, auto-install, npm spawn, npx, or parent
+  search
 - help exit `0`, inspect exit `0`, invalid argv exit `2`
 - unsupported Node fails before attempting the project-package import
-- fresh-clone missing-runtime message is actionable and rendered exactly once
-- other bootstrap throws are rendered once by `run.mjs` as exit `1`
+- only genuine package absence reported as `ERR_MODULE_NOT_FOUND` receives the actionable
+  fresh-clone recovery message exactly once
+- bad exports, invalid targets, other resolution errors, and import/evaluation/bootstrap throws
+  retain their actual message and are rendered once by `run.mjs` as exit `1`
 - runtime `shutdown()` runs after adapter execution
 
 ### OVERLAY
@@ -1807,7 +1829,15 @@ Each case fails before mutation:
 
 After a successful initializer exit, the generated repo resolves `@wizloft/harness-project` from
 `.wizloft/harness/node_modules` with no network and no workspace/symlink back to the Harness
-source checkout. CI uses packed tarballs through the injected installer.
+source checkout.
+
+Proof layering is explicit:
+
+- Phase 4A uses the injected installer seam to prove repository classification, mutation,
+  marker-last, recovery, and idempotency behavior without registry npm or package packing.
+- Phase 4C owns actual packed artifacts, the real production initializer, real npm install, real
+  fresh-clone npm ci, and a loopback-only package source. It remains blocked pending the clean
+  rerun with dependency-context-aware package-resolution probes.
 
 ---
 
