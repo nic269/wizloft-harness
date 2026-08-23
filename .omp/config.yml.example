@@ -1,0 +1,33 @@
+# Copy to .omp/config.yml after replacing the model selectors.
+# Do not commit API keys or credentials.
+
+modelRoleStorage: project
+
+modelRoles:
+  # Replace with selectors shown by `omp models` or assigned through `/model` Roles.
+  default: openai/REPLACE_WITH_COORDINATOR_MODEL:high
+  task: x-ai/REPLACE_WITH_WORKER_MODEL:high
+  slow: openai/REPLACE_WITH_AUDITOR_MODEL:high
+  advisor: "@slow"
+
+cycleOrder:
+  - default
+  - task
+  - slow
+
+tools:
+  # Project baseline. Interactive role wrappers apply stricter runtime overrides.
+  # Do not add a user/project `bash: prompt` policy if Worker is spawned headlessly:
+  # headless subagents cannot satisfy prompts and the bash call will be rejected.
+  approvalMode: write
+
+advisor:
+  enabled: false
+  subagents: false
+  syncBacklog: off
+
+defaultThinkingLevel: high
+
+compaction:
+  strategy: snapcompact
+  thresholdPercent: 80
