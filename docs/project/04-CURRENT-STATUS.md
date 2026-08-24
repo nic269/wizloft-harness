@@ -29,6 +29,8 @@ stops for an Owner decision and new coherent version. If it matches, publish the
 exact artifacts and independently prove all fourteen in the registry plus matching Git provenance.
 Only then may Phase 6 external consumers, the release-dependent Meldmark gates, and OMP Stage D run
 toward closure.
+This alpha.3 recovery instruction is retained as history and superseded by the selected alpha.4
+sequence below.
 
 The earlier temp-only OMP exercise used source provenance `bfbad5c`, a no-remote fixture, and an
 ignored/local-only `.omp/` overlay. It made no Harness source or registry change. Preserve those
@@ -55,3 +57,26 @@ Stop and request an owner decision if the next requested packet would:
 - start Phase 6 external-consumer work before coherent registry and Git-provenance proof;
 - push an external commit without repository-specific authority and live ref preflight;
 - commit/install OMP profiles or run Stage D without its separate exact authority.
+
+## Selected alpha.4 recovery authority
+
+The selected coherent fourteen-package recovery target is `0.1.0-alpha.4`, pending local
+implementation and proof. Alpha.4 is not implemented, packed, published, promoted, tagged, pushed,
+or externally validated.
+
+The partial alpha.3 public state above remains authoritative history. The published alpha.3 project
+artifact never becomes alpha.4 recovery evidence and must not be repaired, moved, deleted,
+unpublished, or retagged. Packed-proof retention and SHA-256 tooling correction precedes alpha.4
+identity implementation in a separate packet. The corrected proof must use one build and one pack,
+retain an external artifact directory, and write its SHA-256 completion manifest last. Independent
+audit then freezes the candidate; later comparison, publication, and registry proof must use those
+exact fourteen artifacts without rebuilding or repacking. Publication uses the seven
+release-contract dependency-derived layers.
+
+Separate exact packets are required for the authority addendum/audit; packed-proof correction;
+alpha.4 identity implementation and audit/commit `R`; artifact freeze/audit; local annotated-tag
+policy; candidate publication; exact registry proof; fourteen-package `next` promotion and proof;
+Git push/Git-to-binary audit; Phase 6 exact-registry consumer, CLI, CLEAN/EXISTING, and Meldmark
+proofs; OMP Stage D; and final documentation reconciliation and push. Registry, Git,
+external-repository, and OMP actions require later exact Owner authorization; this status record
+authorizes none.

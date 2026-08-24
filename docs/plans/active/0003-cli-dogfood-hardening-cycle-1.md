@@ -19,6 +19,8 @@ the other Harness packages remain published at `0.1.0-alpha.2`. Immutable-partia
 recovery, proof of all fourteen exact artifacts, `next` promotion, registry proof, G2B, Phase 6 P2,
 the release-dependent Meldmark gates in section 26, OMP Stage D, and formal plan closure are open.
 They require a later separately authorized coherent release.
+This alpha.3 recovery instruction is retained as history and superseded by the selected alpha.4
+sequence in section 30.
 
 This file owns the accepted alpha.3 onboarding contract.
 
@@ -1743,6 +1745,8 @@ artifact is byte/provenance-identical to the frozen candidate. Any mismatch stop
 decision and a new coherent version. If it matches, publish the remaining thirteen exact artifacts,
 then prove all fourteen in the registry, the intended dist-tags, and matching Git provenance.
 No publication, dist-tag, tag, or push is authorized by this plan correction.
+This alpha.3 completion route is retained as history and superseded by the alpha.4 sequence in
+section 30.
 
 ### Phase 6 — External consumer sequence
 
@@ -1757,6 +1761,7 @@ After a later separately authorized coherent release and independent registry/Gi
 5. Prove Meldmark released initialization and target validation.
 
 External repository changes and pushes require their own exact authority.
+This alpha.3-dependent consumer sequence is retained as history and superseded by section 30.
 
 ### OMP Stage D — interoperability dogfood
 
@@ -1768,6 +1773,7 @@ A historical temp-only exercise used clean Harness source
 publication change, and `.omp/` remained ignored/local-only. Because it relied on the invalid
 coherent-publication premise, it does not close Stage D. Run Stage D only after a later coherent
 release is proved and a separate exact packet authorizes the work.
+This alpha.3-dependent Stage D instruction is retained as history and superseded by section 30.
 
 ---
 
@@ -1996,6 +2002,7 @@ Six local implementation gates are complete; four release-dependent gates remain
 
 These gates require a later separately authorized coherent release. They do not authorize registry
 mutation, Git provenance changes, either external push, or local OMP changes.
+These alpha.3-dependent readiness gates are retained as history and superseded by section 30.
 
 Required Meldmark command shape:
 
@@ -2110,3 +2117,53 @@ runtime; ordinary project commands then use that local runtime.
 Implementing a Wizloft CLI Harness module is not part of alpha.3. That belongs to a separate
 Wizloft CLI initiative. Alpha.3 still generates the portable `run.mjs` contract and still does
 not claim `wizloft` or `wizharness`.
+
+---
+
+## 30. Alpha.4 immutable-partial-publication recovery authority
+
+Status: `0.1.0-alpha.4` is the selected coherent fourteen-package recovery target, pending local
+implementation and proof. Nothing in this section claims that alpha.4 is implemented, packed,
+published, promoted, tagged, pushed, or externally validated.
+
+The partial alpha.3 public state remains historical truth:
+`@wizloft/harness-project@0.1.0-alpha.3` alone is published, while the other thirteen packages
+remain at `0.1.0-alpha.2`. That alpha.3 artifact is not recovery evidence for alpha.4. Do not
+repair, move, delete, unpublish, retag, or otherwise mutate any alpha.3 version or tag, and do not
+rewrite the completed alpha.3 implementation or proof phases above.
+ADRs [0012](../../decisions/0012-public-package-release-contract.md) and
+[0013](../../decisions/0013-project-onboarding-and-discovery.md) remain unchanged; neither those
+ADRs nor this documentation-only authority permits publication or any external mutation.
+
+The packed-proof retention and SHA-256 tooling correction is a separate prerequisite packet. The
+corrected proof must use one build and one pack, retain its artifact directory outside the
+repository, and write the SHA-256 completion manifest last. Before that manifest exists, the
+candidate is incomplete. After it exists and an independent Auditor accepts the freeze, the
+candidate is immutable: comparison, publication, and registry proof must use those exact fourteen
+artifacts without rebuilding or repacking them. Publication follows the seven dependency-derived
+layers owned by `scripts/release-contract.mjs`.
+
+Recovery proceeds only through separate exact packets:
+
+1. accept this alpha.4 authority addendum after independent audit;
+2. correct packed-proof artifact retention and SHA-256 completion-manifest tooling;
+3. implement the alpha.4 lockstep identity, independently audit it, and commit release candidate
+   `R`;
+4. perform the one-build/one-pack external artifact freeze and independently audit it;
+5. separately approve the local annotated alpha.4 tag policy;
+6. publish the exact frozen candidate in seven dependency-derived layers;
+7. independently prove exact registry bytes and behavior for all fourteen packages;
+8. separately approve and perform fourteen-package `next` promotion, then prove the post-`next`
+   graph;
+9. push matching Git provenance and complete an independent Git-to-binary audit;
+10. prove an exact-registry Phase 6 consumer;
+11. prove the Wizloft CLI exact-pin regression;
+12. prove the released CLEAN and EXISTING initializer smokes;
+13. prove Meldmark released initialization and target validation;
+14. rerun and independently validate OMP Stage D; and
+15. reconcile formal closure documents and separately authorize their push.
+
+Each packet must start from a live baseline and frozen allowlist and must satisfy its own stop
+gates and verification contract. Registry mutation, Git mutation or push, external-repository
+work, and OMP action require later exact Owner authorization; this docs-only authority performs
+none of them.

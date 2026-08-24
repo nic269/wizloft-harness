@@ -55,3 +55,29 @@ authority for source, registry, committed-profile, or broader-readiness action.
 
 Start from clean checked-out `main`, resolving HEAD and status live. Any future candidate requires
 its own exact packet, frozen diff, and independent Auditor review.
+
+## Selected alpha.4 recovery authority
+
+The alpha.3 recovery proposal in the preceding next-action record is superseded.
+`0.1.0-alpha.4` is the selected coherent fourteen-package target, pending local implementation and
+proof; it is not implemented or published. Preserve the partial public truth that only
+`@wizloft/harness-project@0.1.0-alpha.3` is published and the other thirteen packages remain at
+alpha.2. The alpha.3 project artifact is never alpha.4 recovery evidence: do not repair, move,
+delete, unpublish, or retag alpha.3, and do not rewrite its historical phases.
+
+The next release-work packet is the packed-proof retention and SHA-256 tooling correction; local
+alpha.4 identity implementation follows in its own packet. The corrected proof must use one build
+and one pack, retain an external artifact directory, and write its SHA-256 completion manifest
+last. A separately audited freeze makes the candidate immutable; every later comparison and
+publication must use those exact fourteen artifacts without rebuilding or repacking. Publication
+uses the seven release-contract dependency-derived layers.
+
+Route separate exact packets, in order, for: this authority addendum and audit; packed-proof
+tooling correction; alpha.4 identity implementation plus audit/commit `R`; one-build/one-pack
+artifact freeze plus audit; local annotated-tag policy approval; exact frozen candidate
+publication; exact registry bytes/behavior proof; fourteen-package `next` promotion plus
+post-promotion proof; Git push/Git-to-binary audit; exact-registry consumer proof; CLI exact-pin
+regression; released CLEAN/EXISTING smokes; Meldmark; OMP Stage D; and formal docs closure plus a
+separately authorized docs push. Registry, Git, external repository, and OMP actions each require
+later exact Owner authorization. This handoff records authority only and authorizes no external
+action.
