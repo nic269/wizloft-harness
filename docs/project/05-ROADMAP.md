@@ -71,20 +71,23 @@ Their pushes are separate adoption gates, not part of P2 proof closure.
 
 ## Stage D — OMP interoperability dogfood
 
-Status: not started. Local OMP portability (`4997897`, `5c966c4`) is not this stage.
+Status: temp-only interoperability proof complete; independent Auditor PASS.
 
-Before starting the next broad hardening cycle:
+Completed from clean Harness source `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`:
 
-- install this OMP team profile in the Harness repo;
-- run one complete proof/correction packet through Coordinator → Worker → Auditor;
-- prove OMP reads the repository bootstrap and can invoke project-local Harness;
-- prove Harness Validation/Evidence closes work without OMP-specific logic in Harness core;
-- document any OMP overlap and remove redundant roadmap items.
+- Owner → Coordinator → Worker → Auditor executed through Orca;
+- the no-remote fixture recorded generated bootstrap `222d7501` and Worker candidate `70bb4342`;
+- generated bootstrap discovery and project-local Harness runner invocation passed;
+- Harness Validation/Evidence events correlated across the exercised work;
+- `.omp/` remained ignored/local-only, with no Harness source or registry action.
+
+This closes Stage D's temp-only proof, not committed-profile discoverability, either external push,
+or broader readiness.
 
 ## Stage E — ready for other projects
 
-The project is ready for general internal use when the readiness checklist in
-`08-READY-FOR-OTHER-PROJECTS.md` is complete.
+The project is ready for general internal use when the remaining committed-profile and adoption
+boundaries in `08-READY-FOR-OTHER-PROJECTS.md` are complete.
 
 ## Later hardening candidates
 

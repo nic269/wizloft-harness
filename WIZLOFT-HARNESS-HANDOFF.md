@@ -8,7 +8,7 @@ Context, Memory, Validation, Evidence/Events, and onboarding.
 
 ## Current state
 
-- Harness baseline: clean `main @ 16fe83ca9c7eee9060487869966c1802677de9ed`
+- Harness source baseline for Stage D: clean `main @ bfbad5cde7979d28b80ef98d10fc29949bec0a3b`
 - Public graph: all 14 packages have `candidate=next=0.1.0-alpha.3`
 - Existing 13 packages retain `latest=0.1.0-alpha.2`
 - `@wizloft/harness-project`: accepted automatic `latest=0.1.0-alpha.3`
@@ -17,7 +17,10 @@ Context, Memory, Validation, Evidence/Events, and onboarding.
 - Phase 6 P2 stages 1–5: proof-closed
 - Wizloft CLI: local unpushed `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`
 - Meldmark: local unpushed `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`
-- Immediate open gates: external pushes and OMP Stage D
+- OMP Stage D: temp-only proof passed independent audit; fixture bootstrap `222d7501`, Worker
+  candidate `70bb4342`
+- Immediate open gates: external pushes, committed OMP-profile discoverability, and broader
+  readiness
 
 ## Completed milestones
 
@@ -37,14 +40,19 @@ Context, Memory, Validation, Evidence/Events, and onboarding.
 - Phase 6 P2 clean registry consumer, CLI upgrade/regression, fresh and existing initializer
   smokes, and Meldmark initialization/target validation;
 - durable local commits for the Wizloft CLI and Meldmark candidates.
+- independently audited Owner → Coordinator → Worker → Auditor Stage D execution through Orca,
+  with generated bootstrap discovery, project-local runner invocation, and correlated
+  Validation/Evidence events in a no-remote fixture.
 
 ## Next sequence
 
 1. Keep the Wizloft CLI and Meldmark pushes separate and owner-authorized; do not infer remote
    adoption from their local commits.
-2. Run OMP Stage D only under a new exact packet.
-3. Reassess broader other-project readiness after OMP dogfood.
-4. Begin scope-integrity only after that evidence.
+2. Preserve Stage D as temp-only evidence: `.omp/` remains ignored/local-only, and no Harness
+   source or registry action occurred.
+3. Decide committed-profile discoverability separately; do not mark broader readiness complete
+   from the temp-only proof.
+4. Begin scope-integrity only after the remaining readiness gates are resolved.
 
 ## Team roles
 

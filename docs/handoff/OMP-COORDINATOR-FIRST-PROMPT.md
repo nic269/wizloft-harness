@@ -12,8 +12,8 @@ Authoritative expected state:
 
 - repository: wizloft-harness
 - branch: main
-- HEAD: 16fe83ca9c7eee9060487869966c1802677de9ed
-- expected index before the docs candidate: empty
+- HEAD: bfbad5cde7979d28b80ef98d10fc29949bec0a3b
+- expected index before the Stage D docs candidate: empty
 - public graph: all 14 packages have candidate=next=0.1.0-alpha.3
 - existing 13 packages retain latest=0.1.0-alpha.2
 - @wizloft/harness-project: accepted automatic latest=0.1.0-alpha.3
@@ -21,7 +21,8 @@ Authoritative expected state:
 - Phase 6 P2 stages 1–5: proof-closed
 - Wizloft CLI: local unpushed rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c
 - Meldmark: local unpushed main @ a35cf34a2e2418eaacda6cef39218235d50566b8
-- OMP Stage D: not started
+- OMP Stage D: independently audited temp-only PASS; fixture bootstrap 222d7501 and Worker
+  candidate 70bb4342
 
 Read, in order:
 
@@ -32,12 +33,16 @@ Read, in order:
 5. docs/project/00-START-HERE.md
 6. docs/handoff/CURRENT-HANDOFF.md
 
-Then inspect Git state and verify the baseline. Treat only the allowed
-PHASE6-DURABLE-STATUS-RECONCILIATION-001 docs as the frozen candidate.
+Then inspect Git state and verify the baseline. Treat only the 12 allowed
+STAGE-D-OMP-ORCA-STATUS-RECONCILIATION-002 docs as the frozen candidate.
 
-Do not repeat publication, promotion, G2B, or P2. Do not infer that the local Wizloft CLI or
-Meldmark commits exist on a remote. External pushes and OMP Stage D each require separate exact
-Owner authority and packets.
+Do not repeat publication, promotion, G2B, P2, or Stage D. Stage D proved Owner → Coordinator →
+Worker → Auditor through Orca, generated bootstrap discovery, the project-local runner, and
+Validation/Evidence event correlation in a no-remote fixture. `.omp/` remains ignored/local-only;
+no source or registry action occurred. Do not infer that the local Wizloft CLI or Meldmark commits
+exist on a remote, or that committed-profile discoverability or broader readiness is complete.
+External pushes and any committed-profile action each require separate exact Owner authority and
+packets.
 
 Use OWNER_DECISION_REQUEST for any material decision. Do not run a Worker until a complete packet
 exists.

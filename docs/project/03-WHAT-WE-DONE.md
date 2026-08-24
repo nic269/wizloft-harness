@@ -133,7 +133,17 @@ Commit: `f13d4d56e720336083764609f62fdd0a3341fa8b`
 - Closed distinct fresh/CLEAN and existing-project released initializer smokes.
 - Closed Meldmark released initialization and target validation, then committed the audited
   candidate locally at `a35cf34a2e2418eaacda6cef39218235d50566b8`.
-- Neither external commit is pushed. OMP interoperability dogfood has not started.
+- Neither external commit is pushed.
+
+### OMP Stage D — temp-only interoperability proof
+
+- Ran Owner → Coordinator → Worker → independent Auditor through Orca from clean Harness source
+  `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`.
+- In the no-remote fixture, generated bootstrap `222d7501` was discovered and invoked the
+  project-local runner; Worker candidate `70bb4342` correlated Validation/Evidence events and
+  passed independent audit.
+- Kept `.omp/` ignored and local-only. The packet performed no Harness source, registry,
+  publication, or push action and did not close committed-profile or broader readiness.
 
 ## What the proof strategy accomplished
 

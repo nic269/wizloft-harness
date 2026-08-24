@@ -1,12 +1,12 @@
-# Current Handoff — Post-Phase6-P2 Durable Boundary
+# Current Handoff — Post-OMP-Stage-D Temp-Only Proof
 
 ## Packet identity
 
 - Classification: documentation/status reconciliation only
-- Packet: `PHASE6-DURABLE-STATUS-RECONCILIATION-001`
+- Packet: `STAGE-D-OMP-ORCA-STATUS-RECONCILIATION-002`
 - Repository: `wizloft-harness`
 - Branch: `main`
-- Baseline HEAD: `16fe83ca9c7eee9060487869966c1802677de9ed`
+- Baseline HEAD: `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`
 - Expected index before this candidate: empty
 - Owning plan: `docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`
 - Owning release ADR: `docs/decisions/0012-public-package-release-contract.md`
@@ -19,7 +19,7 @@
 - Replacement `next` proof is sealed by checksum list
   `9ae53b220a4a3fa99f86a7a7e68c68f8e70ce0b624704f812326933d6aae652b` and tree
   `5843f15c650d9f7eb159be6d43bedc7c23d903b1b25b64633f748484ef1faf6a`.
-- G2B fast-forwarded Harness from remote `19946c7a2f07844bc15aab2380837f8f57be8e92`
+- G2B previously fast-forwarded Harness from remote `19946c7a2f07844bc15aab2380837f8f57be8e92`
   through local and remote `main @ 16fe83ca9c7eee9060487869966c1802677de9ed`.
 - Annotated tag object `90560dea4943c1c08fe0e5154f0f9be906a23dba` is
   `harness-v0.1.0-alpha.3` and peels to
@@ -33,28 +33,35 @@
 - Meldmark candidate is committed locally and unpushed at
   `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`, parent
   `480118417ee20cfb64194ad7d65a0ae53b9aa629`.
-- OMP interoperability dogfood has not started and remains Roadmap Stage D.
+- OMP Stage D passed independent audit from clean Harness source
+  `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`: Owner → Coordinator → Worker → Auditor executed
+  through Orca; the no-remote fixture recorded bootstrap `222d7501` and Worker candidate
+  `70bb4342`; generated bootstrap discovery, project-local runner invocation, and correlated
+  Validation/Evidence events passed.
 
 ## Next action
 
-1. Verify Harness `main @ 16fe83ca9c7eee9060487869966c1802677de9ed`; allow only this
-   unstaged docs candidate.
-2. Obtain separate exact authority before pushing either external repository. A local commit is
+1. Independently audit and freeze only the 12-doc Stage D reconciliation candidate based on
+   `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`.
+2. Preserve Stage D's boundary: `.omp/` remains ignored/local-only, the fixture has no remote, and
+   no Harness source or registry action occurred.
+3. Obtain separate exact authority before pushing either external repository. A local commit is
    not evidence of remote adoption.
-3. Route OMP Stage D independently after this docs candidate is audited and committed.
+4. Treat committed OMP-profile discoverability and broader readiness as open gates; do not infer
+   them from the temp-only proof.
 
 ## Forbidden without separate authority
 
 - further npm publication, access mutation, dist-tag mutation, unpublish, or deprecate
 - retagging or rewriting pushed Harness provenance
 - Wizloft CLI or Meldmark push
-- OMP Stage D or broader readiness closeout
+- OMP profile commit/install or broader readiness closeout
 
 ## Stop gates
 
 Stop immediately on baseline or allowlist drift, any attempt to infer external remote adoption,
-any product/architecture/release decision, or any attempt to collapse external push and OMP gates
-into this documentation packet.
+any product/architecture/release decision, or any attempt to turn temp-only Stage D evidence into
+authority for source, registry, committed-profile, or broader-readiness action.
 
 ## Expected dirty state
 

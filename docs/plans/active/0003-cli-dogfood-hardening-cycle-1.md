@@ -14,8 +14,9 @@ dedicated Phase 4C clean rerun from `main @ 2b035e011f44da991543cbc24177985ccccd
 An independent Auditor finding required a proof-only correction so current apply and current
 dry-run prove filesystem snapshot equality and no npm process execution. That correction is
 green. Independent Auditor review passed. Phase 4C proof is closed. Phase 5 implemented the
-fourteen-package `0.1.0-alpha.3` graph. Candidate publication, `next` promotion, G2B, and Phase 6
-P2 stages 1–5 are proof-closed; external pushes and OMP Stage D remain separate.
+fourteen-package `0.1.0-alpha.3` graph. Candidate publication, `next` promotion, G2B, Phase 6
+P2 stages 1–5, and temp-only OMP Stage D proof are closed; external pushes, committed-profile
+discoverability, and broader readiness remain separate.
 
 This file owns the accepted alpha.3 onboarding contract.
 
@@ -123,6 +124,7 @@ Durable alpha.3 release and consumer state:
 | Registry | all 14 have `candidate=next=0.1.0-alpha.3`; the 13 previously published packages retain `latest=0.1.0-alpha.2`; project accepted automatic `latest=0.1.0-alpha.3` |
 | G2B | pushed Harness `main @ 16fe83ca9c7eee9060487869966c1802677de9ed`; annotated `harness-v0.1.0-alpha.3` peels to `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7` |
 | P2 | stages 1–5 proof-closed; CLI and Meldmark candidates committed locally but unpushed |
+| OMP Stage D | independently audited temp-only PASS from clean source `bfbad5c`; no-remote fixture bootstrap `222d7501`, Worker candidate `70bb4342`; `.omp/` remains ignored/local-only |
 
 
 ---
@@ -1756,8 +1758,21 @@ Status: P2 stages 1–5 proof-closed and durably committed where they changed ex
 5. Meldmark released initialization and target validation — committed locally, unpushed, at
    `main @ a35cf34a2e2418eaacda6cef39218235d50566b8` (parent `4801184`).
 
-External pushes are not part of P2 proof closure and remain separately authorized. OMP
-interoperability dogfood is Roadmap Stage D, has not started, and is not Phase 6 P2.
+External pushes are not part of P2 proof closure and remain separately authorized.
+
+### OMP Stage D — temp-only interoperability proof
+
+Status: independently audited PASS.
+
+From clean Harness source `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`, the explicit Stage D
+packet exercised Owner → Coordinator → Worker → Auditor through Orca. The no-remote fixture
+recorded generated bootstrap `222d7501` and Worker candidate `70bb4342`. Generated bootstrap
+discovery and project-local Harness runner invocation passed, and Validation/Evidence events
+correlated across the exercised work.
+
+The proof made no Harness source, registry, push, or publication change. `.omp/` remains an
+ignored local-only overlay. Stage D does not close committed-profile discoverability, either
+external push, or broader other-project readiness.
 
 ---
 

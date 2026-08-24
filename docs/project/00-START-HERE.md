@@ -2,15 +2,16 @@
 
 ## Current mission
 
-Alpha.3 publication, `next` promotion, Harness Git provenance, and Phase 6 P2 stages 1–5 are
-proof-closed. Preserve the separation between those durable facts, unpushed external commits, and
-the unstarted OMP Stage D.
+Alpha.3 publication, `next` promotion, Harness Git provenance, Phase 6 P2 stages 1–5, and the
+temp-only OMP Stage D interoperability proof are closed. Preserve the separation between those
+durable facts, unpushed external commits, committed-profile discoverability, and broader
+readiness.
 
 ## Current checkpoint
 
 - Branch: `main`
-- Authoritative Harness baseline: `16fe83ca9c7eee9060487869966c1802677de9ed`
-- Expected index before this docs candidate: empty
+- Authoritative Harness baseline: `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`
+- Expected index before this Stage D docs candidate: empty
 - Public graph: all 14 packages have `candidate=next=0.1.0-alpha.3`
 - Dist-tags: the 13 previously published packages retain `latest=0.1.0-alpha.2`;
   `@wizloft/harness-project` accepted automatic `latest=0.1.0-alpha.3`
@@ -19,7 +20,10 @@ the unstarted OMP Stage D.
 - Phase 6 P2 stages 1–5: proof-closed
 - Wizloft CLI: local unpushed `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`
 - Meldmark: local unpushed `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`
-- Open gates: both external pushes, OMP Stage D, and broader readiness
+- OMP Stage D: independent-audit PASS from clean source `bfbad5c`; no-remote fixture bootstrap
+  `222d7501`, Worker candidate `70bb4342`; Owner → Coordinator → Worker → Auditor through Orca
+- Stage D boundaries: `.omp/` remains ignored/local-only; no source or registry action occurred
+- Open gates: both external pushes, committed OMP-profile discoverability, and broader readiness
 
 ## Reading order for a new Coordinator
 
@@ -41,9 +45,10 @@ git rev-parse HEAD
 git diff --cached --name-status
 ```
 
-If HEAD matches `16fe83ca9c7eee9060487869966c1802677de9ed` and only this allowed docs
-candidate is dirty, do not repeat publication, promotion, G2B, or P2. Do not push either external
-commit or start OMP Stage D without a separate exact Owner packet.
+If HEAD matches `bfbad5cde7979d28b80ef98d10fc29949bec0a3b` and only this allowed docs
+candidate is dirty, do not repeat publication, promotion, G2B, P2, or Stage D. Do not push either
+external commit, commit/install an OMP profile, or claim broader readiness without a separate exact
+Owner packet.
 
 ## Definition of a successful handoff
 

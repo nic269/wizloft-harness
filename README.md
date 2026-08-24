@@ -32,20 +32,26 @@ Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 
 ## Current status
 
-Slices 0–6, MUH, Self-host, External Package Release Readiness, and the alpha.3
-onboarding/release graph are complete. All fourteen `0.1.0-alpha.3` artifacts are published to
-npmjs.org with `candidate=next=0.1.0-alpha.3`. The thirteen previously published packages retain
+Slices 0–6, MUH, Self-host, External Package Release Readiness, the alpha.3
+onboarding/release graph, and the temp-only OMP Stage D interoperability proof are complete. All
+fourteen `0.1.0-alpha.3` artifacts are published to npmjs.org with
+`candidate=next=0.1.0-alpha.3`. The thirteen previously published packages retain
 `latest=0.1.0-alpha.2`; `@wizloft/harness-project` accepted automatic
 `latest=0.1.0-alpha.3` from its first publication. The audited Git-to-binary provenance is pushed
-through Harness
-`main @ 16fe83ca9c7eee9060487869966c1802677de9ed`; annotated tag
+through Harness `main @ 16fe83ca9c7eee9060487869966c1802677de9ed`; annotated tag
 `harness-v0.1.0-alpha.3` peels to the publication baseline
 `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`.
 
 Phase 6 P2 stages 1–5 are proof-closed. Their external repository candidates are committed locally
 but unpushed: Wizloft CLI `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`
-and Meldmark `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`. External pushes and OMP
-interoperability dogfood remain separate, open gates.
+and Meldmark `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`.
+
+Stage D passed independently audited Owner → Coordinator → Worker → Auditor execution through
+Orca from clean Harness source `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`. The no-remote
+fixture recorded bootstrap `222d7501` and Worker candidate `70bb4342`, including generated
+bootstrap discovery, project-local runner invocation, and correlated Validation/Evidence events.
+This was temp-only proof: `.omp/` remains ignored and local-only, no source or registry action
+occurred, and committed-profile discoverability and broader readiness remain open.
 
 ## Development
 

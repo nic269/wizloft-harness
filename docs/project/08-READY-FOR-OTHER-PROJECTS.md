@@ -1,7 +1,8 @@
 # Readiness Checklist for Other Projects
 
-Publication, promotion/Git provenance, Phase 6 P2 proof, and its two local external commits are
-complete. External pushes, OMP dogfood, and broader adoption remain separate.
+Publication, promotion/Git provenance, Phase 6 P2 proof, its two local external commits, and
+temp-only OMP Stage D proof are complete. External pushes, committed-profile discoverability, and
+broader adoption remain separate.
 
 ## Release readiness
 
@@ -42,7 +43,7 @@ In-repo Phase 4A/4C proofs are complete. These are not published-consumer proofs
 - [x] Fresh-project smoke completed.
 - [x] Existing-project smoke completed.
 - [x] Meldmark initialized and target-validated; candidate committed locally.
-- [ ] OMP + Orca dogfood packet completed.
+- [x] OMP + Orca temp-only dogfood packet completed with independent audit.
 
 ## Documentation readiness
 
@@ -50,7 +51,8 @@ In-repo Phase 4A/4C proofs are complete. These are not published-consumer proofs
 - [x] Current status names the authoritative HEAD and active work.
 - [x] Roadmap separates implementation, release, and publication.
 - [x] Work-packet templates are installed.
-- [ ] OMP agent profiles are installed and discoverable in a committed tree.
+- [ ] OMP agent profiles are installed and discoverable in a committed tree; temp-only Stage D
+  deliberately kept `.omp/` ignored/local-only.
 - [x] Orca permission/worktree settings are documented.
 - [x] A new Coordinator can continue without conversation history.
 
