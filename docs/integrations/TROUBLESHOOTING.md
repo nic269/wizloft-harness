@@ -10,12 +10,14 @@ ls -la .omp/agents
 omp config path
 ```
 
-OMP project config/agents are discovered from the current working directory's non-empty `.omp`
-directory. Start OMP from the worktree root.
+A repository `.omp/` tree is an optional ignored overlay. OMP uses your user or bundled
+configuration when no local overlay exists. If you created an overlay, start OMP from the
+worktree root so it can discover that directory.
 
 ## Worker uses the wrong model
 
-- Verify `.omp/config.yml` role mappings.
+- Verify user/bundled model roles (`omp config path`, `/model`, or `omp config get modelRoles`).
+- If you created a local overlay, verify `.omp/config.yml` role mappings.
 - Verify the agent frontmatter uses `model: "@task"` or `model: "@slow"`.
 - Do not pass an unnecessary per-task model override; it may supersede the agent profile mapping.
 - Use `/model` Roles view or `omp config get modelRoles`.

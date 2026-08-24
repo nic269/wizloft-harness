@@ -3,7 +3,11 @@ set -euo pipefail
 ROOT="$(git rev-parse --show-toplevel)"
 ARGS=(
   --approval-mode always-ask
-  --append-system-prompt "$ROOT/.omp/prompts/auditor.md"
+)
+if [[ -r "$ROOT/.omp/prompts/auditor.md" ]]; then
+  ARGS+=(--append-system-prompt "$ROOT/.omp/prompts/auditor.md")
+fi
+ARGS+=(
   --tools read,grep,glob,bash,lsp
 )
 if [[ -n "${WIZLOFT_OMP_AUDITOR_MODEL:-}" ]]; then

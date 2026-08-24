@@ -5,10 +5,11 @@
 Use OMP in two complementary ways:
 
 1. **Main interactive Coordinator session** — launched with no file-writing tools.
-2. **Project task agents** — `worker` and `auditor` definitions discovered from `.omp/agents/`.
+2. **Project task agents** — `worker` and `auditor` definitions from your OMP user or bundled configuration, or from an optional local `.omp/agents/` overlay.
 
 For Orca-managed independent worktrees, the provided wrapper scripts can also launch Worker and
-Auditor as separate main OMP processes with role-specific prompts and tool surfaces.
+Auditor as separate main OMP processes with role-specific tool surfaces. A readable local role
+prompt under `.omp/prompts/` is an optional customization and is appended only when present.
 
 ## Install OMP
 
@@ -20,17 +21,16 @@ omp config path
 omp models
 ```
 
-Do not put API keys in committed `.omp/config.yml`.
+Do not put API keys in a local `.omp/` overlay.
 
 ## Configure model roles
 
-Copy:
+Use your OMP user or bundled configuration (`omp config path`). A repository `.omp/` tree is an
+optional ignored per-developer or per-worktree overlay, not a supplied asset. Fresh clones do not
+need one.
 
-```bash
-cp .omp/config.yml.example .omp/config.yml
-```
-
-Edit the selectors after checking `omp models` or using `/model`.
+If you want a local overlay, create `.omp/config.yml` yourself from your OMP configuration and
+edit the selectors after checking `omp models` or using `/model`.
 
 Recommended intent mapping:
 
@@ -41,17 +41,18 @@ Recommended intent mapping:
 | `slow` | Auditor | Codex/OpenAI strongest review model |
 | `advisor` | optional continuous review | alias or selector matching Auditor |
 
-Do not hardcode credentials or account-specific tokens in the project file.
+Do not hardcode credentials or account-specific tokens in a local overlay.
 
 ## Project agent discovery
 
-OMP project task agents live at:
+Optional local task-agent definitions, if you create them, live at:
 
 ```text
 .omp/agents/*.md
 ```
 
-Project definitions override user and bundled agents with the same name. The supplied files define:
+Without a local overlay, OMP uses your user and bundled agents. Overlay definitions, if you create
+them, override user and bundled agents with the same name. The three-role team uses:
 
 - `coordinator` — may spawn Worker/Auditor but has no edit/write tools;
 - `worker` — only role with edit/write/AST tools;
@@ -67,7 +68,7 @@ per task unless there is a deliberate exception.
 ./scripts/agents/omp-coordinator.sh
 ```
 
-The wrapper appends the Coordinator prompt and exposes only:
+The wrapper exposes only:
 
 ```text
 read, grep, glob, bash, task, hub, todo
@@ -98,7 +99,7 @@ Use the selectors shown by your own `omp models`; provider/model IDs change over
 
 ## Approval behavior and subagents
 
-Recommended committed project baseline:
+Recommended local overlay baseline (optional; otherwise use user or bundled configuration):
 
 ```yaml
 tools:
@@ -138,7 +139,8 @@ Two safe operating modes are therefore supported:
 The optional OMP advisor is not the independent final Auditor. It is a continuous second-model
 reviewer that can inject concerns after turns.
 
-The supplied `WATCHDOG.md` and `WATCHDOG.yml` keep it read-only. Enable only when desired:
+A local `.omp/WATCHDOG.md` and `.omp/WATCHDOG.yml` overlay, if you create one, can keep it
+read-only. Enable only when desired:
 
 ```text
 /advisor on
@@ -148,10 +150,12 @@ Keep final audit as a separate Auditor packet against a frozen snapshot.
 
 ## OMP context files
 
+These paths are optional ignored overlay files, not repository-supplied assets:
+
 - `.omp/AGENTS.md` — project-native context entry; includes pointers to repository governance.
 - `.omp/RULES.md` — small hard constraints that must survive long sessions.
-- `.omp/prompts/*.md` — main-session role prompts.
-- `.omp/agents/*.md` — task-agent definitions.
+- `.omp/prompts/*.md` — optional main-session role prompts; wrappers append a prompt only when that file is readable.
+- `.omp/agents/*.md` — optional task-agent definitions.
 
 Do not duplicate the entire Harness contract into every agent file. Once alpha.3 initializes the
 repository, the canonical Harness instructions live under `.wizloft/harness/INSTRUCTIONS.md`.
