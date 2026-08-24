@@ -98,8 +98,12 @@ async function packProofSet(proofRoot, releaseVersion) {
   const extractedRoot = path.join(proofRoot, 'extracted');
   await mkdir(tarballsRoot, { recursive: true });
   await mkdir(extractedRoot, { recursive: true });
-  const proofEntries = [...PUBLIC_PACKAGES, { directory: 'packages/project', name: PROJECT_NAME }];
-  assert.equal(PUBLIC_PACKAGES.length, 13);
+  const proofEntries = [...PUBLIC_PACKAGES];
+  assert.equal(PUBLIC_PACKAGES.length, 14);
+  assert.equal(
+    PUBLIC_PACKAGES.some((entry) => entry.name === PROJECT_NAME),
+    true,
+  );
   assert.equal(proofEntries.length, 14);
 
   const packages = new Map();

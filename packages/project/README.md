@@ -2,8 +2,8 @@
 
 Pre-runtime project onboarding and the generated project-local runner for Wizloft Harness.
 
-This workspace copy is private and outside the implemented `0.1.0-alpha.2` public allowlist until
-the alpha.3 release graph includes it.
+This package is the fourteenth public package in the unpublished `0.1.0-alpha.3`
+release-ready candidate graph.
 
 The public programmatic surface is `planProjectInitialization`,
 `applyProjectInitialization(options)`,
@@ -13,8 +13,7 @@ profile, runner, state, operation, and error types.
 Full initializer apply is implemented: non-marker files, bounded isolated `npm` materialization,
 local lockfile/runtime proof for both existing and newly installed materialization,
 state-specific post-materialization certification, and `project.json` last. Installer and marker
-race injection remain internal test seams. This workspace copy remains private and outside the
-implemented `0.1.0-alpha.2` public allowlist until the alpha.3 release graph includes it.
+race injection remain internal test seams.
 
 The `wizloft-harness-project` bin is a scaffolding executable. `init --dry-run` plans
 initialization. `init` without `--dry-run` applies that plan.

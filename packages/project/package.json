@@ -1,7 +1,6 @@
 {
   "name": "@wizloft/harness-project",
-  "version": "0.1.0-alpha.2",
-  "private": true,
+  "version": "0.1.0-alpha.3",
   "type": "module",
   "files": [
     "dist",
@@ -40,5 +39,18 @@
   "engines": {
     "node": ">=22.13.0"
   },
-  "types": "./dist/index.d.ts"
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nic269/wizloft-harness.git",
+    "directory": "packages/project"
+  },
+  "homepage": "https://github.com/nic269/wizloft-harness#readme",
+  "bugs": {
+    "url": "https://github.com/nic269/wizloft-harness/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
 }

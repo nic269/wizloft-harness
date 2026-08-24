@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { execFile as execFileCallback } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { lstat, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { createServer } from 'node:http';
 import os, { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -32,6 +34,205 @@ async function run(command, args, options = {}) {
     const stdout = typeof error.stdout === 'string' ? error.stdout : '';
     const stderr = typeof error.stderr === 'string' ? error.stderr : '';
     throw new Error(`${command} ${args.join(' ')} failed\n${stdout}${stderr}`, { cause: error });
+  }
+}
+
+const PROJECT_NAME = '@wizloft/harness-project';
+const LOCAL_PROTOCOL_PATTERN = /(?:workspace|file|link):/u;
+
+async function isolatedNpmEnv(root, registryUrl, name) {
+  const cache = path.join(root, `${name}-npm-cache`);
+  const userConfig = path.join(root, `${name}-user.npmrc`);
+  const globalConfig = path.join(root, `${name}-global.npmrc`);
+  await mkdir(cache, { recursive: true });
+  await writeFile(userConfig, '');
+  await writeFile(globalConfig, '');
+  const env = { ...process.env };
+  for (const key of Object.keys(env)) {
+    if (/^(?:NODE_AUTH_TOKEN|NPM_TOKEN)$/iu.test(key)) delete env[key];
+    if (/^npm_config_.*(?:auth|token|password|credential)/iu.test(key)) delete env[key];
+  }
+  return {
+    ...env,
+    HTTP_PROXY: 'http://127.0.0.1:9',
+    HTTPS_PROXY: 'http://127.0.0.1:9',
+    NO_PROXY: '127.0.0.1,localhost',
+    http_proxy: 'http://127.0.0.1:9',
+    https_proxy: 'http://127.0.0.1:9',
+    no_proxy: '127.0.0.1,localhost',
+    npm_config_audit: 'false',
+    npm_config_cache: cache,
+    npm_config_fund: 'false',
+    npm_config_globalconfig: globalConfig,
+    npm_config_progress: 'false',
+    npm_config_registry: registryUrl,
+    npm_config_update_notifier: 'false',
+    npm_config_userconfig: userConfig,
+  };
+}
+
+async function startLoopbackRegistry(packages) {
+  const requests = [];
+  let registryUrl;
+  const server = createServer((request, response) => {
+    const requestUrl = new URL(request.url ?? '/', registryUrl);
+    const method = request.method ?? 'GET';
+    const pathname = requestUrl.pathname;
+    const record = { known: false, method, pathname };
+    requests.push(record);
+    if (method !== 'GET' && method !== 'HEAD') {
+      response.writeHead(405).end();
+      return;
+    }
+
+    if (pathname.startsWith('/tarballs/')) {
+      const name = decodeURIComponent(pathname.slice('/tarballs/'.length, -'.tgz'.length));
+      const artifact = packages.get(name);
+      if (artifact === undefined) {
+        response.writeHead(404).end();
+        return;
+      }
+      record.known = true;
+      response.writeHead(200, {
+        'content-length': artifact.bytes.length,
+        'content-type': 'application/octet-stream',
+      });
+      response.end(method === 'HEAD' ? undefined : artifact.bytes);
+      return;
+    }
+
+    let name;
+    try {
+      name = decodeURIComponent(pathname.slice(1));
+    } catch {
+      response.writeHead(400).end();
+      return;
+    }
+    const artifact = packages.get(name);
+    if (artifact === undefined) {
+      response.writeHead(404).end();
+      return;
+    }
+    record.known = true;
+    const tarball = `${registryUrl}tarballs/${encodeURIComponent(name)}.tgz`;
+    const manifest = {
+      ...artifact.manifest,
+      dist: { integrity: artifact.integrity, shasum: artifact.shasum, tarball },
+    };
+    const body = Buffer.from(
+      JSON.stringify({
+        _id: name,
+        name,
+        'dist-tags': { latest: artifact.manifest.version },
+        versions: { [artifact.manifest.version]: manifest },
+      }),
+    );
+    response.writeHead(200, {
+      'content-length': body.length,
+      'content-type': 'application/json',
+    });
+    response.end(method === 'HEAD' ? undefined : body);
+  });
+
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  const address = server.address();
+  assert.notEqual(address, null);
+  assert.equal(typeof address, 'object');
+  registryUrl = `http://127.0.0.1:${address.port}/`;
+  return {
+    registryUrl,
+    requests,
+    async close() {
+      await new Promise((resolve, reject) => {
+        server.close((error) => (error ? reject(error) : resolve()));
+      });
+    },
+  };
+}
+
+async function proveGeneratedProjectOfflineInspect(releaseVersion, packedArtifacts) {
+  const registry = await startLoopbackRegistry(packedArtifacts);
+  try {
+    const bootstrapRoot = path.join(proofRoot, 'generated', 'bootstrap');
+    await mkdir(bootstrapRoot, { recursive: true });
+    await writeFile(
+      path.join(bootstrapRoot, 'package.json'),
+      `${JSON.stringify({
+        name: 'wizloft-packed-initializer-bootstrap',
+        version: '0.0.0',
+        private: true,
+        dependencies: { [PROJECT_NAME]: releaseVersion },
+      })}\n`,
+    );
+    const bootstrapEnv = await isolatedNpmEnv(
+      proofRoot,
+      registry.registryUrl,
+      'generated-bootstrap',
+    );
+    await run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund'], {
+      cwd: bootstrapRoot,
+      env: bootstrapEnv,
+    });
+
+    const bootstrapProjectRoot = path.join(bootstrapRoot, 'node_modules/@wizloft/harness-project');
+    const bootstrapManifest = JSON.parse(
+      await readFile(path.join(bootstrapProjectRoot, 'package.json'), 'utf8'),
+    );
+    assert.equal(bootstrapManifest.version, releaseVersion);
+    const binPath = path.resolve(
+      bootstrapProjectRoot,
+      bootstrapManifest.bin['wizloft-harness-project'],
+    );
+
+    const generatedRepo = path.join(proofRoot, 'generated', 'repo');
+    await mkdir(generatedRepo);
+    await run('git', ['init', '--quiet'], { cwd: generatedRepo });
+    const generatedEnv = await isolatedNpmEnv(proofRoot, registry.registryUrl, 'generated-repo');
+    const applied = await run(
+      process.execPath,
+      [binPath, 'init', '--root', generatedRepo, '--project-id', 'example', '--json'],
+      { cwd: bootstrapRoot, env: generatedEnv },
+    );
+    const applyJson = JSON.parse(applied.stdout);
+    assert.equal(applyJson.finalState, 'current');
+
+    const isolatedManifest = JSON.parse(
+      await readFile(path.join(generatedRepo, '.wizloft/harness/package.json'), 'utf8'),
+    );
+    assert.deepEqual(isolatedManifest.dependencies, { [PROJECT_NAME]: releaseVersion });
+    assert.equal(LOCAL_PROTOCOL_PATTERN.test(JSON.stringify(isolatedManifest.dependencies)), false);
+    await lstat(path.join(generatedRepo, '.wizloft/harness/run.mjs'));
+    await lstat(path.join(generatedRepo, '.wizloft/harness/node_modules/@wizloft/harness-project'));
+    assert.equal(registry.requests.length > 0, true);
+    assert.equal(
+      registry.requests.every(({ known }) => known),
+      true,
+    );
+    assert.equal(
+      registry.requests.every(({ method }) => method === 'GET' || method === 'HEAD'),
+      true,
+    );
+
+    await registry.close();
+    const offlineEnv = {
+      ...generatedEnv,
+      npm_config_offline: 'true',
+      npm_config_registry: 'http://127.0.0.1:9/',
+    };
+    const inspect = await run(process.execPath, ['.wizloft/harness/run.mjs', 'inspect', '--json'], {
+      cwd: generatedRepo,
+      env: offlineEnv,
+    });
+    const envelope = JSON.parse(inspect.stdout);
+    assert.equal(envelope.kind, 'result');
+    assert.equal(envelope.commandId, 'harness.inspect');
+    process.stdout.write('Generated-project packed offline inspect passed.\n');
+  } catch (error) {
+    await registry.close().catch(() => {});
+    throw error;
   }
 }
 
@@ -362,11 +563,19 @@ try {
   const releaseInspection = await inspectReleaseContract(repositoryRoot);
   assert.deepEqual(releaseInspection.errors, []);
   const releaseVersion = releaseInspection.releaseVersion;
+  assert.equal(PUBLIC_PACKAGES.length, 14);
+  assert.equal(new Set(PUBLIC_PACKAGES.map(({ name }) => name)).size, 14);
+  assert.equal(
+    PUBLIC_PACKAGES.some((entry) => entry.name === PROJECT_NAME),
+    true,
+  );
+
   const rootLicense = await readFile(path.join(repositoryRoot, 'LICENSE'));
   await mkdir(tarballsRoot, { recursive: true });
   await mkdir(extractedRoot, { recursive: true });
 
   const tarballByName = new Map();
+  const packedArtifacts = new Map();
   for (const entry of PUBLIC_PACKAGES) {
     const before = new Set(await readdir(tarballsRoot));
     await run('pnpm', ['pack', '--pack-destination', tarballsRoot], {
@@ -379,6 +588,7 @@ try {
     tarballByName.set(entry.name, created[0]);
   }
   assert.equal(tarballByName.size, PUBLIC_PACKAGES.length);
+  assert.equal(tarballByName.has(PROJECT_NAME), true);
 
   for (const entry of PUBLIC_PACKAGES) {
     const tarballName = tarballByName.get(entry.name);
@@ -396,6 +606,18 @@ try {
     assert.equal(manifest.publishConfig.registry, 'https://registry.npmjs.org/');
     assert.equal(manifest.publishConfig.tag, undefined);
     assert.deepEqual(inspectPackedInternalDependencies(manifest, releaseVersion), []);
+    assert.equal(
+      LOCAL_PROTOCOL_PATTERN.test(
+        JSON.stringify({
+          dependencies: manifest.dependencies,
+          devDependencies: manifest.devDependencies,
+          optionalDependencies: manifest.optionalDependencies,
+          peerDependencies: manifest.peerDependencies,
+        }),
+      ),
+      false,
+      `${manifest.name} packed runtime metadata must not contain a local protocol`,
+    );
 
     const packageEntries = await readdir(packageRoot);
     assert.equal(
@@ -406,7 +628,36 @@ try {
     await lstat(path.join(packageRoot, 'package.json'));
     await lstat(path.join(packageRoot, manifest.exports['.'].import));
     await lstat(path.join(packageRoot, manifest.exports['.'].types));
+    if (entry.name === PROJECT_NAME) {
+      assert.deepEqual(Object.keys(manifest.dependencies ?? {}).sort(), [
+        '@wizloft/harness',
+        '@wizloft/harness-authority',
+        '@wizloft/harness-cli-adapter',
+        '@wizloft/harness-commands',
+        '@wizloft/harness-context',
+        '@wizloft/harness-evidence',
+        '@wizloft/harness-kernel',
+        '@wizloft/harness-plugin-file-events',
+        '@wizloft/harness-plugin-file-memory',
+        '@wizloft/harness-plugin-memory-context',
+        '@wizloft/harness-plugin-repository-files',
+        '@wizloft/harness-validation',
+      ]);
+      assert.equal(manifest.dependencies['@wizloft/harness-memory'], undefined);
+      assert.equal(manifest.optionalDependencies, undefined);
+      assert.equal(manifest.peerDependencies, undefined);
+      await lstat(path.join(packageRoot, manifest.bin['wizloft-harness-project']));
+    }
+
+    const bytes = await readFile(tarballPath);
+    packedArtifacts.set(entry.name, {
+      bytes,
+      integrity: `sha512-${createHash('sha512').update(bytes).digest('base64')}`,
+      manifest,
+      shasum: createHash('sha1').update(bytes).digest('hex'),
+    });
   }
+  assert.equal(packedArtifacts.size, 14);
 
   const dependencies = Object.fromEntries(
     PUBLIC_PACKAGES.map((entry) => [
@@ -457,6 +708,8 @@ try {
   });
   process.stdout.write(scenario.stdout);
 
+  await proveGeneratedProjectOfflineInspect(releaseVersion, packedArtifacts);
+
   const [{ stdout: npmVersion }, { stdout: pnpmVersion }] = await Promise.all([
     run('npm', ['--version']),
     run('pnpm', ['--version']),
@@ -469,6 +722,7 @@ try {
         pnpm: pnpmVersion.trim(),
         os: `${os.platform()} ${os.release()} ${os.arch()}`,
         packages: PUBLIC_PACKAGES.length,
+        generatedProjectInspect: 'passed',
       },
       null,
       2,

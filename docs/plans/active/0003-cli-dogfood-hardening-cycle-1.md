@@ -13,7 +13,8 @@ The second correction is implemented and externally approved as a dedicated corr
 dedicated Phase 4C clean rerun from `main @ 2b035e011f44da991543cbc24177985ccccd1084` is green.
 An independent Auditor finding required a proof-only correction so current apply and current
 dry-run prove filesystem snapshot equality and no npm process execution. That correction is
-green. Independent Auditor review passed. Phase 4C proof is closed. Phase 5 has not
+green. Independent Auditor review passed. Phase 4C proof is closed. Phase 5 implemented the
+unpublished fourteen-package `0.1.0-alpha.3` release-ready candidate graph. Phase 6 has not
 started.
 
 This file owns the accepted alpha.3 onboarding contract.
@@ -110,6 +111,17 @@ Verified 2026-08-18 at Phase 0 start:
 | CLI execution | `npm run harness:dev -- <argv>` or product `wizloft harness` / `wizharness` |
 
 The CLI Gate H0 layout is one consumer convention. It is not the generic alpha.3 standard.
+
+Implemented Phase 5 release graph, unpublished candidate only:
+
+| Surface | Observed |
+|---|---|
+| Root identity | `0.1.0-alpha.3` |
+| Public package set | fourteen allowlisted packages including `@wizloft/harness-project` |
+| Project privacy | public / non-private; Self-host remains private |
+| Project layer | derived DAG layer 7 through `@wizloft/harness-cli-adapter` |
+| Publication | none; no dist-tags, Git tags, or Phase 6 work |
+
 
 ---
 
@@ -1712,9 +1724,25 @@ Phase 5 and does not change release identity, package privacy, or the 13-package
 
 ### Phase 5 — Release graph
 
-- lockstep `0.1.0-alpha.3` identity;
-- packed consumer updated for fourteen packages;
-- docs synchronized with implemented contracts.
+Status: implemented as an unpublished release-ready candidate. Phase 6 is not started.
+
+Implemented:
+
+- lockstep `0.1.0-alpha.3` identity sourced from the private root manifest;
+- public allowlist is exactly fourteen packages, including `@wizloft/harness-project`;
+- project keeps the accepted twelve direct runtime dependencies and no peer/optional
+  internal edges; `@wizloft/harness-memory` remains transitive;
+- project layer remains derived as 7 through `@wizloft/harness-cli-adapter`;
+- packed consumer proves the fourteen-artifact set without a duplicate project append,
+  plus facade → commands → CLI adapter and generated-repo offline
+  `node .wizloft/harness/run.mjs inspect`;
+- current-status docs describe the graph as release-ready/candidate only.
+
+Not done and not authorized here:
+
+- npm publication, access mutation, dist-tags, Git tags, or push;
+- Phase 6 external consumer sequence.
+
 
 ### Phase 6 — External consumer sequence
 

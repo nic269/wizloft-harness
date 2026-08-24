@@ -1,6 +1,6 @@
 {
   "name": "@wizloft/harness-plugin-memory-context",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "type": "module",
   "files": [
     "dist",

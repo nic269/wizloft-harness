@@ -302,7 +302,7 @@ function contextContributor(
 
 export const repositoryFilesPlugin: WizloftPlugin<RepositoryFilesConfig> = {
   name: REPOSITORY_FILES_PLUGIN_NAME,
-  version: '0.1.0-alpha.2',
+  version: '0.1.0-alpha.3',
   requires: [requireCapability(AUTHORITY_CAPABILITY), requireCapability(CONTEXT_CAPABILITY)],
   async setup(context) {
     const config = normalizeConfig(context.config);

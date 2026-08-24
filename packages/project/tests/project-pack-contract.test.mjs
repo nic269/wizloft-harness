@@ -111,8 +111,12 @@ test('packed project closes the intended fourteen-artifact runtime graph', async
   const releaseInspection = await inspectReleaseContract(repositoryRoot);
   assert.deepEqual(releaseInspection.errors, []);
   const releaseVersion = releaseInspection.releaseVersion;
-  const proofEntries = [...PUBLIC_PACKAGES, { directory: 'packages/project', name: PROJECT_NAME }];
-  assert.equal(PUBLIC_PACKAGES.length, 13);
+  const proofEntries = [...PUBLIC_PACKAGES];
+  assert.equal(PUBLIC_PACKAGES.length, 14);
+  assert.equal(
+    PUBLIC_PACKAGES.some((entry) => entry.name === PROJECT_NAME),
+    true,
+  );
   assert.equal(proofEntries.length, 14);
   assert.equal(new Set(proofEntries.map(({ name }) => name)).size, proofEntries.length);
 
@@ -171,7 +175,7 @@ test('packed project closes the intended fourteen-artifact runtime graph', async
   }
 
   const projectManifest = manifests.get(PROJECT_NAME);
-  assert.equal(projectManifest.private, true);
+  assert.equal(projectManifest.private, undefined);
   assert.deepEqual(Object.keys(projectManifest.dependencies ?? {}).sort(), PROJECT_DEPENDENCIES);
   assert.equal(projectManifest.dependencies['@wizloft/harness-memory'], undefined);
   assert.equal(projectManifest.optionalDependencies, undefined);

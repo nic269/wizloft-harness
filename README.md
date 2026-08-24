@@ -32,12 +32,14 @@ Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 
 ## Current status
 
-Slices 0–6, MUH, Self-host, and the External Package Release Readiness implementation are complete.
-After the removed `0.1.0-alpha.1` publication attempt, that version is burned and the thirteen
-approved public packages now share the recovery identity `0.1.0-alpha.2`, publishable metadata,
-MIT license artifacts, deterministic release checks, and a packed external npm consumer proof.
-No `alpha.2` package has been published and no `alpha.2` release Git tag has been created. Any
-future publication and continued `wizloft-cli` integration remain separately governed.
+Slices 0–6, MUH, Self-host, External Package Release Readiness, and the alpha.3
+onboarding/release-graph implementation are complete. The fourteen approved public packages,
+including `@wizloft/harness-project`, now share the lockstep identity `0.1.0-alpha.3`,
+publishable metadata, MIT license artifacts, deterministic release checks, a packed external npm
+consumer proof, and a generated-project packed-tarball offline inspect proof. This is a
+release-ready candidate graph only. No `alpha.3` package has been published and no `alpha.3`
+release Git tag has been created. Publication, dist-tags, and continued `wizloft-cli` / Meldmark
+integration remain separately governed Phase 6 work.
 
 ## Development
 

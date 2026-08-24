@@ -113,6 +113,25 @@ export const PUBLIC_PACKAGES = Object.freeze([
     devDependencies: [],
     pluginSource: 'plugins/repository-files/src/index.ts',
   },
+  {
+    directory: 'packages/project',
+    name: '@wizloft/harness-project',
+    dependencies: [
+      '@wizloft/harness',
+      '@wizloft/harness-authority',
+      '@wizloft/harness-cli-adapter',
+      '@wizloft/harness-commands',
+      '@wizloft/harness-context',
+      '@wizloft/harness-evidence',
+      '@wizloft/harness-kernel',
+      '@wizloft/harness-plugin-file-events',
+      '@wizloft/harness-plugin-file-memory',
+      '@wizloft/harness-plugin-memory-context',
+      '@wizloft/harness-plugin-repository-files',
+      '@wizloft/harness-validation',
+    ],
+    devDependencies: [],
+  },
 ]);
 
 export const PUBLIC_PACKAGE_NAMES = new Set(PUBLIC_PACKAGES.map(({ name }) => name));
