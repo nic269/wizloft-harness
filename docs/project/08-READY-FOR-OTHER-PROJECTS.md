@@ -1,9 +1,8 @@
 # Readiness Checklist for Other Projects
 
-Publication, promotion/Git provenance, Phase 6 P2 proof, all ten Meldmark readiness gates, the two
-local external commits, temp-only OMP Stage D proof, and the active plan's substantive/formal scope
-are complete. External pushes, committed-profile discoverability, and broader adoption remain
-separate non-plan gates.
+The local fourteen-package `0.1.0-alpha.3` implementation and packed proof are complete. The public
+release, Phase 6 external-consumer proof, release-dependent Meldmark gates, OMP Stage D, and formal
+active-plan closure remain open.
 
 ## Release readiness
 
@@ -11,9 +10,9 @@ separate non-plan gates.
 - [x] Fourteen-package `0.1.0-alpha.3` release graph is implemented.
 - [x] All packed manifests use exact versions and no local protocols.
 - [x] Exact-minimum Node proof is recorded as a current release-gate result.
-- [x] Publication is explicitly authorized and completed.
-- [x] Clean registry consumer installs the exact fourteen-package graph.
-- [x] `@next` consumer passes through the replacement replay proof.
+- [ ] All fourteen exact `0.1.0-alpha.3` artifacts are published as one coherent graph.
+- [ ] Registry dist-tags and Git-to-binary provenance are independently proved.
+- [ ] A clean registry consumer installs the exact fourteen-package graph.
 
 ## Initializer readiness
 
@@ -40,11 +39,11 @@ In-repo Phase 4A/4C proofs are complete. These are not published-consumer proofs
 
 ## Consumer readiness
 
-- [x] Wizloft CLI exact pins upgraded and regression tested; candidate committed locally.
-- [x] Fresh-project smoke completed.
-- [x] Existing-project smoke completed.
-- [x] Meldmark initialized and target-validated; candidate committed locally.
-- [x] OMP + Orca temp-only dogfood packet completed with independent audit.
+- [ ] Wizloft CLI exact pins are regression-tested against the coherent public alpha.3 graph.
+- [ ] Fresh-project released smoke is completed after coherent publication.
+- [ ] Existing-project released smoke is completed after coherent publication.
+- [ ] Meldmark is initialized and target-validated against the coherent public alpha.3 graph.
+- [ ] OMP Stage D is rerun after coherent publication under separate authority and independent audit.
 
 ## Documentation readiness
 

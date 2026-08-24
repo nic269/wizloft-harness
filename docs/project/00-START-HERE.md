@@ -2,29 +2,26 @@
 
 ## Current mission
 
-Alpha.3 publication, `next` promotion, Harness Git provenance, Phase 6 P2 stages 1–5, all ten
-Meldmark readiness gates, the temp-only OMP Stage D interoperability proof, and the active plan's
-substantive and formal scope are closed. Preserve the separation between those durable facts,
-unpushed external commits, committed-profile discoverability, and broader readiness.
+The local fourteen-package alpha.3 implementation and packed proof are complete, but the public
+release is incomplete. Only `@wizloft/harness-project@0.1.0-alpha.3` is published; the other
+Harness packages remain published at alpha.2. The active plan is open for coherent publication,
+registry and Git-provenance proof, Phase 6 external consumers, and OMP Stage D.
 
 ## Current checkpoint
 
 - Operational baseline: clean checked-out `main`
 - Baseline verification: capture `git rev-parse HEAD` and verify index/worktree status live; do not
   use a documentation-embedded SHA as the expected current HEAD
-- Public graph: all 14 packages have `candidate=next=0.1.0-alpha.3`
-- Dist-tags: the 13 previously published packages retain `latest=0.1.0-alpha.2`;
-  `@wizloft/harness-project` accepted automatic `latest=0.1.0-alpha.3`
-- G2B: Harness local/remote `main @ 16fe83c`; annotated `harness-v0.1.0-alpha.3` peels to
-  `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`
-- Phase 6 P2 stages 1–5: proof-closed
-- Wizloft CLI: local unpushed `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`
-- Meldmark: local unpushed `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`
-- OMP Stage D: independent-audit PASS from clean source `bfbad5c`; no-remote fixture bootstrap
-  `222d7501`, Worker candidate `70bb4342`; Owner → Coordinator → Worker → Auditor through Orca
-- Stage D boundaries: `.omp/` remains ignored/local-only; no source or registry action occurred
-- Later non-plan gates: both external pushes, committed OMP-profile discoverability, and broader
-  readiness
+- Local candidate: fourteen packages implemented at lockstep `0.1.0-alpha.3`; Phase 4C packed proof
+  and Phase 5 release-readiness evidence remain valid
+- Public graph: incomplete; only `@wizloft/harness-project@0.1.0-alpha.3` is published, while the
+  other Harness packages remain published at `0.1.0-alpha.2`
+- Publication/promotion/G2B: no coherent alpha.3 graph or completed registry/Git-provenance proof
+- Phase 6 P2 and release-dependent Meldmark readiness gates: open
+- OMP Stage D: open; a prior temp-only no-remote exercise made no source or registry change and
+  cannot close the gate under the invalid publication premise
+- Boundary: no publish, tag, push, Phase 6, external-consumer, or local OMP action without a new
+  exact Owner packet
 
 ## Reading order for a new Coordinator
 
@@ -46,10 +43,10 @@ git rev-parse HEAD
 git diff --cached --name-status
 ```
 
-Once live preflight confirms clean checked-out `main`, do not repeat publication, promotion, G2B,
-P2, Meldmark readiness proof, or Stage D. Do not push either external commit, commit/install an OMP
-profile, or claim broader readiness without a separate exact Owner packet. `bfbad5c` remains only
-the qualified source provenance for the completed Stage D fixture.
+Once live preflight confirms clean checked-out `main`, preserve the local implementation evidence
+without treating it as public-release proof. Do not publish, promote, tag, push, run Phase 6, or
+change local OMP state without a separate exact Owner packet. A later coherent release and
+independent registry/Git-provenance proof must precede Phase 6 external consumers and Stage D.
 
 ## Definition of a successful handoff
 

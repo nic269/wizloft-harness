@@ -41,49 +41,42 @@ At Phase 5 closeout:
 
 ## Stage C — publication and external consumers
 
-Status: complete through Phase 6 P2 durable local commits.
+Status: open.
 
-### C1. Publication, promotion, and Git provenance
+### C1. Coherent publication, promotion, and Git provenance
 
-Completed:
+Current public state:
 
-- all fourteen frozen artifacts published under `candidate`;
-- immediately after candidate publication, the project had accepted automatic
-  `latest=0.1.0-alpha.3` and had no `next`;
-- later authorized N1 promotion set `next=0.1.0-alpha.3` on all fourteen packages;
-- the thirteen previously published packages retain `latest=0.1.0-alpha.2`;
-- replacement `next` replay independently sealed;
-- Harness `main` pushed through `16fe83ca9c7eee9060487869966c1802677de9ed`;
-- annotated `harness-v0.1.0-alpha.3` pushed and verified to peel to `4b3d5b9`.
+- only `@wizloft/harness-project@0.1.0-alpha.3` is published;
+- the other Harness packages remain published at `0.1.0-alpha.2`;
+- no coherent fourteen-package alpha.3 `candidate`/`next` graph, registry proof, or Git-to-binary
+  provenance is complete.
+
+Exit gates under a later separately authorized release packet:
+
+- prove the already-published project artifact is byte/provenance-identical to the frozen candidate;
+- stop for an Owner decision and new coherent version if it differs;
+- if it matches, publish the remaining thirteen exact frozen artifacts;
+- independently prove all fourteen in the registry, the intended dist-tags, and matching Git
+  provenance.
 
 ### C2. Phase 6 P2 consumer sequence
 
-All five ordered stages are proof-closed: exact-version registry consumer, Wizloft CLI pin
+Status: open and blocked on C1.
+
+After C1 closes, prove in order: an exact-version registry consumer, Wizloft CLI pin
 upgrade/regression, fresh/CLEAN initializer smoke, existing-project initializer smoke, and
-Meldmark initialization/target validation.
-
-The two durable external candidates are local and unpushed:
-
-- Wizloft CLI `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`;
-- Meldmark `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`.
-
-Their pushes are separate adoption gates, not part of P2 proof closure.
+Meldmark initialization/target validation. External repository changes and pushes require
+separate authority.
 
 ## Stage D — OMP interoperability dogfood
 
-Status: temp-only interoperability proof complete; independent Auditor PASS.
+Status: open and blocked on a coherent release plus separate exact authority.
 
-Completed from clean Harness source `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`:
-
-- Owner → Coordinator → Worker → Auditor executed through Orca;
-- the no-remote fixture recorded generated bootstrap `222d7501` and Worker candidate `70bb4342`;
-- generated bootstrap discovery and project-local Harness runner invocation passed;
-- Harness Validation/Evidence events correlated across the exercised work;
-- `.omp/` remained ignored/local-only, with no Harness source or registry action.
-
-This closes Stage D's temp-only proof and the active alpha.3 plan's substantive/formal scope. It
-does not close committed-profile discoverability, either external push, or broader readiness;
-those are later non-plan gates.
+A historical temp-only no-remote exercise kept `.omp/` ignored/local-only and made no Harness
+source or registry action. Because its publication premise was invalid, it is not Stage D
+completion evidence. Rerun and independently audit Stage D only after Stage C establishes the
+coherent release.
 
 ## Stage E — ready for other projects
 

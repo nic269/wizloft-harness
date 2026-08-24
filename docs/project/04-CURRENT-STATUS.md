@@ -7,20 +7,15 @@ Snapshot date: **2026-08-25**
 | Field | Current value |
 |---|---|
 | Harness baseline | clean checked-out `main`; resolve HEAD and status live before each packet |
-| Public identity | 14 packages at `0.1.0-alpha.3` |
-| Candidate | all 14 artifacts published |
-| Dist-tags | all 14 packages `candidate=next=0.1.0-alpha.3`; 13 previously published packages retain `latest=0.1.0-alpha.2`; project accepted automatic `latest=0.1.0-alpha.3` |
-| G2B main | local/remote `16fe83ca9c7eee9060487869966c1802677de9ed` |
-| G2B tag | annotated `harness-v0.1.0-alpha.3` peels to `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7` |
-| Phase 6 P2 | stages 1–5 proof-closed |
-| Wizloft CLI | local unpushed `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`, parent `8738fdac8467ea62e5642169b3052376c9abc4d7` |
-| Meldmark | local unpushed `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`, parent `480118417ee20cfb64194ad7d65a0ae53b9aa629` |
-| OMP Stage D | temp-only independent-audit PASS; no-remote fixture bootstrap `222d7501`, Worker candidate `70bb4342` |
-| Active plan | substantive and formal scope closed; all ten Meldmark readiness gates complete |
-
-The replacement `next` replay is sealed by checksum list
-`9ae53b220a4a3fa99f86a7a7e68c68f8e70ce0b624704f812326933d6aae652b` and tree
-`5843f15c650d9f7eb159be6d43bedc7c23d903b1b25b64633f748484ef1faf6a`.
+| Local alpha.3 candidate | fourteen packages implemented at lockstep `0.1.0-alpha.3`; release-ready but unpublished as a coherent graph |
+| Historical local proof | Phase 4C packed proof and Phase 5 release-readiness review complete |
+| Public registry | incomplete: only `@wizloft/harness-project@0.1.0-alpha.3` is published; the other Harness packages remain at `0.1.0-alpha.2` |
+| Candidate / dist-tags | no coherent fourteen-package alpha.3 `candidate` or `next` graph is proved |
+| Git provenance | no completed Git-to-binary proof for a coherent alpha.3 release |
+| Phase 6 P2 | open; prior results premised on coherent alpha.3 publication are not closure proof |
+| Meldmark readiness | release-dependent gates open |
+| OMP Stage D | open; prior temp-only attempt does not close the release-dependent gate |
+| Active plan | open for publication, registry proof, Git provenance, Phase 6, and Stage D |
 
 ## Current operating objective
 
@@ -28,23 +23,18 @@ Use clean checked-out `main` as the operational baseline. Before routing a packe
 `git rev-parse HEAD` result and verify the index and worktree are clean. A documentation-embedded
 SHA must not be treated as the expected current HEAD.
 
-The active alpha.3 plan is substantively and formally closed: publication, promotion, G2B, Phase 6
-P2 stages 1–5, all ten Meldmark readiness gates, and temp-only OMP Stage D proof are complete.
-Stage D exercised Owner → Coordinator → Worker → Auditor through Orca, generated bootstrap
-discovery, the project-local runner, and Validation/Evidence event correlation. Its qualified
-Harness source provenance is `bfbad5c`; that SHA is not the current operational baseline. `.omp/`
-remains ignored/local-only, the fixture has no remote, and no Harness source or registry action
-occurred.
+The active alpha.3 plan remains open. A later separately authorized release must first prove the
+already-published project artifact is byte/provenance-identical to the frozen candidate. A mismatch
+stops for an Owner decision and new coherent version. If it matches, publish the remaining thirteen
+exact artifacts and independently prove all fourteen in the registry plus matching Git provenance.
+Only then may Phase 6 external consumers, the release-dependent Meldmark gates, and OMP Stage D run
+toward closure.
 
-External pushes, committed-profile discoverability, and broader readiness remain later independent
-Owner decisions, not active-plan closure gates:
+The earlier temp-only OMP exercise used source provenance `bfbad5c`, a no-remote fixture, and an
+ignored/local-only `.omp/` overlay. It made no Harness source or registry change. Preserve those
+facts as historical scope boundaries, but do not treat the exercise as Stage D completion.
 
-- do not republish, repromote, retag, or rewrite pushed Harness provenance;
-- do not treat either local external commit as remote adoption;
-- do not repeat Stage D or convert its temp-only evidence into committed-profile authority;
-- do not mark broader readiness complete while its separate gates remain open.
-
-Authority remains `docs/decisions/0012-public-package-release-contract.md` and the closed contract
+Authority remains `docs/decisions/0012-public-package-release-contract.md` and the open contract
 record in `docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`.
 
 ## Historical correction checkpoint
@@ -61,7 +51,7 @@ The Phase 4C correction checkpoint below is historical. It is not the current ba
 
 Stop and request an owner decision if the next requested packet would:
 
-- republish, repromote, retag, rewrite pushed provenance, or mutate the registry;
-- push either external commit without repository-specific authority and live ref preflight;
-- commit/install OMP profiles or claim broader readiness from the temp-only Stage D proof;
-- change the accepted fourteen-package `0.1.0-alpha.3` identity or reopen closed proof.
+- publish, promote, tag, push, or mutate the registry without a new exact release packet;
+- start Phase 6 external-consumer work before coherent registry and Git-provenance proof;
+- push an external commit without repository-specific authority and live ref preflight;
+- commit/install OMP profiles or run Stage D without its separate exact authority.

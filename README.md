@@ -32,28 +32,21 @@ Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 
 ## Current status
 
-Slices 0–6, MUH, Self-host, External Package Release Readiness, the alpha.3
-onboarding/release graph, all ten Meldmark readiness gates, the active plan's substantive/formal
-scope, and the temp-only OMP Stage D interoperability proof are complete. All
-fourteen `0.1.0-alpha.3` artifacts are published to npmjs.org with
-`candidate=next=0.1.0-alpha.3`. The thirteen previously published packages retain
-`latest=0.1.0-alpha.2`; `@wizloft/harness-project` accepted automatic
-`latest=0.1.0-alpha.3` from its first publication. The audited Git-to-binary provenance is pushed
-through Harness `main @ 16fe83ca9c7eee9060487869966c1802677de9ed`; annotated tag
-`harness-v0.1.0-alpha.3` peels to the publication baseline
-`4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`.
+Slices 0–6, MUH, Self-host, External Package Release Readiness, and the local alpha.3
+implementation are complete. Phase 4C historically proved the fourteen packed artifacts and
+Phase 5 produced a fourteen-package `0.1.0-alpha.3` release-ready candidate.
 
-Phase 6 P2 stages 1–5 are proof-closed. Their external repository candidates are committed locally
-but unpushed: Wizloft CLI `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`
-and Meldmark `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`.
+The public release is incomplete. Only `@wizloft/harness-project@0.1.0-alpha.3` is published; the
+other Harness packages remain published at `0.1.0-alpha.2`. There is therefore no coherent public
+fourteen-package alpha.3 graph, no valid `candidate`/`next` promotion or Git-to-binary provenance
+proof, and no completed Phase 6 consumer or OMP Stage D release proof.
 
-Stage D passed independently audited Owner → Coordinator → Worker → Auditor execution through
-Orca from clean Harness source `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`; that SHA is fixture
-source provenance, not a current operational baseline. The no-remote fixture recorded bootstrap
-`222d7501` and Worker candidate `70bb4342`, including generated bootstrap discovery,
-project-local runner invocation, and correlated Validation/Evidence events. This was temp-only
-proof: `.omp/` remains ignored and local-only, no source or registry action occurred, and external
-pushes, committed-profile discoverability, and broader readiness remain later non-plan gates.
+The active plan remains open for a later, separately authorized coherent release. First prove the
+already-published project artifact is byte-for-byte and provenance-identical to the frozen
+candidate; a mismatch stops for an Owner decision and a new coherent version. If it matches,
+publish the remaining thirteen exact artifacts, prove all fourteen in registry state and matching
+Git provenance, then rerun the Phase 6 external consumer sequence and Stage D. No publish, tag,
+push, external-consumer, or local OMP action is authorized by this status correction.
 
 ## Development
 

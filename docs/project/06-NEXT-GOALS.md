@@ -1,27 +1,29 @@
 # Next Goals
 
-The alpha.3 active plan, all ten Meldmark readiness gates, and temp-only OMP Stage D proof are
-closed. The remaining goals below are later non-plan gates.
+The local fourteen-package alpha.3 implementation is release-ready, but the active plan remains
+open because the public release is incomplete.
 
-## Goal 1 — separately decide external pushes
+## Goal 1 — authorize and prove one coherent alpha.3 release
 
-The durable external commits are local and unpushed:
+Only `@wizloft/harness-project@0.1.0-alpha.3` is published; the other Harness packages remain at
+alpha.2. A later exact Owner packet must first prove the published project artifact is
+byte/provenance-identical to the frozen candidate. A mismatch stops for an Owner decision and new
+coherent version. If it matches, publish the remaining thirteen exact artifacts and independently
+prove all fourteen in the registry, the intended dist-tags, and matching Git provenance.
 
-- Wizloft CLI `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`;
-- Meldmark `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`.
+## Goal 2 — complete Phase 6 external consumers
 
-Any remote adoption requires repository-specific non-force push authority with live ancestry and
-ref preflight. Do not combine either push with unrelated Harness documentation or infer remote
-state.
+Only after the coherent release is proved, run the ordered exact-version consumer, Wizloft CLI,
+fresh/CLEAN initializer, existing-project initializer, and Meldmark gates. External repository
+changes and pushes remain separately authorized.
 
-## Goal 2 — separately decide committed-profile discoverability
+## Goal 3 — complete Stage D
 
-Stage D temp-only proof is complete. `.omp/` remains ignored/local-only, and the proof made no
-Harness source or registry change. Any committed OMP profile or installation is a separate exact
-packet; do not infer documentation readiness from the temp-only fixture.
+Treat the prior temp-only OMP attempt as historical boundary evidence, not completion. After the
+coherent release is proved, obtain a separate exact packet, rerun Stage D, and independently audit
+it. Do not commit or install an OMP profile under this status correction.
 
-## Goal 3 — broader readiness
+## Goal 4 — broader readiness
 
-Reassess `08-READY-FOR-OTHER-PROJECTS.md` after external adoption decisions and
-committed-profile discoverability. Extract a reusable project starter only after those gates
-provide real consumer evidence.
+Reassess `08-READY-FOR-OTHER-PROJECTS.md` only after coherent publication, Phase 6, Stage D,
+external-adoption decisions, and committed-profile discoverability provide valid evidence.

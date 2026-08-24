@@ -112,47 +112,44 @@ Commit: `f13d4d56e720336083764609f62fdd0a3341fa8b`
 - Independent Auditor review passed. No npm publication, dist-tag, Git tag, push, or Phase 6
   consumer work was authorized or performed.
 
-### Candidate publication, promotion, and G2B
+### Partial alpha.3 publication attempt
 
-- Published all fourteen frozen `0.1.0-alpha.3` artifacts under `candidate`.
-- Immediately after candidate publication, `@wizloft/harness-project` had accepted automatic
-  `latest=0.1.0-alpha.3` and had no `next`.
-- A later authorized N1 promotion set `next=0.1.0-alpha.3` on all fourteen packages.
-- The thirteen previously published packages retain `latest=0.1.0-alpha.2`.
-- Replacement `next` replay and registry tree were independently sealed.
-- Fast-forwarded Harness local/remote `main` through
-  `16fe83ca9c7eee9060487869966c1802677de9ed`.
-- Created and pushed annotated `harness-v0.1.0-alpha.3`, which peels to publication baseline
-  `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`.
+- The local fourteen-package `0.1.0-alpha.3` implementation remained the release-ready candidate.
+- Only `@wizloft/harness-project@0.1.0-alpha.3` was actually published.
+- The other Harness packages remain published at `0.1.0-alpha.2`.
+- Prior records claiming all fourteen publications, coherent `candidate`/`next` promotion, sealed
+  registry proof, or Git-to-binary closure are not current completion evidence.
 
 ### Phase 6 P2 — external consumers
 
-- Closed the clean exact-version fourteen-package public-registry consumer.
-- Closed the Wizloft CLI exact-pin upgrade and regression, then committed the audited candidate
-  locally at `b2b2af52df2bd337a341888c2512e74ac2b64c0c`.
-- Closed distinct fresh/CLEAN and existing-project released initializer smokes.
-- Closed Meldmark released initialization and target validation, then committed the audited
-  candidate locally at `a35cf34a2e2418eaacda6cef39218235d50566b8`.
-- Neither external commit is pushed.
+- Work was attempted on registry consumption, the Wizloft CLI, released initializer smokes, and
+  Meldmark.
+- Because the coherent fourteen-package alpha.3 public graph did not exist, that work cannot close
+  Phase 6 or the release-dependent Meldmark gates.
+- Any retained local external-repository commits are not proof of a coherent public release or
+  remote adoption.
 
-### OMP Stage D — temp-only interoperability proof
+### OMP Stage D — temp-only interoperability attempt
 
-- Ran Owner → Coordinator → Worker → independent Auditor through Orca from clean Harness source
-  `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`.
-- In the no-remote fixture, generated bootstrap `222d7501` was discovered and invoked the
-  project-local runner; Worker candidate `70bb4342` correlated Validation/Evidence events and
-  passed independent audit.
-- Kept `.omp/` ignored and local-only. The packet performed no Harness source, registry,
-  publication, or push action and did not close committed-profile or broader readiness.
+- A temp-only no-remote exercise ran from Harness source
+  `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`, with generated bootstrap `222d7501` and Worker
+  candidate `70bb4342`.
+- It kept `.omp/` ignored and local-only and performed no Harness source, registry, publication, or
+  push action.
+- Because it relied on the invalid coherent-publication premise, it does not close Stage D,
+  committed-profile discoverability, or broader readiness.
 
-### Active-plan formal closure
+### Active-plan status correction
 
-- Reconciled the plan's ten completed Meldmark readiness gates to the audited Phase 4C, registry,
-  CLI regression, released initializer, and Meldmark evidence.
-- Replaced self-stale current-HEAD and pending-candidate directions with a clean checked-out `main`
-  operational baseline that must be verified from live Git state.
-- Closed the active alpha.3 plan's substantive and formal scope without treating either external
-  push, committed-profile discoverability, or broader readiness as plan gates.
+- Reopened immutable-partial-publication recovery, proof of all fourteen exact artifacts, registry
+  proof, Git provenance, Phase 6 external consumers, the release-dependent Meldmark gates, and OMP
+  Stage D.
+- Preserved Phase 4C and Phase 5 as local packed-proof and release-readiness evidence only.
+- Required a later packet to compare the already-published project artifact byte/provenance against
+  the frozen candidate, stop for an Owner decision/new coherent version on mismatch, or publish the
+  remaining thirteen and prove all fourteen on match.
+- Kept publication, tagging, pushing, Phase 6, and local OMP work behind later separate Owner
+  decisions and exact packets.
 
 ## What the proof strategy accomplished
 
