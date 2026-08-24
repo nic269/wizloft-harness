@@ -2,30 +2,24 @@
 
 ## Current mission
 
-The Wizloft Harness alpha.3 onboarding implementation is complete through Phase 5. The
-fourteen-package `0.1.0-alpha.3` graph is published to npmjs.org under `candidate`.
-
-The immediate work is **not** a redesign, **not** a Phase 4C rerun, and **not** a new
-publication. Next promotion, Git tag/push, and Phase 6 remain unauthorized. Phase 6 has not
-started.
+Alpha.3 publication, `next` promotion, Harness Git provenance, and Phase 6 P2 stages 1–5 are
+proof-closed. Preserve the separation between those durable facts, unpushed external commits, and
+the unstarted OMP Stage D.
 
 ## Current checkpoint
 
 - Branch: `main`
-- Authoritative HEAD: `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`
-- Commit: `docs: reconcile alpha.3 release status`
-- Expected index: empty
-- Expected committed worktree: clean. This publication-status packet may leave only the allowed
-  status/handoff docs unstaged.
-- Public release graph: 14 packages at `0.1.0-alpha.3`
-- `@wizloft/harness-project`: public at `0.1.0-alpha.3`
-- Phase 4C: closed at `aa6234f832dc2fb0b04bf5039ee2cf81b5772630`
-- Phase 5: implemented and independently audited as an unpublished release-ready candidate
-- Candidate publication: all 14 frozen artifacts published once under `candidate`
-- Dist-tags: 13 packages retain `latest=next=0.1.0-alpha.2`; `@wizloft/harness-project` has
-  accepted automatic `latest=0.1.0-alpha.3` and no `next`
-- Phase 6: not started
-- Publication: candidate publication complete; no explicit latest/next mutation
+- Authoritative Harness baseline: `16fe83ca9c7eee9060487869966c1802677de9ed`
+- Expected index before this docs candidate: empty
+- Public graph: all 14 packages have `candidate=next=0.1.0-alpha.3`
+- Dist-tags: the 13 previously published packages retain `latest=0.1.0-alpha.2`;
+  `@wizloft/harness-project` accepted automatic `latest=0.1.0-alpha.3`
+- G2B: Harness local/remote `main @ 16fe83c`; annotated `harness-v0.1.0-alpha.3` peels to
+  `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`
+- Phase 6 P2 stages 1–5: proof-closed
+- Wizloft CLI: local unpushed `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`
+- Meldmark: local unpushed `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`
+- Open gates: both external pushes, OMP Stage D, and broader readiness
 
 ## Reading order for a new Coordinator
 
@@ -47,9 +41,9 @@ git rev-parse HEAD
 git diff --cached --name-status
 ```
 
-If HEAD matches `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7` and the index is empty, do **not**
-prepare a Phase 4C proof packet. Do **not** publish again, retag, push, or start Phase 6
-without a new Owner packet that names exact allowed paths.
+If HEAD matches `16fe83ca9c7eee9060487869966c1802677de9ed` and only this allowed docs
+candidate is dirty, do not repeat publication, promotion, G2B, or P2. Do not push either external
+commit or start OMP Stage D without a separate exact Owner packet.
 
 ## Definition of a successful handoff
 

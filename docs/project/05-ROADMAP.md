@@ -41,29 +41,33 @@ At Phase 5 closeout:
 
 ## Stage C — publication and external consumers
 
-Status: candidate publication complete; external consumer sequence not started.
+Status: complete through Phase 6 P2 durable local commits.
 
-### C1. Separately authorized publication
+### C1. Publication, promotion, and Git provenance
 
-Completed as `ALPHA3-CANDIDATE-PUBLICATION-001` from `main @ 4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`:
+Completed:
 
-- published all fourteen frozen artifacts with `--tag candidate`;
-- recorded registry versions/tags/hashes;
-- ran clean exact-version and `@wizloft/harness-project` registry consumers;
-- owner accepted automatic `@wizloft/harness-project latest=0.1.0-alpha.3`;
-- no explicit latest/next mutation, no next promotion, no Git tag/push, no unpublish.
+- all fourteen frozen artifacts published under `candidate`;
+- immediately after candidate publication, the project had accepted automatic
+  `latest=0.1.0-alpha.3` and had no `next`;
+- later authorized N1 promotion set `next=0.1.0-alpha.3` on all fourteen packages;
+- the thirteen previously published packages retain `latest=0.1.0-alpha.2`;
+- replacement `next` replay independently sealed;
+- Harness `main` pushed through `16fe83ca9c7eee9060487869966c1802677de9ed`;
+- annotated `harness-v0.1.0-alpha.3` pushed and verified to peel to `4b3d5b9`.
 
-### C2. Consumer sequence
+### C2. Phase 6 P2 consumer sequence
 
-Status: not started. Requires a separately authorized Owner decision.
+All five ordered stages are proof-closed: exact-version registry consumer, Wizloft CLI pin
+upgrade/regression, fresh/CLEAN initializer smoke, existing-project initializer smoke, and
+Meldmark initialization/target validation.
 
-1. Upgrade Wizloft CLI exact Harness pins from alpha.2 to alpha.3.
-2. Run CLI Harness/package regression.
-3. Run fresh-project initialization smoke.
-4. Run existing-project initialization smoke.
-5. Initialize Meldmark with the released initializer.
+The two durable external candidates are local and unpushed:
 
-Do not start C2 from a status or implementation packet.
+- Wizloft CLI `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`;
+- Meldmark `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`.
+
+Their pushes are separate adoption gates, not part of P2 proof closure.
 
 ## Stage D — OMP interoperability dogfood
 

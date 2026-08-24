@@ -1,17 +1,17 @@
 # Readiness Checklist for Other Projects
 
-Completed Phase 4C/5 proof work is checked. Publication, registry proof, CLI regression,
-fresh/existing consumer init, Meldmark, and OMP dogfood remain unchecked.
+Publication, promotion/Git provenance, Phase 6 P2 proof, and its two local external commits are
+complete. External pushes, OMP dogfood, and broader adoption remain separate.
 
 ## Release readiness
 
 - [x] Phase 4C real packaged-runtime proof is committed and green.
 - [x] Fourteen-package `0.1.0-alpha.3` release graph is implemented.
 - [x] All packed manifests use exact versions and no local protocols.
-- [ ] Exact-minimum Node proof is recorded as a current release-gate result.
-- [ ] Publication is explicitly authorized and completed.
-- [ ] Clean registry consumer installs the exact fourteen-package graph.
-- [ ] `@next` consumer passes.
+- [x] Exact-minimum Node proof is recorded as a current release-gate result.
+- [x] Publication is explicitly authorized and completed.
+- [x] Clean registry consumer installs the exact fourteen-package graph.
+- [x] `@next` consumer passes through the replacement replay proof.
 
 ## Initializer readiness
 
@@ -38,10 +38,10 @@ In-repo Phase 4A/4C proofs are complete. These are not published-consumer proofs
 
 ## Consumer readiness
 
-- [ ] Wizloft CLI exact pins upgraded and regression tested.
-- [ ] Fresh-project smoke completed.
-- [ ] Existing-project smoke completed.
-- [ ] Meldmark initialized from the released package.
+- [x] Wizloft CLI exact pins upgraded and regression tested; candidate committed locally.
+- [x] Fresh-project smoke completed.
+- [x] Existing-project smoke completed.
+- [x] Meldmark initialized and target-validated; candidate committed locally.
 - [ ] OMP + Orca dogfood packet completed.
 
 ## Documentation readiness

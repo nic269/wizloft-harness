@@ -8,14 +8,16 @@ Context, Memory, Validation, Evidence/Events, and onboarding.
 
 ## Current state
 
-- HEAD: `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`
-- Public graph: 14 packages at `0.1.0-alpha.3`, all published under `candidate`
-- Existing 13 packages: `latest=next=0.1.0-alpha.2`
-- `@wizloft/harness-project`: accepted automatic `latest=0.1.0-alpha.3`; no `next`
-- Immediate goal: do not start next promotion, Git tag/push, or Phase 6 without a new Owner packet
-- Phase 4C: closed
-- Phase 5: implemented
-- Phase 6: not started
+- Harness baseline: clean `main @ 16fe83ca9c7eee9060487869966c1802677de9ed`
+- Public graph: all 14 packages have `candidate=next=0.1.0-alpha.3`
+- Existing 13 packages retain `latest=0.1.0-alpha.2`
+- `@wizloft/harness-project`: accepted automatic `latest=0.1.0-alpha.3`
+- G2B: Harness `main` pushed through `16fe83c`; annotated `harness-v0.1.0-alpha.3` peels to
+  `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`
+- Phase 6 P2 stages 1–5: proof-closed
+- Wizloft CLI: local unpushed `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`
+- Meldmark: local unpushed `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`
+- Immediate open gates: external pushes and OMP Stage D
 
 ## Completed milestones
 
@@ -30,17 +32,19 @@ Context, Memory, Validation, Evidence/Events, and onboarding.
 - portable npm lockfile correction;
 - Phase 4C packaged-runtime proof;
 - Phase 5 fourteen-package `0.1.0-alpha.3` release graph;
-- candidate publication of all fourteen frozen alpha.3 artifacts.
+- candidate publication and `next` promotion with independently sealed registry proof;
+- pushed Harness Git provenance and annotated alpha.3 tag;
+- Phase 6 P2 clean registry consumer, CLI upgrade/regression, fresh and existing initializer
+  smokes, and Meldmark initialization/target validation;
+- durable local commits for the Wizloft CLI and Meldmark candidates.
 
 ## Next sequence
 
-1. Separately authorize next promotion, Git tag/push, or Phase 6. None of these is authorized now.
-2. Prove remaining external consumers only after Phase 6 authorization.
-3. Upgrade Wizloft CLI pins.
-4. Smoke fresh/existing repositories.
-5. Initialize Meldmark.
-6. Dogfood OMP + Orca team workflow.
-7. Begin scope-integrity only after that evidence.
+1. Keep the Wizloft CLI and Meldmark pushes separate and owner-authorized; do not infer remote
+   adoption from their local commits.
+2. Run OMP Stage D only under a new exact packet.
+3. Reassess broader other-project readiness after OMP dogfood.
+4. Begin scope-integrity only after that evidence.
 
 ## Team roles
 

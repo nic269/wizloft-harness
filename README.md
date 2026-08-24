@@ -33,16 +33,19 @@ Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 ## Current status
 
 Slices 0–6, MUH, Self-host, External Package Release Readiness, and the alpha.3
-onboarding/release-graph implementation are complete. The fourteen approved public packages,
-including `@wizloft/harness-project`, now share the lockstep identity `0.1.0-alpha.3`,
-publishable metadata, MIT license artifacts, deterministic release checks, a packed external npm
-consumer proof, and a generated-project packed-tarball offline inspect proof. All fourteen
-`0.1.0-alpha.3` artifacts are published to npmjs.org under `candidate`. The thirteen previously
-published packages retain `latest` and `next` at `0.1.0-alpha.2`. `@wizloft/harness-project` has
-automatic `latest=0.1.0-alpha.3` from first publish and no `next` tag; that side effect is accepted
-and is not a `next` promotion. No `alpha.3` Git tag has been created. Explicit latest/next
-mutation, Git tag/push, and continued `wizloft-cli` / Meldmark integration remain separately
-governed and unauthorized.
+onboarding/release graph are complete. All fourteen `0.1.0-alpha.3` artifacts are published to
+npmjs.org with `candidate=next=0.1.0-alpha.3`. The thirteen previously published packages retain
+`latest=0.1.0-alpha.2`; `@wizloft/harness-project` accepted automatic
+`latest=0.1.0-alpha.3` from its first publication. The audited Git-to-binary provenance is pushed
+through Harness
+`main @ 16fe83ca9c7eee9060487869966c1802677de9ed`; annotated tag
+`harness-v0.1.0-alpha.3` peels to the publication baseline
+`4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`.
+
+Phase 6 P2 stages 1–5 are proof-closed. Their external repository candidates are committed locally
+but unpushed: Wizloft CLI `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`
+and Meldmark `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`. External pushes and OMP
+interoperability dogfood remain separate, open gates.
 
 ## Development
 

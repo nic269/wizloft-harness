@@ -112,18 +112,28 @@ Commit: `f13d4d56e720336083764609f62fdd0a3341fa8b`
 - Independent Auditor review passed. No npm publication, dist-tag, Git tag, push, or Phase 6
   consumer work was authorized or performed.
 
-### Candidate publication
+### Candidate publication, promotion, and G2B
 
-Packet: `ALPHA3-CANDIDATE-PUBLICATION-001` from `main @ 4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`.
+- Published all fourteen frozen `0.1.0-alpha.3` artifacts under `candidate`.
+- Immediately after candidate publication, `@wizloft/harness-project` had accepted automatic
+  `latest=0.1.0-alpha.3` and had no `next`.
+- A later authorized N1 promotion set `next=0.1.0-alpha.3` on all fourteen packages.
+- The thirteen previously published packages retain `latest=0.1.0-alpha.2`.
+- Replacement `next` replay and registry tree were independently sealed.
+- Fast-forwarded Harness local/remote `main` through
+  `16fe83ca9c7eee9060487869966c1802677de9ed`.
+- Created and pushed annotated `harness-v0.1.0-alpha.3`, which peels to publication baseline
+  `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`.
 
-- Published all fourteen frozen `0.1.0-alpha.3` artifacts to npmjs.org once under `candidate`.
-- Candidate is `0.1.0-alpha.3` for all fourteen packages.
-- The thirteen previously published packages retain `latest=next=0.1.0-alpha.2`.
-- `@wizloft/harness-project` received automatic `latest=0.1.0-alpha.3` and no `next` on first
-  publish. Owner accepted that side effect. No explicit latest/next command ran; this is not a
-  next promotion.
-- No Git tag/push, access change, unpublish, or deprecate.
-- Phase 6 has not started.
+### Phase 6 P2 — external consumers
+
+- Closed the clean exact-version fourteen-package public-registry consumer.
+- Closed the Wizloft CLI exact-pin upgrade and regression, then committed the audited candidate
+  locally at `b2b2af52df2bd337a341888c2512e74ac2b64c0c`.
+- Closed distinct fresh/CLEAN and existing-project released initializer smokes.
+- Closed Meldmark released initialization and target validation, then committed the audited
+  candidate locally at `a35cf34a2e2418eaacda6cef39218235d50566b8`.
+- Neither external commit is pushed. OMP interoperability dogfood has not started.
 
 ## What the proof strategy accomplished
 
@@ -137,6 +147,6 @@ unit/behavior fixtures
 ```
 
 The two production defects appeared only in real packaged execution, before release-graph
-transition. Phase 4C then closed, and Phase 5 implemented the unpublished fourteen-package
-`0.1.0-alpha.3` candidate. Candidate publication later published that frozen graph under
-`candidate`.
+transition. Later gates kept immutable publication, promotion/Git provenance, exact-version
+consumer proof, external repository commits, external pushes, and OMP dogfood independently
+reviewable.

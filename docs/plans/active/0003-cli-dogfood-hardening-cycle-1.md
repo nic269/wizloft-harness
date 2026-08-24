@@ -14,8 +14,8 @@ dedicated Phase 4C clean rerun from `main @ 2b035e011f44da991543cbc24177985ccccd
 An independent Auditor finding required a proof-only correction so current apply and current
 dry-run prove filesystem snapshot equality and no npm process execution. That correction is
 green. Independent Auditor review passed. Phase 4C proof is closed. Phase 5 implemented the
-unpublished fourteen-package `0.1.0-alpha.3` release-ready candidate graph. Candidate
-publication later published that frozen graph under `candidate`. Phase 6 has not started.
+fourteen-package `0.1.0-alpha.3` graph. Candidate publication, `next` promotion, G2B, and Phase 6
+P2 stages 1–5 are proof-closed; external pushes and OMP Stage D remain separate.
 
 This file owns the accepted alpha.3 onboarding contract.
 
@@ -112,7 +112,7 @@ Verified 2026-08-18 at Phase 0 start:
 
 The CLI Gate H0 layout is one consumer convention. It is not the generic alpha.3 standard.
 
-Implemented Phase 5 release graph, then candidate publication:
+Durable alpha.3 release and consumer state:
 
 | Surface | Observed |
 |---|---|
@@ -120,7 +120,9 @@ Implemented Phase 5 release graph, then candidate publication:
 | Public package set | fourteen allowlisted packages including `@wizloft/harness-project` |
 | Project privacy | public / non-private; Self-host remains private |
 | Project layer | derived DAG layer 7 through `@wizloft/harness-cli-adapter` |
-| Publication | all 14 published under `candidate`; 13 retain `latest=next=0.1.0-alpha.2`; `@wizloft/harness-project` has accepted automatic `latest=0.1.0-alpha.3` and no `next`; no Git tag/push or Phase 6 |
+| Registry | all 14 have `candidate=next=0.1.0-alpha.3`; the 13 previously published packages retain `latest=0.1.0-alpha.2`; project accepted automatic `latest=0.1.0-alpha.3` |
+| G2B | pushed Harness `main @ 16fe83ca9c7eee9060487869966c1802677de9ed`; annotated `harness-v0.1.0-alpha.3` peels to `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7` |
+| P2 | stages 1–5 proof-closed; CLI and Meldmark candidates committed locally but unpushed |
 
 
 ---
@@ -1637,7 +1639,8 @@ runtime execution. It does not start Phase 4C or change release identity, packag
 
 Status: proof-only current apply/dry-run correction green at
 `2b035e011f44da991543cbc24177985ccccd1084`; independent Auditor review passed; Phase 4C proof
-is closed. Phase 5 subsequently implemented the unpublished fourteen-package `0.1.0-alpha.3` release-ready candidate graph; Phase 6 has not started.
+is closed. Phase 5, release/promotion provenance, and Phase 6 P2 subsequently closed without
+changing this historical proof boundary.
 
 Owns isolated packed-tarball resolution and generated-repository packaged-runtime proof only.
 
@@ -1724,48 +1727,37 @@ Phase 5 and does not change release identity, package privacy, or the 13-package
 
 ### Phase 5 — Release graph
 
-Status: Phase 5 implemented the unpublished release-ready candidate. Subsequent candidate
-publication is complete. Phase 6 is not started.
+Status: implemented at `f13d4d56e720336083764609f62fdd0a3341fa8b`. Subsequent publication,
+promotion, and Git provenance gates are complete.
 
-Implemented:
+The fourteen-package lockstep `0.1.0-alpha.3` graph includes public
+`@wizloft/harness-project` at derived layer 7. Phase 5 itself remained an unpublished
+implementation turn. A later candidate packet published all fourteen artifacts under `candidate`.
+Immediately after candidate publication, the project had accepted automatic
+`latest=0.1.0-alpha.3` and had no `next`. A later authorized N1 promotion set
+`next=0.1.0-alpha.3` on all fourteen packages; the thirteen previously published packages retain
+`latest=0.1.0-alpha.2`.
 
-- lockstep `0.1.0-alpha.3` identity sourced from the private root manifest;
-- public allowlist is exactly fourteen packages, including `@wizloft/harness-project`;
-- project keeps the accepted twelve direct runtime dependencies and no peer/optional
-  internal edges; `@wizloft/harness-memory` remains transitive;
-- project layer remains derived as 7 through `@wizloft/harness-cli-adapter`;
-- packed consumer proves the fourteen-artifact set without a duplicate project append,
-  plus facade → commands → CLI adapter and generated-repo offline
-  `node .wizloft/harness/run.mjs inspect`;
-- current-status docs describe the graph as release-ready/candidate only.
-
-Not done and not authorized in the Phase 5 implementation turn:
-
-- npm publication, access mutation, dist-tags, Git tags, or push;
-- Phase 6 external consumer sequence.
-
-Subsequent separately authorized candidate publication (`ALPHA3-CANDIDATE-PUBLICATION-001`)
-published the fourteen frozen artifacts under `candidate`. Owner accepted automatic
-`@wizloft/harness-project latest=0.1.0-alpha.3`. Explicit latest/next mutation, next
-promotion, Git tag/push, and Phase 6 remain unauthorized.
-
+Harness G2B fast-forwarded `main` through `16fe83ca9c7eee9060487869966c1802677de9ed`.
+Annotated `harness-v0.1.0-alpha.3` peels to the publication baseline
+`4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`.
 
 ### Phase 6 — External consumer sequence
 
-Separately authorized:
+Status: P2 stages 1–5 proof-closed and durably committed where they changed external repositories.
 
-```text
-Harness repo proof
-  -> publish complete coherent graph
-  -> clean external consumer of alpha.3
-  -> upgrade Wizloft CLI exact alpha.2 pins to exact alpha.3
-  -> run CLI Harness/package regression
-  -> fresh-project init smoke
-  -> existing-project init smoke
-  -> Meldmark init with the released initializer
-```
+1. Clean exact-version public-registry consumer — closed at Harness `16fe83c`.
+2. Wizloft CLI exact-pin upgrade and regression — committed locally, unpushed, at
+   `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c` (parent `8738fdac`).
+3. Fresh/CLEAN released initializer smoke — closed in sealed packet
+   `PHASE6-RELEASED-INIT-SMOKES-002`.
+4. Existing-project released initializer smoke — closed in the same packet with distinct
+   assertions.
+5. Meldmark released initialization and target validation — committed locally, unpushed, at
+   `main @ a35cf34a2e2418eaacda6cef39218235d50566b8` (parent `4801184`).
 
-Do not publish from an implementation turn unless a later release turn authorizes it.
+External pushes are not part of P2 proof closure and remain separately authorized. OMP
+interoperability dogfood is Roadmap Stage D, has not started, and is not Phase 6 P2.
 
 ---
 

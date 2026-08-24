@@ -12,16 +12,16 @@ Authoritative expected state:
 
 - repository: wizloft-harness
 - branch: main
-- HEAD: 4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7
-- expected index: empty
-- expected committed worktree: clean
-- current public graph: 14 packages at 0.1.0-alpha.3, all published under candidate
-- @wizloft/harness-project: public 0.1.0-alpha.3; accepted automatic latest=0.1.0-alpha.3; no next
-- existing 13 packages: latest=next=0.1.0-alpha.2
-- Phase 4C: closed at aa6234f832dc2fb0b04bf5039ee2cf81b5772630
-- Phase 5: implemented, independently audited, unpublished at closeout
-- Phase 6: not started
-- publication: candidate publication complete; no explicit latest/next mutation; not a next promotion
+- HEAD: 16fe83ca9c7eee9060487869966c1802677de9ed
+- expected index before the docs candidate: empty
+- public graph: all 14 packages have candidate=next=0.1.0-alpha.3
+- existing 13 packages retain latest=0.1.0-alpha.2
+- @wizloft/harness-project: accepted automatic latest=0.1.0-alpha.3
+- G2B: remote main through 16fe83c; annotated harness-v0.1.0-alpha.3 peels to 4b3d5b9
+- Phase 6 P2 stages 1–5: proof-closed
+- Wizloft CLI: local unpushed rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c
+- Meldmark: local unpushed main @ a35cf34a2e2418eaacda6cef39218235d50566b8
+- OMP Stage D: not started
 
 Read, in order:
 
@@ -32,14 +32,12 @@ Read, in order:
 5. docs/project/00-START-HERE.md
 6. docs/handoff/CURRENT-HANDOFF.md
 
-Then inspect Git state and verify the baseline. If it matches, do not prepare a Phase 4C packet.
-The next action is a separately authorized Owner next-promotion, Git tag/push, or Phase 6
-decision. Use docs/templates/OWNER-DECISION-REQUEST.md. Do not issue a promotion or Phase 6 Work
-Packet until that decision exists and names exact allowed paths.
+Then inspect Git state and verify the baseline. Treat only the allowed
+PHASE6-DURABLE-STATUS-RECONCILIATION-001 docs as the frozen candidate.
 
-If the only dirty paths are the status/handoff docs from
-ALPHA3-PUBLICATION-STATUS-RECONCILIATION-001, treat that as the current documentation candidate,
-not as a reason to reopen Phase 4C or republish.
+Do not repeat publication, promotion, G2B, or P2. Do not infer that the local Wizloft CLI or
+Meldmark commits exist on a remote. External pushes and OMP Stage D each require separate exact
+Owner authority and packets.
 
 Use OWNER_DECISION_REQUEST for any material decision. Do not run a Worker until a complete packet
 exists.

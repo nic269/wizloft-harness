@@ -1,44 +1,35 @@
 # Current Status
 
-Snapshot date: **2026-08-24**
+Snapshot date: **2026-08-25**
 
-## Repository state
+## Repository and release state
 
 | Field | Current value |
 |---|---|
-| Branch | `main` |
-| HEAD | `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7` |
-| Commit | `docs: reconcile alpha.3 release status` |
-| Expected index | empty |
-| Expected committed worktree | clean |
-| Public graph | 14 packages |
-| Public identity | `0.1.0-alpha.3` |
-| Project package | public `0.1.0-alpha.3` |
-| Phase 4C | closed at `aa6234f832dc2fb0b04bf5039ee2cf81b5772630` |
-| Phase 5 | implemented and independently audited as an unpublished release-ready candidate |
-| Candidate publication | all 14 frozen artifacts published once under `candidate` |
-| Dist-tags | 13 packages `latest=next=0.1.0-alpha.2`; `@wizloft/harness-project` accepted automatic `latest=0.1.0-alpha.3`, no `next` |
-| Phase 6 | not started |
-| Publication | candidate complete; no explicit latest/next mutation; not a next promotion |
+| Harness baseline | clean `main @ 16fe83ca9c7eee9060487869966c1802677de9ed` |
+| Public identity | 14 packages at `0.1.0-alpha.3` |
+| Candidate | all 14 artifacts published |
+| Dist-tags | all 14 packages `candidate=next=0.1.0-alpha.3`; 13 previously published packages retain `latest=0.1.0-alpha.2`; project accepted automatic `latest=0.1.0-alpha.3` |
+| G2B main | local/remote `16fe83ca9c7eee9060487869966c1802677de9ed` |
+| G2B tag | annotated `harness-v0.1.0-alpha.3` peels to `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7` |
+| Phase 6 P2 | stages 1–5 proof-closed |
+| Wizloft CLI | local unpushed `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`, parent `8738fdac8467ea62e5642169b3052376c9abc4d7` |
+| Meldmark | local unpushed `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`, parent `480118417ee20cfb64194ad7d65a0ae53b9aa629` |
+| OMP Stage D | not started |
 
-This publication-status packet may leave only the allowed status/handoff docs unstaged. That
-does not reopen Phase 4C, authorize next promotion, or start Phase 6.
-
-Evidence root:
-`/var/folders/yg/dk0mc14d183_6tvg70k548wh0000gn/T/wizloft-alpha3-node22130-.j5DCyb4mQy`
+The replacement `next` replay is sealed by checksum list
+`9ae53b220a4a3fa99f86a7a7e68c68f8e70ce0b624704f812326933d6aae652b` and tree
+`5843f15c650d9f7eb159be6d43bedc7c23d903b1b25b64633f748484ef1faf6a`.
 
 ## Exact immediate objective
 
-Do **not** rerun Phase 4C. Do **not** start Phase 6. Do **not** run explicit latest/next
-commands, Git tag/push, or another publication.
+Freeze and independently audit this docs-only reconciliation. After it is committed, external
+pushes and OMP Stage D remain independent Owner decisions:
 
-The next Owner/Coordinator action is a separately authorized next-promotion, Git tag/push, or
-Phase 6 decision. Until that decision exists:
-
-- no further npm publication, access change, or dist-tag;
-- no Git tag or push for alpha.3;
-- no Wizloft CLI pin upgrade, Phase 6 registry consumer, fresh/existing init smoke, Meldmark, or
-  OMP dogfood packet.
+- do not republish, repromote, retag, or rewrite pushed Harness provenance;
+- do not treat either local external commit as remote adoption;
+- do not start OMP Stage D from a push or docs packet;
+- do not mark broader readiness complete while its separate gates remain open.
 
 Authority remains `docs/decisions/0012-public-package-release-contract.md` and
 `docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`.
@@ -57,7 +48,7 @@ The Phase 4C correction checkpoint below is historical. It is not the current ba
 
 Stop and request an owner decision if the next requested packet would:
 
-- publish again, retag, push, or mutate a registry;
-- start Phase 6 consumer work without a new Owner authorization;
-- change the accepted fourteen-package `0.1.0-alpha.3` identity;
-- treat the closed Phase 4C proof as unfinished WIP.
+- republish, repromote, retag, rewrite pushed provenance, or mutate the registry;
+- push either external commit without repository-specific authority and live ref preflight;
+- start OMP Stage D or claim broader readiness from this docs packet;
+- change the accepted fourteen-package `0.1.0-alpha.3` identity or reopen closed proof.

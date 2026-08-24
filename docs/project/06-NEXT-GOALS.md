@@ -1,61 +1,29 @@
 # Next Goals
 
-## Goal 1 — Owner release/publication decision
+## Goal 1 — freeze durable Phase 6 P2 authority
 
-Owner: Owner
-Coordinator: prepare the decision request only
-Writer: none until authorization exists
-Auditor: required for any later publication packet
+Independently audit and commit the allowed Harness status/handoff/plan docs against
+`main @ 16fe83ca9c7eee9060487869966c1802677de9ed`.
 
-Do not rerun Phase 4C. Do not implement Phase 6 in a status packet.
+Do not repeat the completed publication, `next` promotion, G2B, or P2 consumer stages.
 
-The Coordinator should open `docs/templates/OWNER-DECISION-REQUEST.md` against:
+## Goal 2 — separately decide external pushes
 
-- baseline `f13d4d56e720336083764609f62fdd0a3341fa8b`;
-- ADR `docs/decisions/0012-public-package-release-contract.md`;
-- plan `docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`.
+The durable external commits are local and unpushed:
 
-The decision must say whether publication is authorized. Absence of that decision means stop.
+- Wizloft CLI `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`;
+- Meldmark `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`.
 
-## Goal 2 — authorized publication only
+Any remote adoption requires repository-specific non-force push authority with live ancestry and
+ref preflight. Do not combine either push with this Harness docs packet or infer remote state.
 
-Publication is a distinct owner-authorized operation. It must not be mixed with source
-implementation or with this status reconciliation.
+## Goal 3 — OMP + Orca dogfood
 
-If authorized, publish the already-implemented fourteen-package `0.1.0-alpha.3` graph. Do not
-invent a new version, unpublish, or reuse a failed version.
+Roadmap Stage D remains unstarted. Use a separate exact Coordinator → Worker → independent Auditor
+packet to prove repository bootstrap, project-local Harness invocation, and Validation/Evidence
+closeout without adding OMP/model/orchestration semantics to Harness core.
 
-## Goal 3 — registry proof
+## Goal 4 — broader readiness
 
-Only after publication:
-
-- clean registry consumer installs the exact fourteen-package graph;
-- `@next` consumer passes.
-
-Do not claim registry availability before those proofs exist.
-
-## Goal 4 — Phase 6 consumer sequence
-
-Phase 6 has not started. After registry proof:
-
-1. Upgrade Wizloft CLI exact Harness pins from alpha.2 to alpha.3.
-2. Run CLI Harness/package regression.
-3. Run fresh-project initialization smoke.
-4. Run existing-project initialization smoke.
-5. Initialize Meldmark with the released initializer.
-
-## Goal 5 — OMP + Orca dogfood
-
-Use one complete Coordinator → Worker → Auditor packet after the released initializer is the
-consumer contract. Local OMP overlay/portability work is already committed and is not this goal.
-
-## Goal 6 — extract a reusable project starter
-
-After dogfood, produce a minimal starter that contains:
-
-- Harness initializer command;
-- `.omp` team profiles;
-- work-packet templates;
-- Orca worktree conventions;
-- project-specific `PROJECT.md` content;
-- no copied generated Harness runtime.
+Reassess `08-READY-FOR-OTHER-PROJECTS.md` after external adoption decisions and OMP Stage D.
+Extract a reusable project starter only after those gates provide real consumer evidence.
