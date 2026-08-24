@@ -9,8 +9,12 @@ matrix committed at `4612359ba5d6204af140b6a4eb4cbf795d406ce4`. Phase 4B packed 
 committed at `a116899ebcd20c5ee111f828f32cb412e5cd0af3`. Phase 4C real packed execution
 exposed and corrected an ESM-resolution defect at
 `cabe413e29adb30d56400cf8f6ed76b1ee476cf2`, then exposed a non-portable npm lockfile defect.
-The second correction is implemented and externally approved as a dedicated correction. Phase 4C
-remains blocked pending a dedicated clean rerun from the correction checkpoint.
+The second correction is implemented and externally approved as a dedicated correction. The
+dedicated Phase 4C clean rerun from `main @ 2b035e011f44da991543cbc24177985ccccd1084` is green.
+An independent Auditor finding required a proof-only correction so current apply and current
+dry-run prove filesystem snapshot equality and no npm process execution. That correction is
+green. Independent Auditor review passed. Phase 4C proof is closed. Phase 5 has not
+started.
 
 This file owns the accepted alpha.3 onboarding contract.
 
@@ -1619,8 +1623,9 @@ runtime execution. It does not start Phase 4C or change release identity, packag
 
 #### Phase 4C — Generated-repository packaged runtime proof
 
-Status: blocked; not completed. A clean rerun is required from the dedicated correction
-checkpoint.
+Status: proof-only current apply/dry-run correction green at
+`2b035e011f44da991543cbc24177985ccccd1084`; independent Auditor review passed; Phase 4C proof
+is closed. Phase 5 has not started.
 
 Owns isolated packed-tarball resolution and generated-repository packaged-runtime proof only.
 
@@ -1650,9 +1655,60 @@ unapplied, first-init markers remain absent, and upgrade markers remain unchange
 recovery command remains
 `npm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund`.
 
-Phase 4C remains blocked and not completed. A later dedicated turn must rerun the untracked real
-packed-runtime proof from the frozen second-correction checkpoint; this correction turn does not
-start Phase 5.
+The dedicated clean rerun ran from `main @ 2b035e011f44da991543cbc24177985ccccd1084` against the
+untracked proof `packages/project/tests/project-packed-runtime.test.mjs` (then SHA-256
+`30159299e1c21862fe2a9d252e0cd791b5eddf579ee8865b16a7969293f4d84a`). The proof uses
+dependency-context-aware ESM traversal: each packed package is resolved with `import.meta.resolve`
+from that package's own installed root, then walks the declared Harness dependency graph. It does
+not assume top-level hoisting.
+
+That first clean-rerun current-state check established only JSON `current` / empty operations and
+an unchanged loopback-registry request count. Independent Auditor review found that insufficient:
+it did not compare generated-repository filesystem bytes and could not distinguish a skipped npm
+invocation from an npm invocation satisfied by a warm cache.
+
+The proof-only correction (`PHASE4C-PACKED-RUNTIME-PROOF-CORRECTION-001`, advisor verdict A) keeps
+the accepted Phase 4C product/runtime contract unchanged. It adds, inside the existing packed
+runtime proof and only around the already-current generated repository, a full-tree filesystem
+snapshot of that repository immediately before current apply, immediately after current apply, and
+after current dry-run, plus a test-local executable `npm` PATH sentinel that records any process
+execution and exits 66. Real bootstrap `npm install` and fresh-clone `npm ci` still execute against
+the loopback registry with isolated cache/config. Current calls continue to prove zero
+package-source requests.
+
+Corrected proof SHA-256
+`5edeb6b71386bf950b31e9fde7c3becd1fa36dc577e9f71e4921199433457d5f`.
+`pnpm --filter @wizloft/harness-project build` succeeded. Focused proof
+`node --test packages/project/tests/project-packed-runtime.test.mjs` passed 1/1 in 6754.368625ms.
+`pnpm --filter @wizloft/harness-project test` passed 153/153. `pnpm verify` and
+`pnpm release:check` succeeded.
+
+The clean rerun, after this correction, proved:
+
+- fourteen actual packed artifacts (13 public + still-private `@wizloft/harness-project`);
+- loopback-only npm source on 127.0.0.1 and isolated cache/config;
+- packed initializer bootstrap;
+- dry-run zero mutation and no package-source requests;
+- production real npm install;
+- portable generated lockfile with root-relative `node_modules/...` keys;
+- dependency-context-aware ESM resolution of all fourteen packages without a top-level-hoisting
+  assumption;
+- no source/bootstrap escape;
+- wrapper help, inspect, Authority, Context, Validation;
+- runtime makes no package-source requests;
+- real Git clone without `node_modules`;
+- exact recovery error before `npm ci`;
+- exact `npm --prefix .wizloft/harness ci --ignore-scripts --no-audit --no-fund` succeeds;
+- marker and lockfile bytes preserved across `npm ci`;
+- clone runtime succeeds;
+- current apply and current dry-run: JSON `current` / empty operations; generated-repository
+  filesystem snapshot equal before apply, after apply, and after dry-run; npm PATH sentinel
+  recorded zero invocations; zero package-source requests;
+- both runtimes work after local registry shutdown;
+- registry audit contains only known artifacts and GET/HEAD.
+
+Independent Auditor review passed. Phase 4C proof is closed. This turn does not start
+Phase 5 and does not change release identity, package privacy, or the 13-package public graph.
 
 ### Phase 5 — Release graph
 
@@ -1879,9 +1935,11 @@ Proof layering is explicit:
 - Phase 4A uses the injected installer seam to prove repository classification, mutation,
   marker-last, recovery, and idempotency behavior without registry npm or package packing.
 - Phase 4C owns actual packed artifacts, the real production initializer, real npm install, real
-  fresh-clone npm ci, and a loopback-only package source. It remains blocked pending a dedicated
-  clean rerun from the portable-lockfile correction checkpoint; dependency-context-aware package
-  resolution remains required and must not assume top-level hoisting.
+  fresh-clone npm ci, and a loopback-only package source. The dedicated clean rerun from
+  `2b035e011f44da991543cbc24177985ccccd1084`, including the proof-only current apply/dry-run
+  filesystem-snapshot and npm-sentinel correction, is green. Independent Auditor review passed.
+  Phase 4C proof is closed. Dependency-context-aware package resolution remains required and
+  must not assume top-level hoisting.
 
 ---
 
