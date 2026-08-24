@@ -18,7 +18,7 @@ Exit gate met:
 
 ## Stage B — release graph transition
 
-Status: complete as an unpublished release-ready candidate.
+Status: complete. Phase 5 implemented the unpublished release-ready candidate graph.
 
 ### B1. Phase 5 implementation
 
@@ -34,23 +34,28 @@ Completed:
 - fourteen-package packed consumer proof rerun;
 - independent Auditor review passed.
 
-Still true:
+At Phase 5 closeout:
 
-- no publication, dist-tag, Git tag, or push;
-- Phase 6 has not started.
+- no publication, dist-tag, Git tag, or push had been performed;
+- Phase 6 had not started.
 
 ## Stage C — publication and external consumers
 
-Status: not started. Requires a separately authorized Owner decision.
+Status: candidate publication complete; external consumer sequence not started.
 
 ### C1. Separately authorized publication
 
-- publish all fourteen coherent packages with prerelease tag;
-- record registry versions/tags/hashes;
-- run clean exact-version and `@next` consumers;
-- do not unpublish or reuse a failed version; fix forward.
+Completed as `ALPHA3-CANDIDATE-PUBLICATION-001` from `main @ 4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`:
+
+- published all fourteen frozen artifacts with `--tag candidate`;
+- recorded registry versions/tags/hashes;
+- ran clean exact-version and `@wizloft/harness-project` registry consumers;
+- owner accepted automatic `@wizloft/harness-project latest=0.1.0-alpha.3`;
+- no explicit latest/next mutation, no next promotion, no Git tag/push, no unpublish.
 
 ### C2. Consumer sequence
+
+Status: not started. Requires a separately authorized Owner decision.
 
 1. Upgrade Wizloft CLI exact Harness pins from alpha.2 to alpha.3.
 2. Run CLI Harness/package regression.
@@ -58,7 +63,7 @@ Status: not started. Requires a separately authorized Owner decision.
 4. Run existing-project initialization smoke.
 5. Initialize Meldmark with the released initializer.
 
-Do not start C1 or C2 from a status or implementation packet.
+Do not start C2 from a status or implementation packet.
 
 ## Stage D — OMP interoperability dogfood
 

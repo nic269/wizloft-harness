@@ -12,15 +12,16 @@ Authoritative expected state:
 
 - repository: wizloft-harness
 - branch: main
-- HEAD: f13d4d56e720336083764609f62fdd0a3341fa8b
+- HEAD: 4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7
 - expected index: empty
 - expected committed worktree: clean
-- current public graph: 14 packages at 0.1.0-alpha.3
-- @wizloft/harness-project: public 0.1.0-alpha.3
+- current public graph: 14 packages at 0.1.0-alpha.3, all published under candidate
+- @wizloft/harness-project: public 0.1.0-alpha.3; accepted automatic latest=0.1.0-alpha.3; no next
+- existing 13 packages: latest=next=0.1.0-alpha.2
 - Phase 4C: closed at aa6234f832dc2fb0b04bf5039ee2cf81b5772630
-- Phase 5: implemented, independently audited, unpublished
+- Phase 5: implemented, independently audited, unpublished at closeout
 - Phase 6: not started
-- publication: not authorized
+- publication: candidate publication complete; no explicit latest/next mutation; not a next promotion
 
 Read, in order:
 
@@ -32,12 +33,13 @@ Read, in order:
 6. docs/handoff/CURRENT-HANDOFF.md
 
 Then inspect Git state and verify the baseline. If it matches, do not prepare a Phase 4C packet.
-The next action is a separately authorized Owner release/publication decision. Use
-docs/templates/OWNER-DECISION-REQUEST.md. Do not issue a publication or Phase 6 Work Packet until
-that decision exists and names exact allowed paths.
+The next action is a separately authorized Owner next-promotion, Git tag/push, or Phase 6
+decision. Use docs/templates/OWNER-DECISION-REQUEST.md. Do not issue a promotion or Phase 6 Work
+Packet until that decision exists and names exact allowed paths.
 
-If the only dirty paths are the status/handoff docs from ACTIVE-PLAN-STATUS-RECONCILIATION-001,
-treat that as the current documentation candidate, not as a reason to reopen Phase 4C.
+If the only dirty paths are the status/handoff docs from
+ALPHA3-PUBLICATION-STATUS-RECONCILIATION-001, treat that as the current documentation candidate,
+not as a reason to reopen Phase 4C or republish.
 
 Use OWNER_DECISION_REQUEST for any material decision. Do not run a Worker until a complete packet
 exists.

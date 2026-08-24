@@ -10,7 +10,8 @@
   release-readiness plan.
 - `plans/active/0003-cli-dogfood-hardening-cycle-1.md` — current CLI dogfood retrospective
   and onboarding-only alpha.3 contract. Phase 5 implemented the unpublished
-  fourteen-package `0.1.0-alpha.3` release-ready candidate graph.
+  fourteen-package `0.1.0-alpha.3` release-ready candidate graph. Candidate publication later
+  published that frozen graph under `candidate`.
 - `consumers/WIZLOFT-CLI.md` — first external dogfood/rewrite contract.
 - `consumers/MELDMARK.md` — later domain-rich consumer.
 - `references/` — reference map and pinned baselines.

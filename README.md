@@ -36,10 +36,13 @@ Slices 0–6, MUH, Self-host, External Package Release Readiness, and the alpha.
 onboarding/release-graph implementation are complete. The fourteen approved public packages,
 including `@wizloft/harness-project`, now share the lockstep identity `0.1.0-alpha.3`,
 publishable metadata, MIT license artifacts, deterministic release checks, a packed external npm
-consumer proof, and a generated-project packed-tarball offline inspect proof. This is a
-release-ready candidate graph only. No `alpha.3` package has been published and no `alpha.3`
-release Git tag has been created. Publication, dist-tags, and continued `wizloft-cli` / Meldmark
-integration remain separately governed Phase 6 work.
+consumer proof, and a generated-project packed-tarball offline inspect proof. All fourteen
+`0.1.0-alpha.3` artifacts are published to npmjs.org under `candidate`. The thirteen previously
+published packages retain `latest` and `next` at `0.1.0-alpha.2`. `@wizloft/harness-project` has
+automatic `latest=0.1.0-alpha.3` from first publish and no `next` tag; that side effect is accepted
+and is not a `next` promotion. No `alpha.3` Git tag has been created. Explicit latest/next
+mutation, Git tag/push, and continued `wizloft-cli` / Meldmark integration remain separately
+governed and unauthorized.
 
 ## Development
 

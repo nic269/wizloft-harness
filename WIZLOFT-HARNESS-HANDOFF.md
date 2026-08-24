@@ -8,12 +8,14 @@ Context, Memory, Validation, Evidence/Events, and onboarding.
 
 ## Current state
 
-- HEAD: `19946c7a2f07844bc15aab2380837f8f57be8e92`
-- Public graph: 13 packages at `0.1.0-alpha.2`
-- Project package: private alpha.2
-- Current WIP: untracked `packages/project/tests/project-packed-runtime.test.mjs`
-- Immediate goal: clean Phase 4C packaged-runtime rerun
-- Phase 5: not started
+- HEAD: `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`
+- Public graph: 14 packages at `0.1.0-alpha.3`, all published under `candidate`
+- Existing 13 packages: `latest=next=0.1.0-alpha.2`
+- `@wizloft/harness-project`: accepted automatic `latest=0.1.0-alpha.3`; no `next`
+- Immediate goal: do not start next promotion, Git tag/push, or Phase 6 without a new Owner packet
+- Phase 4C: closed
+- Phase 5: implemented
+- Phase 6: not started
 
 ## Completed milestones
 
@@ -25,19 +27,20 @@ Context, Memory, Validation, Evidence/Events, and onboarding.
 - repository acceptance matrix;
 - packed fourteen-artifact closure;
 - ESM-resolution correction;
-- portable npm lockfile correction.
+- portable npm lockfile correction;
+- Phase 4C packaged-runtime proof;
+- Phase 5 fourteen-package `0.1.0-alpha.3` release graph;
+- candidate publication of all fourteen frozen alpha.3 artifacts.
 
 ## Next sequence
 
-1. Close Phase 4C proof.
-2. Transition to fourteen-package `0.1.0-alpha.3` graph.
-3. Separately authorize and perform publication.
-4. Prove clean registry consumers.
-5. Upgrade Wizloft CLI pins.
-6. Smoke fresh/existing repositories.
-7. Initialize Meldmark.
-8. Dogfood OMP + Orca team workflow.
-9. Begin scope-integrity only after that evidence.
+1. Separately authorize next promotion, Git tag/push, or Phase 6. None of these is authorized now.
+2. Prove remaining external consumers only after Phase 6 authorization.
+3. Upgrade Wizloft CLI pins.
+4. Smoke fresh/existing repositories.
+5. Initialize Meldmark.
+6. Dogfood OMP + Orca team workflow.
+7. Begin scope-integrity only after that evidence.
 
 ## Team roles
 
