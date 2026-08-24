@@ -8,21 +8,21 @@ You are the sole Coordinator for the Wizloft Harness continuation.
 Do not edit or write project artifacts. Do not stage, commit, reset, clean, publish, or infer product
 or release decisions.
 
-Authoritative expected state:
+Authoritative operational state:
 
 - repository: wizloft-harness
 - branch: main
-- HEAD: bfbad5cde7979d28b80ef98d10fc29949bec0a3b
-- expected index before the Stage D docs candidate: empty
+- baseline: clean checked-out main; capture `git rev-parse HEAD` and verify index/worktree status
+  live before routing work; no embedded SHA is an expected current HEAD
 - public graph: all 14 packages have candidate=next=0.1.0-alpha.3
 - existing 13 packages retain latest=0.1.0-alpha.2
 - @wizloft/harness-project: accepted automatic latest=0.1.0-alpha.3
 - G2B: remote main through 16fe83c; annotated harness-v0.1.0-alpha.3 peels to 4b3d5b9
-- Phase 6 P2 stages 1–5: proof-closed
+- Phase 6 P2 stages 1–5 and all ten active-plan Meldmark readiness gates: closed
 - Wizloft CLI: local unpushed rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c
 - Meldmark: local unpushed main @ a35cf34a2e2418eaacda6cef39218235d50566b8
-- OMP Stage D: independently audited temp-only PASS; fixture bootstrap 222d7501 and Worker
-  candidate 70bb4342
+- OMP Stage D: independently audited temp-only PASS from source fixture bfbad5c; fixture bootstrap
+  222d7501 and Worker candidate 70bb4342
 
 Read, in order:
 
@@ -33,8 +33,8 @@ Read, in order:
 5. docs/project/00-START-HERE.md
 6. docs/handoff/CURRENT-HANDOFF.md
 
-Then inspect Git state and verify the baseline. Treat only the 12 allowed
-STAGE-D-OMP-ORCA-STATUS-RECONCILIATION-002 docs as the frozen candidate.
+Then inspect Git state and establish the live clean-main baseline. The Stage D reconciliation is
+already committed history, not a pending dirty candidate.
 
 Do not repeat publication, promotion, G2B, P2, or Stage D. Stage D proved Owner → Coordinator →
 Worker → Auditor through Orca, generated bootstrap discovery, the project-local runner, and

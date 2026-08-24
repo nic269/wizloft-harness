@@ -33,7 +33,8 @@ Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 ## Current status
 
 Slices 0–6, MUH, Self-host, External Package Release Readiness, the alpha.3
-onboarding/release graph, and the temp-only OMP Stage D interoperability proof are complete. All
+onboarding/release graph, all ten Meldmark readiness gates, the active plan's substantive/formal
+scope, and the temp-only OMP Stage D interoperability proof are complete. All
 fourteen `0.1.0-alpha.3` artifacts are published to npmjs.org with
 `candidate=next=0.1.0-alpha.3`. The thirteen previously published packages retain
 `latest=0.1.0-alpha.2`; `@wizloft/harness-project` accepted automatic
@@ -47,11 +48,12 @@ but unpushed: Wizloft CLI `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74a
 and Meldmark `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`.
 
 Stage D passed independently audited Owner → Coordinator → Worker → Auditor execution through
-Orca from clean Harness source `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`. The no-remote
-fixture recorded bootstrap `222d7501` and Worker candidate `70bb4342`, including generated
-bootstrap discovery, project-local runner invocation, and correlated Validation/Evidence events.
-This was temp-only proof: `.omp/` remains ignored and local-only, no source or registry action
-occurred, and committed-profile discoverability and broader readiness remain open.
+Orca from clean Harness source `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`; that SHA is fixture
+source provenance, not a current operational baseline. The no-remote fixture recorded bootstrap
+`222d7501` and Worker candidate `70bb4342`, including generated bootstrap discovery,
+project-local runner invocation, and correlated Validation/Evidence events. This was temp-only
+proof: `.omp/` remains ignored and local-only, no source or registry action occurred, and external
+pushes, committed-profile discoverability, and broader readiness remain later non-plan gates.
 
 ## Development
 

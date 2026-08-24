@@ -81,8 +81,9 @@ Completed from clean Harness source `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`:
 - Harness Validation/Evidence events correlated across the exercised work;
 - `.omp/` remained ignored/local-only, with no Harness source or registry action.
 
-This closes Stage D's temp-only proof, not committed-profile discoverability, either external push,
-or broader readiness.
+This closes Stage D's temp-only proof and the active alpha.3 plan's substantive/formal scope. It
+does not close committed-profile discoverability, either external push, or broader readiness;
+those are later non-plan gates.
 
 ## Stage E — ready for other projects
 

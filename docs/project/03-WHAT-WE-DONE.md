@@ -145,6 +145,15 @@ Commit: `f13d4d56e720336083764609f62fdd0a3341fa8b`
 - Kept `.omp/` ignored and local-only. The packet performed no Harness source, registry,
   publication, or push action and did not close committed-profile or broader readiness.
 
+### Active-plan formal closure
+
+- Reconciled the plan's ten completed Meldmark readiness gates to the audited Phase 4C, registry,
+  CLI regression, released initializer, and Meldmark evidence.
+- Replaced self-stale current-HEAD and pending-candidate directions with a clean checked-out `main`
+  operational baseline that must be verified from live Git state.
+- Closed the active alpha.3 plan's substantive and formal scope without treating either external
+  push, committed-profile discoverability, or broader readiness as plan gates.
+
 ## What the proof strategy accomplished
 
 The staged proof model worked as intended:

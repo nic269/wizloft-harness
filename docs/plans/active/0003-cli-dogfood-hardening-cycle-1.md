@@ -1,8 +1,9 @@
 # Execution Plan — CLI Dogfood Retrospective and Hardening Cycle 1
 
-Status: Accepted contract. Phase 0 committed. Portable-wrapper versus host-CLI clarification
-committed. Phase 1 committed at `fac903208236d59353a98e52158fe85b770fb8c2`. Phase 2 committed
-at `feb372e62c295c43fe234282b9371e4e5e6af985`. Phase 3A committed at
+Status: Accepted contract; implementation, delivery proof, and formal plan scope are complete.
+Phase 0 committed. Portable-wrapper versus host-CLI clarification committed. Phase 1 committed at
+`fac903208236d59353a98e52158fe85b770fb8c2`. Phase 2 committed at
+`feb372e62c295c43fe234282b9371e4e5e6af985`. Phase 3A committed at
 `29dd040293419eba5bbc72195ac2eeec62b2a92c`. Phase 3B materialization + sentinel
 committed at `a23f34ff885e88c9686a0523a7492b8da87fcd67`. Phase 4A repository acceptance
 matrix committed at `4612359ba5d6204af140b6a4eb4cbf795d406ce4`. Phase 4B packed package closure
@@ -15,8 +16,9 @@ An independent Auditor finding required a proof-only correction so current apply
 dry-run prove filesystem snapshot equality and no npm process execution. That correction is
 green. Independent Auditor review passed. Phase 4C proof is closed. Phase 5 implemented the
 fourteen-package `0.1.0-alpha.3` graph. Candidate publication, `next` promotion, G2B, Phase 6
-P2 stages 1–5, and temp-only OMP Stage D proof are closed; external pushes, committed-profile
-discoverability, and broader readiness remain separate.
+P2 stages 1–5, all ten Meldmark readiness gates in section 26, and temp-only OMP Stage D proof
+are closed. External pushes, committed-profile discoverability, and broader readiness are later
+non-plan gates.
 
 This file owns the accepted alpha.3 onboarding contract.
 
@@ -1986,18 +1988,24 @@ Proof layering is explicit:
 
 ## 26. Meldmark readiness
 
-Meldmark may be initialized only after all of the following are true:
+All ten gates that authorized Meldmark initialization are complete:
 
-- [ ] CLEAN fixture is green
-- [ ] EXISTING fixture is green
-- [ ] idempotent re-init is green
-- [ ] marker/discovery/commit-sentinel proof is green
-- [ ] at least AGENTS.md adapter is installed by default
-- [ ] stable Context `<projectId>:project` resolves as specified
-- [ ] `0.1.0-alpha.3` is published as a complete fourteen-package graph
-- [ ] a clean external npm consumer proves the released graph
-- [ ] Wizloft CLI exact alpha.3 pin regression is green
-- [ ] Meldmark is initialized with the released command, not a hand-copied Gate H0 tree
+- [x] CLEAN fixture is green — Phase 4A acceptance and the released fresh/CLEAN smoke.
+- [x] EXISTING fixture is green — Phase 4A acceptance and the released existing-project smoke.
+- [x] Idempotent re-init is green — Phase 4A/4C acceptance and released initializer evidence.
+- [x] Marker/discovery/commit-sentinel proof is green — Phase 4A/4C acceptance.
+- [x] At least AGENTS.md adapter is installed by default — Phase 4A/4C acceptance.
+- [x] Stable Context `<projectId>:project` resolves as specified — Phase 4A/4C acceptance and
+  Meldmark target validation.
+- [x] `0.1.0-alpha.3` is published as a complete fourteen-package graph — candidate publication,
+  `next` promotion, and sealed registry proof.
+- [x] A clean external npm consumer proves the released graph — Phase 6 P2 stage 1.
+- [x] Wizloft CLI exact alpha.3 pin regression is green — Phase 6 P2 stage 2.
+- [x] Meldmark was initialized with the released command, not a hand-copied Gate H0 tree — Phase 6
+  P2 stage 5 released initialization and target validation.
+
+These completed plan gates do not imply that either external repository was pushed. External
+pushes, committed-profile discoverability, and broader readiness remain separate non-plan gates.
 
 Required Meldmark command shape:
 

@@ -8,18 +8,19 @@ Context, Memory, Validation, Evidence/Events, and onboarding.
 
 ## Current state
 
-- Harness source baseline for Stage D: clean `main @ bfbad5cde7979d28b80ef98d10fc29949bec0a3b`
+- Operational baseline: clean checked-out `main`; resolve HEAD and status live before new work
 - Public graph: all 14 packages have `candidate=next=0.1.0-alpha.3`
 - Existing 13 packages retain `latest=0.1.0-alpha.2`
 - `@wizloft/harness-project`: accepted automatic `latest=0.1.0-alpha.3`
 - G2B: Harness `main` pushed through `16fe83c`; annotated `harness-v0.1.0-alpha.3` peels to
   `4b3d5b9d2aa7adb5274b644ce022ad5bbfaf9fa7`
-- Phase 6 P2 stages 1–5: proof-closed
+- Phase 6 P2 stages 1–5 and all ten Meldmark readiness gates: proof-closed
 - Wizloft CLI: local unpushed `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`
 - Meldmark: local unpushed `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`
-- OMP Stage D: temp-only proof passed independent audit; fixture bootstrap `222d7501`, Worker
-  candidate `70bb4342`
-- Immediate open gates: external pushes, committed OMP-profile discoverability, and broader
+- OMP Stage D: temp-only proof passed independent audit from source fixture `bfbad5c`; fixture
+  bootstrap `222d7501`, Worker candidate `70bb4342`
+- Active alpha.3 plan: substantive and formal scope closed
+- Later non-plan gates: external pushes, committed OMP-profile discoverability, and broader
   readiness
 
 ## Completed milestones
@@ -43,6 +44,8 @@ Context, Memory, Validation, Evidence/Events, and onboarding.
 - independently audited Owner → Coordinator → Worker → Auditor Stage D execution through Orca,
   with generated bootstrap discovery, project-local runner invocation, and correlated
   Validation/Evidence events in a no-remote fixture.
+- formal active-plan closure through reconciliation of all completed Meldmark gates and a
+  live-verified clean-`main` operational baseline.
 
 ## Next sequence
 

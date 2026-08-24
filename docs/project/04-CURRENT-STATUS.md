@@ -6,7 +6,7 @@ Snapshot date: **2026-08-25**
 
 | Field | Current value |
 |---|---|
-| Harness baseline | clean `main @ bfbad5cde7979d28b80ef98d10fc29949bec0a3b` |
+| Harness baseline | clean checked-out `main`; resolve HEAD and status live before each packet |
 | Public identity | 14 packages at `0.1.0-alpha.3` |
 | Candidate | all 14 artifacts published |
 | Dist-tags | all 14 packages `candidate=next=0.1.0-alpha.3`; 13 previously published packages retain `latest=0.1.0-alpha.2`; project accepted automatic `latest=0.1.0-alpha.3` |
@@ -16,28 +16,36 @@ Snapshot date: **2026-08-25**
 | Wizloft CLI | local unpushed `rewrite/typescript @ b2b2af52df2bd337a341888c2512e74ac2b64c0c`, parent `8738fdac8467ea62e5642169b3052376c9abc4d7` |
 | Meldmark | local unpushed `main @ a35cf34a2e2418eaacda6cef39218235d50566b8`, parent `480118417ee20cfb64194ad7d65a0ae53b9aa629` |
 | OMP Stage D | temp-only independent-audit PASS; no-remote fixture bootstrap `222d7501`, Worker candidate `70bb4342` |
+| Active plan | substantive and formal scope closed; all ten Meldmark readiness gates complete |
 
 The replacement `next` replay is sealed by checksum list
 `9ae53b220a4a3fa99f86a7a7e68c68f8e70ce0b624704f812326933d6aae652b` and tree
 `5843f15c650d9f7eb159be6d43bedc7c23d903b1b25b64633f748484ef1faf6a`.
 
-## Exact immediate objective
+## Current operating objective
 
-Freeze and independently audit this docs-only Stage D reconciliation. Stage D exercised Owner →
-Coordinator → Worker → Auditor through Orca, generated bootstrap discovery, the project-local
-runner, and Validation/Evidence event correlation. `.omp/` remains ignored/local-only; the fixture
-has no remote; no Harness source or registry action occurred.
+Use clean checked-out `main` as the operational baseline. Before routing a packet, record the live
+`git rev-parse HEAD` result and verify the index and worktree are clean. A documentation-embedded
+SHA must not be treated as the expected current HEAD.
 
-After this candidate, external pushes, committed-profile discoverability, and broader readiness
-remain independent Owner decisions:
+The active alpha.3 plan is substantively and formally closed: publication, promotion, G2B, Phase 6
+P2 stages 1–5, all ten Meldmark readiness gates, and temp-only OMP Stage D proof are complete.
+Stage D exercised Owner → Coordinator → Worker → Auditor through Orca, generated bootstrap
+discovery, the project-local runner, and Validation/Evidence event correlation. Its qualified
+Harness source provenance is `bfbad5c`; that SHA is not the current operational baseline. `.omp/`
+remains ignored/local-only, the fixture has no remote, and no Harness source or registry action
+occurred.
+
+External pushes, committed-profile discoverability, and broader readiness remain later independent
+Owner decisions, not active-plan closure gates:
 
 - do not republish, repromote, retag, or rewrite pushed Harness provenance;
 - do not treat either local external commit as remote adoption;
 - do not repeat Stage D or convert its temp-only evidence into committed-profile authority;
 - do not mark broader readiness complete while its separate gates remain open.
 
-Authority remains `docs/decisions/0012-public-package-release-contract.md` and
-`docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`.
+Authority remains `docs/decisions/0012-public-package-release-contract.md` and the closed contract
+record in `docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`.
 
 ## Historical correction checkpoint
 

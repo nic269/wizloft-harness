@@ -1,13 +1,12 @@
-# Current Handoff — Post-OMP-Stage-D Temp-Only Proof
+# Current Handoff — Active Plan Closed; Residual Gates Separate
 
-## Packet identity
+## Operational identity
 
-- Classification: documentation/status reconciliation only
-- Packet: `STAGE-D-OMP-ORCA-STATUS-RECONCILIATION-002`
+- Classification: operational handoff after active-plan closure
 - Repository: `wizloft-harness`
-- Branch: `main`
-- Baseline HEAD: `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`
-- Expected index before this candidate: empty
+- Operational baseline: clean checked-out `main`
+- Live preflight: record `git rev-parse HEAD`, then require an empty index and worktree before
+  routing any new packet; do not compare against a documentation-embedded expected HEAD
 - Owning plan: `docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`
 - Owning release ADR: `docs/decisions/0012-public-package-release-contract.md`
 
@@ -41,14 +40,15 @@
 
 ## Next action
 
-1. Independently audit and freeze only the 12-doc Stage D reconciliation candidate based on
-   `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`.
-2. Preserve Stage D's boundary: `.omp/` remains ignored/local-only, the fixture has no remote, and
-   no Harness source or registry action occurred.
+1. Treat the alpha.3 active plan, all ten Meldmark readiness gates, and temp-only OMP Stage D proof
+   as closed; do not repeat their publication, promotion, G2B, P2, or proof work.
+2. Preserve Stage D's boundary and source provenance: `.omp/` remains ignored/local-only, the
+   fixture has no remote, no Harness source or registry action occurred, and `bfbad5c` identifies
+   the Stage D source fixture rather than the current Harness baseline.
 3. Obtain separate exact authority before pushing either external repository. A local commit is
    not evidence of remote adoption.
-4. Treat committed OMP-profile discoverability and broader readiness as open gates; do not infer
-   them from the temp-only proof.
+4. Treat committed OMP-profile discoverability and broader readiness as later non-plan gates; do
+   not infer them from the temp-only proof.
 
 ## Forbidden without separate authority
 
@@ -63,6 +63,7 @@ Stop immediately on baseline or allowlist drift, any attempt to infer external r
 any product/architecture/release decision, or any attempt to turn temp-only Stage D evidence into
 authority for source, registry, committed-profile, or broader-readiness action.
 
-## Expected dirty state
+## Expected working state
 
-Unstaged, uncommitted, allowed status/handoff docs only. Independent Auditor review is required.
+Start from clean checked-out `main`, resolving HEAD and status live. Any future candidate requires
+its own exact packet, frozen diff, and independent Auditor review.

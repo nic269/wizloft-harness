@@ -1,8 +1,9 @@
 # Readiness Checklist for Other Projects
 
-Publication, promotion/Git provenance, Phase 6 P2 proof, its two local external commits, and
-temp-only OMP Stage D proof are complete. External pushes, committed-profile discoverability, and
-broader adoption remain separate.
+Publication, promotion/Git provenance, Phase 6 P2 proof, all ten Meldmark readiness gates, the two
+local external commits, temp-only OMP Stage D proof, and the active plan's substantive/formal scope
+are complete. External pushes, committed-profile discoverability, and broader adoption remain
+separate non-plan gates.
 
 ## Release readiness
 
@@ -48,7 +49,8 @@ In-repo Phase 4A/4C proofs are complete. These are not published-consumer proofs
 ## Documentation readiness
 
 - [x] Project overview and architecture boundary are current.
-- [x] Current status names the authoritative HEAD and active work.
+- [x] Current status defines clean checked-out `main` as the operational baseline and requires live
+  HEAD/index/worktree verification.
 - [x] Roadmap separates implementation, release, and publication.
 - [x] Work-packet templates are installed.
 - [ ] OMP agent profiles are installed and discoverable in a committed tree; temp-only Stage D
