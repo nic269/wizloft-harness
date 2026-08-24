@@ -2,23 +2,26 @@
 
 ## Current mission
 
-Finish the Wizloft Harness alpha.3 onboarding cycle, prove the packaged runtime end to end,
-release the coherent fourteen-package graph, and dogfood the released initializer in real projects.
+The Wizloft Harness alpha.3 onboarding implementation is complete through Phase 5. The
+fourteen-package `0.1.0-alpha.3` graph is release-ready and unpublished.
 
-The immediate work is **not** a redesign. The next task is a clean rerun and closeout of the
-existing Phase 4C packaged-runtime proof from the frozen correction checkpoint.
+The immediate work is **not** a redesign and **not** a Phase 4C rerun. The next Owner/Coordinator
+action is a separately authorized release/publication decision. Phase 6 has not started.
 
 ## Current checkpoint
 
 - Branch: `main`
-- Authoritative HEAD: `19946c7a2f07844bc15aab2380837f8f57be8e92`
-- Commit: `fix: make isolated npm lockfile portable`
-- Expected worktree item:
-  - `?? packages/project/tests/project-packed-runtime.test.mjs`
-- Public release graph: 13 packages at `0.1.0-alpha.2`
-- `@wizloft/harness-project`: still private at `0.1.0-alpha.2`
-- Phase 4C: not closed
-- Phase 5: not started
+- Authoritative HEAD: `f13d4d56e720336083764609f62fdd0a3341fa8b`
+- Commit: `release: prepare alpha.3 package graph`
+- Expected index: empty
+- Expected committed worktree: clean. This status-reconciliation packet may leave only the allowed
+  status/handoff docs unstaged.
+- Public release graph: 14 packages at `0.1.0-alpha.3`
+- `@wizloft/harness-project`: public at `0.1.0-alpha.3`
+- Phase 4C: closed at `aa6234f832dc2fb0b04bf5039ee2cf81b5772630`
+- Phase 5: implemented and independently audited; unpublished
+- Phase 6: not started
+- Publication: not authorized
 
 ## Reading order for a new Coordinator
 
@@ -26,9 +29,11 @@ existing Phase 4C packaged-runtime proof from the frozen correction checkpoint.
 2. `docs/decisions/0012-public-package-release-contract.md`.
 3. `docs/decisions/0013-project-onboarding-and-discovery.md`.
 4. `docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`.
-5. This package's `docs/handoff/CURRENT-HANDOFF.md`.
-6. The exact candidate file `packages/project/tests/project-packed-runtime.test.mjs`.
-7. Git status, HEAD, diff, and test baseline.
+5. This repository's `docs/handoff/CURRENT-HANDOFF.md`.
+6. Git status, HEAD, and index. Confirm they match this checkpoint.
+
+Do not treat `packages/project/tests/project-packed-runtime.test.mjs` as a live WIP candidate. That
+proof is committed.
 
 ## First OMP Coordinator actions
 
@@ -36,11 +41,11 @@ existing Phase 4C packaged-runtime proof from the frozen correction checkpoint.
 git status --short --branch
 git rev-parse HEAD
 git diff --cached --name-status
-pnpm --filter @wizloft/harness-project build
 ```
 
-Then run the focused Phase 4C proof. Do not modify production code if the proof exposes a real
-runtime or packaging defect. Stop and open an owner decision or a bounded correction packet.
+If HEAD matches `f13d4d56e720336083764609f62fdd0a3341fa8b` and the index is empty, do **not**
+prepare a Phase 4C proof packet. Ask the Owner for an explicit release/publication decision before
+any registry mutation, tag, push, or Phase 6 consumer work.
 
 ## Definition of a successful handoff
 

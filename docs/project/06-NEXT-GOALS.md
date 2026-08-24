@@ -1,62 +1,53 @@
 # Next Goals
 
-## Goal 1 — close Phase 4C
+## Goal 1 — Owner release/publication decision
 
-Owner: Coordinator
-Writer: Worker only if the WIP proof needs proof-only corrections
-Auditor: required after green because this is the last pre-release runtime gate
+Owner: Owner
+Coordinator: prepare the decision request only
+Writer: none until authorization exists
+Auditor: required for any later publication packet
 
-Allowed final dirty paths after a green proof:
+Do not rerun Phase 4C. Do not implement Phase 6 in a status packet.
 
-- `packages/project/tests/project-packed-runtime.test.mjs`
-- `docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`
+The Coordinator should open `docs/templates/OWNER-DECISION-REQUEST.md` against:
 
-Production and release files are forbidden in this packet.
+- baseline `f13d4d56e720336083764609f62fdd0a3341fa8b`;
+- ADR `docs/decisions/0012-public-package-release-contract.md`;
+- plan `docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`.
 
-## Goal 2 — freeze the proof
+The decision must say whether publication is authorized. Absence of that decision means stop.
 
-Suggested commit:
+## Goal 2 — authorized publication only
 
-```text
-test: prove Harness project packaged runtime
-```
+Publication is a distinct owner-authorized operation. It must not be mixed with source
+implementation or with this status reconciliation.
 
-Required evidence:
+If authorized, publish the already-implemented fourteen-package `0.1.0-alpha.3` graph. Do not
+invent a new version, unpublish, or reuse a failed version.
 
-- focused Phase 4C 1/1;
-- expected total project test count;
-- Phase 4A/4B remain green;
-- `pnpm verify`;
-- `pnpm release:check` still 13 alpha.2;
-- clean worktree/index after commit.
+## Goal 3 — registry proof
 
-## Goal 3 — prepare a Phase 5 decision packet
+Only after publication:
 
-Do not implement Phase 5 in the Phase 4C packet.
+- clean registry consumer installs the exact fourteen-package graph;
+- `@next` consumer passes.
 
-Coordinator should create a new exact packet that identifies:
+Do not claim registry availability before those proofs exist.
 
-- all fourteen package manifests;
-- release scripts and tests;
-- version source of truth;
-- public allowlist and DAG;
-- root and workspace lockfile changes;
-- docs that must change;
-- publication explicitly excluded.
+## Goal 4 — Phase 6 consumer sequence
 
-## Goal 4 — release alpha.3
+Phase 6 has not started. After registry proof:
 
-Publication is a distinct owner-authorized operation. It must not be mixed with source implementation.
+1. Upgrade Wizloft CLI exact Harness pins from alpha.2 to alpha.3.
+2. Run CLI Harness/package regression.
+3. Run fresh-project initialization smoke.
+4. Run existing-project initialization smoke.
+5. Initialize Meldmark with the released initializer.
 
-## Goal 5 — real-project dogfood
+## Goal 5 — OMP + Orca dogfood
 
-Use the released initializer on:
-
-1. a fresh temporary repository;
-2. an existing brownfield repository;
-3. Wizloft CLI;
-4. Meldmark;
-5. one OMP + Orca managed packet.
+Use one complete Coordinator → Worker → Auditor packet after the released initializer is the
+consumer contract. Local OMP overlay/portability work is already committed and is not this goal.
 
 ## Goal 6 — extract a reusable project starter
 

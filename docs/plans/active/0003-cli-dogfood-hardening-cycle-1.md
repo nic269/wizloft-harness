@@ -1637,7 +1637,7 @@ runtime execution. It does not start Phase 4C or change release identity, packag
 
 Status: proof-only current apply/dry-run correction green at
 `2b035e011f44da991543cbc24177985ccccd1084`; independent Auditor review passed; Phase 4C proof
-is closed. Phase 5 has not started.
+is closed. Phase 5 subsequently implemented the unpublished fourteen-package `0.1.0-alpha.3` release-ready candidate graph; Phase 6 has not started.
 
 Owns isolated packed-tarball resolution and generated-repository packaged-runtime proof only.
 

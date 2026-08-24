@@ -12,14 +12,15 @@ Authoritative expected state:
 
 - repository: wizloft-harness
 - branch: main
-- HEAD: 19946c7a2f07844bc15aab2380837f8f57be8e92
+- HEAD: f13d4d56e720336083764609f62fdd0a3341fa8b
 - expected index: empty
-- expected worktree item:
-    ?? packages/project/tests/project-packed-runtime.test.mjs
-- current public graph: 13 packages at 0.1.0-alpha.2
-- @wizloft/harness-project: private 0.1.0-alpha.2
-- Phase 4C: not closed
-- Phase 5: not started
+- expected committed worktree: clean
+- current public graph: 14 packages at 0.1.0-alpha.3
+- @wizloft/harness-project: public 0.1.0-alpha.3
+- Phase 4C: closed at aa6234f832dc2fb0b04bf5039ee2cf81b5772630
+- Phase 5: implemented, independently audited, unpublished
+- Phase 6: not started
+- publication: not authorized
 
 Read, in order:
 
@@ -29,17 +30,15 @@ Read, in order:
 4. docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md
 5. docs/project/00-START-HERE.md
 6. docs/handoff/CURRENT-HANDOFF.md
-7. packages/project/tests/project-packed-runtime.test.mjs
 
-Then inspect Git state and verify the baseline. If it matches, prepare one exact proof-only Work Packet
-for Phase 4C. The only potential final changed paths are:
+Then inspect Git state and verify the baseline. If it matches, do not prepare a Phase 4C packet.
+The next action is a separately authorized Owner release/publication decision. Use
+docs/templates/OWNER-DECISION-REQUEST.md. Do not issue a publication or Phase 6 Work Packet until
+that decision exists and names exact allowed paths.
 
-- packages/project/tests/project-packed-runtime.test.mjs
-- docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md
+If the only dirty paths are the status/handoff docs from ACTIVE-PLAN-STATUS-RECONCILIATION-001,
+treat that as the current documentation candidate, not as a reason to reopen Phase 4C.
 
-The Worker must stop if the focused real packaged-runtime proof exposes a new production/package
-defect. It must not modify production or release files in the proof packet.
-
-Issue the packet, write lease, verification commands, stop gates, and Auditor requirement. Do not run
-the Worker until the packet is complete. Use OWNER_DECISION_REQUEST for any material decision.
+Use OWNER_DECISION_REQUEST for any material decision. Do not run a Worker until a complete packet
+exists.
 ```

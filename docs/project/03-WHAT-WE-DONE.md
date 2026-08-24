@@ -81,6 +81,37 @@ Portable-lock correction: `19946c7a2f07844bc15aab2380837f8f57be8e92`
 - Moved internal npm execution to the isolated npm project cwd.
 - Added portable lockfile certification before marker publication.
 
+### Phase 4C closeout
+
+Commit: `aa6234f832dc2fb0b04bf5039ee2cf81b5772630`
+
+- Committed the real packaged-runtime proof after the ESM and portable-lock corrections.
+- Proved fourteen packed artifacts, loopback-only npm, packed bootstrap, portable lockfile,
+  dependency-context-aware ESM resolution, clone `npm ci` recovery, and current re-init with no
+  npm.
+- Independent Auditor review passed. Phase 4C is closed. That commit did not change release
+  identity, package privacy, or start Phase 5.
+
+### Local OMP portability
+
+Commits: `49978971e8fdb34bfc07adb48817310218e163db`,
+`5c966c40c8f766260a958e9de3f35f6c85e73566`
+
+- Stopped tracking repository `.omp/` and treat it as an optional ignored overlay.
+- Made the OMP launcher scripts and setup docs work with user, bundled, or local configuration.
+- This is local tooling portability only. It is not OMP dogfood and not Phase 6.
+
+### Phase 5 — unpublished alpha.3 release graph
+
+Commit: `f13d4d56e720336083764609f62fdd0a3341fa8b`
+
+- Transitioned the implemented public graph to fourteen packages at lockstep `0.1.0-alpha.3`.
+- Made `@wizloft/harness-project` public and release-allowlisted.
+- Updated release-contract, packed-consumer, and identity surfaces for the unpublished
+  release-ready candidate.
+- Independent Auditor review passed. No npm publication, dist-tag, Git tag, push, or Phase 6
+  consumer work was authorized or performed.
+
 ## What the proof strategy accomplished
 
 The staged proof model worked as intended:
@@ -92,4 +123,6 @@ unit/behavior fixtures
     -> real packaged runtime
 ```
 
-The two production defects appeared only in real packaged execution, before release-graph transition.
+The two production defects appeared only in real packaged execution, before release-graph
+transition. Phase 4C then closed, and Phase 5 implemented the unpublished fourteen-package
+`0.1.0-alpha.3` candidate.

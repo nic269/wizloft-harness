@@ -2,39 +2,46 @@
 
 ## Stage A — finish alpha.3 proof
 
+Status: complete.
+
 ### A1. Phase 4C clean rerun
 
-Deliverable: committed proof file and active-plan evidence.
+Deliverable: committed proof file and active-plan evidence at
+`aa6234f832dc2fb0b04bf5039ee2cf81b5772630`.
 
-Exit gate:
+Exit gate met:
 
-- real packaged-runtime proof passes 1/1;
-- full project tests pass;
+- real packaged-runtime proof passed and was independently audited;
 - no production changes in the proof commit;
-- release graph remains 13 / alpha.2;
-- commit suggested: `test: prove Harness project packaged runtime`.
+- release graph at that commit remained 13 / alpha.2;
+- commit: `test(project): prove packaged runtime`.
 
 ## Stage B — release graph transition
 
+Status: complete as an unpublished release-ready candidate.
+
 ### B1. Phase 5 implementation
 
-Transition the implemented graph from thirteen alpha.2 packages to fourteen alpha.3 packages.
+Transitioned the implemented graph from thirteen alpha.2 packages to fourteen alpha.3 packages at
+`f13d4d56e720336083764609f62fdd0a3341fa8b`.
 
-Scope:
+Completed:
 
 - lockstep `0.1.0-alpha.3` identity;
-- `@wizloft/harness-project` becomes public/release-allowlisted;
+- `@wizloft/harness-project` public and release-allowlisted;
 - project package metadata/private flag synchronized;
 - release contract, pack proof, publish DAG, lockfile, root/package docs updated;
-- fourteen-package packed consumer proof rerun.
+- fourteen-package packed consumer proof rerun;
+- independent Auditor review passed.
 
-Exit gate:
+Still true:
 
-- all fourteen packed manifests exact and release-safe;
-- `pnpm verify` and exact-minimum Node proofs pass;
-- no publication yet.
+- no publication, dist-tag, Git tag, or push;
+- Phase 6 has not started.
 
 ## Stage C — publication and external consumers
+
+Status: not started. Requires a separately authorized Owner decision.
 
 ### C1. Separately authorized publication
 
@@ -51,7 +58,11 @@ Exit gate:
 4. Run existing-project initialization smoke.
 5. Initialize Meldmark with the released initializer.
 
+Do not start C1 or C2 from a status or implementation packet.
+
 ## Stage D — OMP interoperability dogfood
+
+Status: not started. Local OMP portability (`4997897`, `5c966c4`) is not this stage.
 
 Before starting the next broad hardening cycle:
 

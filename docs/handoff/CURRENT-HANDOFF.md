@@ -1,93 +1,61 @@
-# Current Handoff — Phase 4C Clean Rerun
+# Current Handoff — Release Decision Boundary
 
 ## Packet identity
 
-- Classification: proof-only
+- Classification: documentation/status reconciliation only
 - Repository: `wizloft-harness`
 - Branch: `main`
-- Baseline HEAD: `19946c7a2f07844bc15aab2380837f8f57be8e92`
+- Baseline HEAD: `f13d4d56e720336083764609f62fdd0a3341fa8b`
 - Expected index: empty
-- Expected initial worktree item:
-  - `?? packages/project/tests/project-packed-runtime.test.mjs`
+- Expected committed worktree: clean
 - Owning plan: `docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`
+- Owning release ADR: `docs/decisions/0012-public-package-release-contract.md`
+
+## Current committed facts
+
+- Phase 4C proof closed at `aa6234f832dc2fb0b04bf5039ee2cf81b5772630`.
+- Local OMP portability committed at `49978971e8fdb34bfc07adb48817310218e163db` and
+  `5c966c40c8f766260a958e9de3f35f6c85e73566`.
+- Phase 5 unpublished fourteen-package `0.1.0-alpha.3` graph committed at
+  `f13d4d56e720336083764609f62fdd0a3341fa8b`.
+- `@wizloft/harness-project` is public at `0.1.0-alpha.3`.
+- Phase 4C and Phase 5 were independently audited.
+- Phase 6 has not started.
+- Publication is not authorized.
 
 ## Goal
 
-Rerun and finish the real packaged-runtime Phase 4C proof after the ESM-resolution and portable-lock
-corrections. If green, update only the active plan and leave the proof uncommitted for independent
-external/Auditor review.
+Give the next Owner/Coordinator the correct release decision boundary. Do not rerun Phase 4C. Do
+not start publication, tagging, pushing, registry proof, CLI upgrade, Meldmark, or OMP dogfood
+from this handoff.
 
-## Allowed paths
+## Next action
 
-After a successful proof:
+1. Verify HEAD is `f13d4d56e720336083764609f62fdd0a3341fa8b` and the index is empty.
+2. Read `docs/project/00-START-HERE.md` and `docs/project/04-CURRENT-STATUS.md`.
+3. Ask the Owner for an explicit publication decision using
+   `docs/templates/OWNER-DECISION-REQUEST.md`.
+4. Issue a Worker packet only after that decision names exact allowed paths and classification
+   (`publication` or a later Phase 6 consumer packet).
 
-- `packages/project/tests/project-packed-runtime.test.mjs`
-- `docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`
+## Forbidden until authorization
 
-## Forbidden paths
-
-- `packages/project/src/**`
-- package manifests and lockfiles
-- release scripts/tests
-- root version/public allowlist
-- ADRs/architecture
-- Wizloft CLI and Meldmark repositories
-
-## Required sequence
-
-1. Verify HEAD/status/index.
-2. Read the WIP proof completely.
-3. Confirm dependency-context-aware ESM traversal; no top-level-hoisting assumption.
-4. Build `@wizloft/harness-project`.
-5. Run focused test:
-
-   ```bash
-   node --test packages/project/tests/project-packed-runtime.test.mjs
-   ```
-
-6. If it fails because of a real product/package defect, stop without production changes.
-7. If green, update the active plan with the clean rerun facts.
-8. Run full package tests, `pnpm verify`, `pnpm release:check`, and `git diff --check`.
-9. Leave unstaged/uncommitted for Auditor review.
-
-## Proof obligations
-
-- fourteen real tarballs;
-- loopback-only source and isolated caches/config;
-- packed bootstrap;
-- dry-run zero mutation/no requests;
-- production real npm install;
-- portable real package-lock;
-- full dependency-context ESM graph;
-- no source/bootstrap escape;
-- wrapper help/inspect/Authority/Context/Validation;
-- runtime produces no package-source requests;
-- real Git clone;
-- exact recovery error before `npm ci`;
-- exact public recovery command succeeds;
-- marker and lockfile bytes unchanged;
-- clone runtime succeeds;
-- current re-init/dry-run zero-diff and no npm;
-- original and clone run after registry shutdown;
-- registry audit contains only known artifacts/methods.
+- npm publish, access mutation, dist-tags
+- Git tags and push
+- Phase 6 external consumer sequence
+- Wizloft CLI and Meldmark repository changes
+- treating `packages/project/tests/project-packed-runtime.test.mjs` as unfinished WIP
 
 ## Stop gates
 
 Stop immediately if:
 
-- HEAD/status differs;
-- any production/release path must change;
-- a package resolves outside the generated isolated runtime;
-- `npm ci` modifies marker or lockfile;
-- current re-init contacts the package source;
-- external registry or normal global cache can explain success;
-- a new architecture/release decision is needed.
+- HEAD/status differs from this checkpoint in a way that is not this docs packet;
+- a Worker is asked to publish or start Phase 6 without an Owner decision;
+- a new architecture/release/version decision is being inferred;
+- anyone proposes rerunning Phase 4C as the next packet.
 
-## Expected green state
+## Expected dirty state for this reconciliation
 
-```text
- M docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md
-?? packages/project/tests/project-packed-runtime.test.mjs
-```
-
-No staging or commit until independent review.
+Unstaged, uncommitted, allowed status/handoff docs only. No staging or commit in this packet.
+Independent Auditor review is required because these documents govern future coordination.
