@@ -2,8 +2,7 @@
 
 Pre-runtime project onboarding and the generated project-local runner for Wizloft Harness.
 
-This package is the fourteenth public package in the unpublished `0.1.0-alpha.3`
-release-ready candidate graph.
+This package is the fourteenth public package in the Wizloft Harness package graph.
 
 The public programmatic surface is `planProjectInitialization`,
 `applyProjectInitialization(options)`,

@@ -131,7 +131,7 @@ export function createFileMemoryStore(filePath: string): MemoryStore {
 
 export const fileMemoryPlugin: WizloftPlugin<FileMemoryConfig> = {
   name: FILE_MEMORY_PLUGIN_NAME,
-  version: '0.1.0-alpha.3',
+  version: '0.1.0-alpha.4',
   provides: [declareCapability(MEMORY_CAPABILITY)],
   async setup(context) {
     const config = normalizeConfig(context.config);

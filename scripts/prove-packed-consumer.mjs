@@ -1,10 +1,25 @@
 import assert from 'node:assert/strict';
 import { execFile as execFileCallback } from 'node:child_process';
-import { createHash } from 'node:crypto';
-import { lstat, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { createHash, randomBytes } from 'node:crypto';
+import { constants as fsConstants } from 'node:fs';
+import {
+  link,
+  lstat,
+  mkdir,
+  mkdtemp,
+  open,
+  readdir,
+  readFile,
+  realpath,
+  rm,
+  stat,
+  unlink,
+  writeFile,
+} from 'node:fs/promises';
 import { createServer } from 'node:http';
 import os, { tmpdir } from 'node:os';
 import path from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
@@ -16,8 +31,9 @@ import {
 
 const execFile = promisify(execFileCallback);
 const repositoryRoot = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
+const artifactsDestination = parseArtifactsDestination(process.argv.slice(2));
 const proofRoot = await mkdtemp(path.join(tmpdir(), 'wizloft-harness-packed-consumer-'));
-const tarballsRoot = path.join(proofRoot, 'consumer', 'tarballs');
+const defaultTarballsRoot = path.join(proofRoot, 'consumer', 'tarballs');
 const extractedRoot = path.join(proofRoot, 'extracted');
 const consumerRoot = path.join(proofRoot, 'consumer');
 const npmCache = path.join(consumerRoot, '.npm-cache');
@@ -39,6 +55,279 @@ async function run(command, args, options = {}) {
 
 const PROJECT_NAME = '@wizloft/harness-project';
 const LOCAL_PROTOCOL_PATTERN = /(?:workspace|file|link):/u;
+
+function isContainedPath(root, candidate) {
+  const relative = path.relative(root, candidate);
+  return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..');
+}
+
+function parseArtifactsDestination(args) {
+  if (args.length === 0) return null;
+  assert.equal(
+    args[0],
+    '--artifacts-dir',
+    'usage: node scripts/prove-packed-consumer.mjs [--artifacts-dir <outside-repository-path>]',
+  );
+  assert.equal(
+    args.length,
+    2,
+    'usage: node scripts/prove-packed-consumer.mjs [--artifacts-dir <outside-repository-path>]',
+  );
+  assert.notEqual(args[1], '', '--artifacts-dir requires a destination');
+  assert.equal(path.isAbsolute(args[1]), true, '--artifacts-dir must be an absolute path');
+  return path.normalize(args[1]);
+}
+
+async function stableDirectoryPath(handle) {
+  if (process.platform === 'darwin') {
+    const stats = await handle.stat({ bigint: true });
+    return path.join('/.vol', String(stats.dev), String(stats.ino));
+  }
+  if (process.platform === 'linux') {
+    return path.join('/proc', String(process.pid), 'fd', String(handle.fd));
+  }
+  throw new Error('--artifacts-dir requires Darwin file-ID paths or Linux descriptor paths');
+}
+
+function sameFile(left, right) {
+  return left.dev === right.dev && left.ino === right.ino;
+}
+
+async function openAnchoredDirectory(directory) {
+  const canonicalDirectory = await realpath(directory);
+  const root = path.parse(canonicalDirectory).root;
+  let handle = await open(
+    root,
+    fsConstants.O_RDONLY | fsConstants.O_DIRECTORY | fsConstants.O_NOFOLLOW,
+  );
+  try {
+    for (const component of path
+      .relative(root, canonicalDirectory)
+      .split(path.sep)
+      .filter(Boolean)) {
+      const anchor = await stableDirectoryPath(handle);
+      const next = await open(
+        path.join(anchor, component),
+        fsConstants.O_RDONLY | fsConstants.O_DIRECTORY | fsConstants.O_NOFOLLOW,
+      );
+      await handle.close();
+      handle = next;
+    }
+    return handle;
+  } catch (error) {
+    await handle.close();
+    throw error;
+  }
+}
+
+async function assertDestinationBoundary(artifactsDirectory) {
+  const boundary = await lstat(artifactsDirectory.destination, { bigint: true });
+  assert.equal(
+    boundary.isSymbolicLink(),
+    false,
+    '--artifacts-dir must not be replaced by a symbolic link',
+  );
+  assert.equal(
+    sameFile(boundary, await artifactsDirectory.handle.stat({ bigint: true })),
+    true,
+    '--artifacts-dir must not be replaced or renamed during proof',
+  );
+}
+
+async function prepareArtifactsDirectory(destination) {
+  assert.equal(
+    ['darwin', 'linux'].includes(process.platform),
+    true,
+    '--artifacts-dir requires Darwin file-ID paths or Linux descriptor paths',
+  );
+  const canonicalRepositoryRoot = await realpath(repositoryRoot);
+  const parent = path.dirname(destination);
+  const basename = path.basename(destination);
+  const parentHandle = await openAnchoredDirectory(parent);
+  try {
+    const parentAnchor = await stableDirectoryPath(parentHandle);
+    const canonicalParent = await realpath(parent);
+    assert.equal(
+      sameFile(
+        await stat(canonicalParent, { bigint: true }),
+        await parentHandle.stat({ bigint: true }),
+      ),
+      true,
+      '--artifacts-dir parent must not be replaced during creation',
+    );
+    const canonicalCandidate = path.join(canonicalParent, basename);
+    assert.equal(
+      isContainedPath(canonicalRepositoryRoot, canonicalCandidate),
+      false,
+      '--artifacts-dir must resolve outside the repository',
+    );
+    await mkdir(path.join(parentAnchor, basename), { mode: 0o700 });
+    const handle = await open(
+      path.join(parentAnchor, basename),
+      fsConstants.O_RDONLY | fsConstants.O_DIRECTORY | fsConstants.O_NOFOLLOW,
+    );
+    const anchor = await stableDirectoryPath(handle);
+    const artifactsDirectory = {
+      anchor,
+      childAnchor: anchor,
+      destination,
+      handle,
+    };
+    try {
+      await assertDestinationBoundary(artifactsDirectory);
+      assert.deepEqual(await readdir(artifactsDirectory.anchor), []);
+      return artifactsDirectory;
+    } catch (error) {
+      await handle.close();
+      throw error;
+    }
+  } finally {
+    await parentHandle.close();
+  }
+}
+
+async function inspectCleanSource(expectedSource = null) {
+  const { stdout: status } = await run('git', [
+    '--no-optional-locks',
+    'status',
+    '--porcelain=v1',
+    '--untracked-files=all',
+  ]);
+  assert.equal(status, '', 'artifact proof requires a clean index and worktree');
+  const { stdout: commitOutput } = await run('git', ['rev-parse', 'HEAD']);
+  const commit = commitOutput.trim();
+  const { stdout: treeOutput } = await run('git', ['rev-parse', `${commit}^{tree}`]);
+  const source = { commit, tree: treeOutput.trim() };
+  if (expectedSource !== null) {
+    assert.deepEqual(
+      source,
+      expectedSource,
+      'artifact proof source commit/tree changed during proof',
+    );
+  }
+  return source;
+}
+
+async function finalizeReleaseArtifacts(
+  artifactsDirectory,
+  releaseVersion,
+  source,
+  tools,
+  packedArtifacts,
+) {
+  const artifacts = PUBLIC_PACKAGES.map(({ name }) => {
+    const artifact = packedArtifacts.get(name);
+    assert.ok(artifact, `missing packed artifact for ${name}`);
+    return {
+      name,
+      version: artifact.manifest.version,
+      filename: artifact.filename,
+      size: artifact.size,
+      sha256: artifact.sha256,
+    };
+  });
+  assert.equal(artifacts.length, 14);
+  assert.equal(new Set(artifacts.map(({ filename }) => filename)).size, 14);
+  const manifest = {
+    schemaVersion: 1,
+    releaseVersion,
+    source,
+    tools,
+    artifacts,
+  };
+  const bytes = Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`);
+  const sha256 = createHash('sha256').update(bytes).digest('hex');
+  const finalName = 'release-artifacts.json';
+  const temporaryName = `.release-artifacts.${randomBytes(16).toString('hex')}.tmp`;
+  const temporaryPath = path.join(artifactsDirectory.anchor, temporaryName);
+  const finalPath = path.join(artifactsDirectory.anchor, finalName);
+  const finalizationDelay = Number(process.env.WIZLOFT_PACKED_PROOF_FINALIZATION_DELAY_MS ?? 0);
+  assert.equal(
+    Number.isInteger(finalizationDelay) && finalizationDelay >= 0 && finalizationDelay <= 30_000,
+    true,
+    'WIZLOFT_PACKED_PROOF_FINALIZATION_DELAY_MS must be an integer from 0 through 30000',
+  );
+  let installed = false;
+  try {
+    if (finalizationDelay > 0) await delay(finalizationDelay);
+    await inspectCleanSource(source);
+    await validateRetainedArtifacts(artifactsDirectory, packedArtifacts);
+    const temporary = await open(
+      temporaryPath,
+      fsConstants.O_WRONLY | fsConstants.O_CREAT | fsConstants.O_EXCL | fsConstants.O_NOFOLLOW,
+      0o600,
+    );
+    try {
+      await temporary.writeFile(bytes);
+      await temporary.sync();
+    } finally {
+      await temporary.close();
+    }
+    assert.deepEqual(JSON.parse(await readFile(temporaryPath, 'utf8')), manifest);
+    if (process.env.WIZLOFT_PACKED_PROOF_FAIL_BEFORE_MANIFEST_FINALIZE === '1') {
+      throw new Error('injected failure before artifact manifest finalization');
+    }
+    await inspectCleanSource(source);
+    await validateRetainedArtifacts(artifactsDirectory, packedArtifacts, [temporaryName]);
+    await assertDestinationBoundary(artifactsDirectory);
+    await link(temporaryPath, finalPath);
+    installed = true;
+    await artifactsDirectory.handle.sync();
+    await assertDestinationBoundary(artifactsDirectory);
+    return {
+      artifacts,
+      manifestPath: path.join(artifactsDirectory.destination, finalName),
+      sha256,
+    };
+  } catch (error) {
+    if (installed) {
+      await unlink(finalPath).catch((unlinkError) => {
+        if (unlinkError?.code !== 'ENOENT') throw unlinkError;
+      });
+      await artifactsDirectory.handle.sync();
+    }
+    throw error;
+  } finally {
+    await unlink(temporaryPath).catch((error) => {
+      if (error?.code !== 'ENOENT') throw error;
+    });
+    await artifactsDirectory.handle.sync();
+  }
+}
+
+async function validateRetainedArtifacts(
+  artifactsDirectory,
+  packedArtifacts,
+  additionalEntries = [],
+) {
+  const expectedFilenames = [
+    ...PUBLIC_PACKAGES.map(({ name }) => packedArtifacts.get(name).filename),
+    ...additionalEntries,
+  ];
+  assert.deepEqual(
+    (await readdir(artifactsDirectory.anchor)).sort(),
+    expectedFilenames.toSorted(),
+    'artifact destination must contain only retained tarballs and expected finalization entries',
+  );
+  for (const { name } of PUBLIC_PACKAGES) {
+    const artifact = packedArtifacts.get(name);
+    const retained = await open(
+      path.join(artifactsDirectory.anchor, artifact.filename),
+      fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW,
+    );
+    try {
+      assert.equal((await retained.stat({ bigint: true })).isFile(), true);
+      const bytes = await retained.readFile();
+      assert.equal(bytes.byteLength, artifact.size);
+      assert.equal(createHash('sha256').update(bytes).digest('hex'), artifact.sha256);
+      assert.equal(bytes.equals(artifact.bytes), true);
+    } finally {
+      await retained.close();
+    }
+  }
+  await artifactsDirectory.handle.sync();
+  await assertDestinationBoundary(artifactsDirectory);
+}
 
 async function isolatedNpmEnv(root, registryUrl, name) {
   const cache = path.join(root, `${name}-npm-cache`);
@@ -559,7 +848,17 @@ assert.equal(persistedMemory.trim().split('\n').length, 5);
 console.log('External packed consumer scenario passed.');
 `;
 
+let artifactsDirectory = null;
+let artifactCompletionOutputWritten = false;
+let proofRootRemoved = false;
 try {
+  const artifactMode = artifactsDestination !== null;
+  const source = artifactMode ? await inspectCleanSource() : null;
+  if (artifactMode) {
+    artifactsDirectory = await prepareArtifactsDirectory(artifactsDestination);
+  }
+  const tarballsRoot = artifactsDirectory?.anchor ?? defaultTarballsRoot;
+  const childTarballsRoot = artifactsDirectory?.childAnchor ?? tarballsRoot;
   const releaseInspection = await inspectReleaseContract(repositoryRoot);
   assert.deepEqual(releaseInspection.errors, []);
   const releaseVersion = releaseInspection.releaseVersion;
@@ -571,14 +870,15 @@ try {
   );
 
   const rootLicense = await readFile(path.join(repositoryRoot, 'LICENSE'));
-  await mkdir(tarballsRoot, { recursive: true });
+  await mkdir(consumerRoot, { recursive: true });
+  if (!artifactMode) await mkdir(tarballsRoot, { recursive: true });
   await mkdir(extractedRoot, { recursive: true });
 
   const tarballByName = new Map();
   const packedArtifacts = new Map();
   for (const entry of PUBLIC_PACKAGES) {
     const before = new Set(await readdir(tarballsRoot));
-    await run('pnpm', ['pack', '--pack-destination', tarballsRoot], {
+    await run('pnpm', ['pack', '--pack-destination', childTarballsRoot], {
       cwd: path.join(repositoryRoot, entry.directory),
     });
     const created = (await readdir(tarballsRoot)).filter(
@@ -593,9 +893,10 @@ try {
   for (const entry of PUBLIC_PACKAGES) {
     const tarballName = tarballByName.get(entry.name);
     const tarballPath = path.join(tarballsRoot, tarballName);
+    const childTarballPath = path.join(childTarballsRoot, tarballName);
     const extractPath = path.join(extractedRoot, entry.name.replaceAll('/', '-').replace('@', ''));
     await mkdir(extractPath, { recursive: true });
-    await run('tar', ['-xzf', tarballPath, '-C', extractPath]);
+    await run('tar', ['-xzf', childTarballPath, '-C', extractPath]);
     const packageRoot = path.join(extractPath, 'package');
     const manifest = JSON.parse(await readFile(path.join(packageRoot, 'package.json'), 'utf8'));
     assert.equal(manifest.name, entry.name);
@@ -649,11 +950,25 @@ try {
       await lstat(path.join(packageRoot, manifest.bin['wizloft-harness-project']));
     }
 
-    const bytes = await readFile(tarballPath);
+    let bytes;
+    if (artifactsDirectory === null) {
+      bytes = await readFile(tarballPath);
+    } else {
+      const tarball = await open(tarballPath, fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW);
+      try {
+        bytes = await tarball.readFile();
+        await tarball.sync();
+      } finally {
+        await tarball.close();
+      }
+    }
     packedArtifacts.set(entry.name, {
       bytes,
+      size: bytes.byteLength,
+      filename: tarballName,
       integrity: `sha512-${createHash('sha512').update(bytes).digest('base64')}`,
       manifest,
+      sha256: createHash('sha256').update(bytes).digest('hex'),
       shasum: createHash('sha1').update(bytes).digest('hex'),
     });
   }
@@ -662,7 +977,9 @@ try {
   const dependencies = Object.fromEntries(
     PUBLIC_PACKAGES.map((entry) => [
       entry.name,
-      `file:./tarballs/${tarballByName.get(entry.name)}`,
+      artifactsDirectory === null
+        ? `file:./tarballs/${tarballByName.get(entry.name)}`
+        : `file:${path.join(childTarballsRoot, tarballByName.get(entry.name))}`,
     ]),
   );
   await writeFile(
@@ -693,7 +1010,10 @@ try {
     cwd: consumerRoot,
     env: installEnvironment,
   });
-  await run('npm', ['ls', '--all'], { cwd: consumerRoot, env: installEnvironment });
+  await run('npm', ['ls', '--all'], {
+    cwd: consumerRoot,
+    env: installEnvironment,
+  });
 
   for (const entry of PUBLIC_PACKAGES) {
     const installed = await lstat(
@@ -714,12 +1034,27 @@ try {
     run('npm', ['--version']),
     run('pnpm', ['--version']),
   ]);
+  const tools = {
+    node: process.version,
+    npm: npmVersion.trim(),
+    pnpm: pnpmVersion.trim(),
+  };
+  await rm(proofRoot, { force: true, recursive: true });
+  proofRootRemoved = true;
+  let artifactCompletion = null;
+  if (artifactsDirectory !== null) {
+    artifactCompletion = await finalizeReleaseArtifacts(
+      artifactsDirectory,
+      releaseVersion,
+      source,
+      tools,
+      packedArtifacts,
+    );
+  }
   console.log(
     JSON.stringify(
       {
-        node: process.version,
-        npm: npmVersion.trim(),
-        pnpm: pnpmVersion.trim(),
+        ...tools,
         os: `${os.platform()} ${os.release()} ${os.arch()}`,
         packages: PUBLIC_PACKAGES.length,
         generatedProjectInspect: 'passed',
@@ -728,6 +1063,32 @@ try {
       2,
     ),
   );
+  if (artifactCompletion !== null) {
+    console.log(
+      JSON.stringify(
+        {
+          artifactManifest: artifactCompletion.manifestPath,
+          source,
+          manifestSha256: artifactCompletion.sha256,
+          artifacts: artifactCompletion.artifacts,
+        },
+        null,
+        2,
+      ),
+    );
+  }
+  artifactCompletionOutputWritten = artifactCompletion !== null;
 } finally {
-  await rm(proofRoot, { force: true, recursive: true });
+  if (artifactsDirectory !== null) {
+    if (!artifactCompletionOutputWritten) {
+      await unlink(path.join(artifactsDirectory.anchor, 'release-artifacts.json')).catch(
+        (error) => {
+          if (error?.code !== 'ENOENT') throw error;
+        },
+      );
+      await artifactsDirectory.handle.sync();
+    }
+    await artifactsDirectory.handle.close();
+  }
+  if (!proofRootRemoved) await rm(proofRoot, { force: true, recursive: true });
 }

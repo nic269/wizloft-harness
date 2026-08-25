@@ -236,7 +236,7 @@ export const CONTEXT_CAPABILITY = createCapabilityToken<ContextService>(CONTEXT_
 
 export const contextPlugin: WizloftPlugin = {
   name: CONTEXT_PLUGIN_NAME,
-  version: '0.1.0-alpha.3',
+  version: '0.1.0-alpha.4',
   provides: [declareCapability(CONTEXT_CAPABILITY)],
   setup(context) {
     context.capabilities.provide(CONTEXT_CAPABILITY, createContextService());

@@ -108,21 +108,27 @@ tools:
 
 The role wrappers then apply process-local overrides:
 
-- Coordinator: `--approval-mode always-ask`;
+- Coordinator: `--approval-mode yolo`;
 - Worker: `--approval-mode write`;
-- Auditor: `--approval-mode always-ask`.
+- Auditor: `--approval-mode yolo`.
 
-OMP task subagents run headless in yolo mode; the parent task call is the authorization boundary.
-A user-level per-tool `prompt` cannot be satisfied by a headless subagent and rejects that call, so
-do not set a global or project `tools.approval.bash: prompt` when the Worker is spawned as a task
-agent and needs bash. The task-agent Auditor definition intentionally has no bash or write tools; the
-independent Orca Auditor wrapper may use bash under interactive approval for tests and Git inspection.
+Yolo auto-approves every call exposed by each wrapper's existing tool allowlist without an OMP
+confirmation prompt, unless an explicit per-tool prompt or deny policy overrides it. It changes
+prompting only: it does not add tools, expand an allowlist, or relax repository role authority.
+The Coordinator still has no edit/write tools, and the Auditor remains read-only.
+
+OMP task subagents also run headless in yolo mode, where the parent task call is the authorization
+boundary. A user-level per-tool `prompt` cannot be satisfied by a headless subagent and rejects that
+call, so do not set a global or project `tools.approval.bash: prompt` when the Worker is spawned as
+a task agent and needs bash. The task-agent Auditor definition intentionally has no bash or write
+tools; the independent Orca Auditor wrapper may use its allowed bash under yolo for read-only tests
+and Git inspection.
 
 Two safe operating modes are therefore supported:
 
 ### Mode A — Orca worktrees, independent OMP sessions (recommended for write work)
 
-- Coordinator: project config with bash prompt.
+- Coordinator: wrapper yolo with no per-call bash prompt.
 - Worker: separate Orca worktree/session; use an untracked CLI config overlay or wrapper with the
   needed permissions.
 - Auditor: separate read-only role/session.

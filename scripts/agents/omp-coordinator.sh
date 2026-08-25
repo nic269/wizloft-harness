@@ -2,7 +2,7 @@
 set -euo pipefail
 ROOT="$(git rev-parse --show-toplevel)"
 ARGS=(
-  --approval-mode always-ask
+  --approval-mode yolo
 )
 if [[ -r "$ROOT/.omp/prompts/coordinator.md" ]]; then
   ARGS+=(--append-system-prompt "$ROOT/.omp/prompts/coordinator.md")
