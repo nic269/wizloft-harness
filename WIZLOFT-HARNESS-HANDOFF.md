@@ -8,17 +8,26 @@ Context, Memory, Validation, Evidence/Events, and onboarding.
 
 ## Current state
 
-- Operational baseline: clean checked-out `main`; resolve HEAD and status live before new work
-- Local candidate: fourteen packages implemented at lockstep `0.1.0-alpha.3`; Phase 4C packed proof
-  and Phase 5 release-readiness review remain valid local evidence
-- Public graph: incomplete; only `@wizloft/harness-project@0.1.0-alpha.3` is published, while the
-  other Harness packages remain published at `0.1.0-alpha.2`
-- Publication/promotion/G2B: no coherent fourteen-package alpha.3 public graph and no completed
-  registry-promotion or Git-provenance proof
-- Phase 6 P2 and OMP Stage D: open; prior work premised on a coherent alpha.3 release is not
-  completion evidence
-- Active alpha.3 plan: reopened for coherent publication, registry proof, Git provenance, Phase 6
-  external consumers, and Stage D
+- Operational baseline: clean checked-out `main`; resolve HEAD, index, and worktree live before new
+  work
+- Alpha.4 source `R` / frozen provenance: `f662a454216d90c61c443c55a83165618d5e9843` (tree
+  `68d5bb37d506b49301e2d3c433979b0c7fa64f2f`)
+- Frozen artifact manifest SHA-256:
+  `553c0e4ee510b3087360b0e2e7910aa07adf6c8140b4fbff798049e703a482bd`
+- Git tag: annotated `harness-v0.1.0-alpha.4` object `7c70e518458eb4923d42353dcba7d2069adb7b04`,
+  peeled to `R`, remote-pushed
+- Public prerelease graph: fourteen packages at `0.1.0-alpha.4` on `candidate` and `next`
+- `latest`: thirteen packages remain `0.1.0-alpha.2`; `@wizloft/harness-project@0.1.0-alpha.3`
+- Alpha.3 partial publication is immutable history and must not be repaired
+- Phase 6 P2: A4-10 through A4-13 independently accepted. CLI commit
+  `c5e011383fd6b056d271517580b8cfd7d59bb7c3` on `rewrite/typescript` is local and unpushed.
+  Meldmark commit `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` on `main` is local with no remote
+- OMP Stage D: A4-14 temp-only no-remote fixture passed; `.omp/` ignored/local-only;
+  committed-profile discoverability remains open
+- Active plan: section 30 steps 1–14 complete; this docs reconciliation is a candidate.
+  Independent audit is required for commit eligibility; the candidate itself authorizes no
+  commit or push. Push remains separately authorized. External pushes and broader readiness
+  remain separate
 
 ## Completed milestones
 
@@ -32,23 +41,23 @@ Context, Memory, Validation, Evidence/Events, and onboarding.
 - ESM-resolution correction;
 - portable npm lockfile correction;
 - Phase 4C packaged-runtime proof;
-- Phase 5 local fourteen-package `0.1.0-alpha.3` release-ready candidate.
+- Phase 5 local fourteen-package `0.1.0-alpha.3` release-ready candidate;
+- immutable alpha.3 partial-publication history preserved;
+- alpha.4 lockstep identity, freeze, `candidate`/`next` publication, and Git-to-binary provenance;
+- ordered downstream proofs A4-10 through A4-14.
 
-The partial public release, prior external-consumer attempts, and temp-only OMP exercise do not
-close publication, promotion, G2B, Phase 6, Meldmark readiness, Stage D, or the active plan.
+Local CLI/Meldmark commits and the temp-only Stage D fixture are durable proof, not remote
+adoption or committed-profile discoverability.
 
 ## Next sequence
 
-1. Preserve the completed Phase 4C packed-runtime proof and Phase 5 local release-ready candidate
-   as local evidence only.
-2. Obtain a new Owner decision and exact release packet before any publication, dist-tag, Git tag,
-   push, or provenance action.
-3. Under that later authority, prove the already-published project artifact is byte/provenance-
-   identical to the frozen candidate. Stop for an Owner decision and new coherent version on any
-   mismatch; otherwise publish the remaining thirteen exact artifacts and independently prove all
-   fourteen in the registry plus matching Git provenance.
-4. Only then run and audit Phase 6 external consumers and Stage D; keep external pushes and local
-   OMP changes separately authorized.
+1. Independent audit is required before this docs-only candidate is commit-eligible. The
+   candidate itself authorizes no commit or push.
+2. Harness docs commit requires a later exact Owner packet; push remains separately authorized.
+3. Wizloft CLI push of `c5e011383fd6b056d271517580b8cfd7d59bb7c3` and any Meldmark remote/push of
+   `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` each require their own repository-specific authority.
+4. Committed OMP-profile discoverability and broader readiness remain separate Owner decisions.
+5. Do not publish, retag, unpublish, or otherwise mutate alpha.3 or the frozen alpha.4 graph.
 
 ## Team roles
 

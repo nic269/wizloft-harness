@@ -91,19 +91,20 @@ The consumer may evolve this structure if tests/clarity justify a better shape.
 
 ## Hardening Cycle 1 posture
 
-Wizloft CLI remains the `0.1.0-alpha.2` dogfood consumer. Its Gate H0 / product Harness layout is
-CLI-owned.
+Wizloft CLI remains the original `0.1.0-alpha.2` dogfood consumer. Its Gate H0 / product Harness
+layout is CLI-owned.
 
-Generic alpha.3 project onboarding remains independent of Wizloft CLI. A Harness-initialized
-repository is operable through `node .wizloft/harness/run.mjs` without the CLI installed.
+Generic project onboarding remains independent of Wizloft CLI. A Harness-initialized repository is
+operable through `node .wizloft/harness/run.mjs` without the CLI installed.
 
 A future `wizloft harness` / `wizharness` convenience may detect the repository marker and invoke
 the project-local `@wizloft/harness-project` (`runProjectHarness`) directly. Ordinary project
 commands must use the repository-pinned runtime, not a host-bundled Harness version.
 
 Generic `@wizloft/harness-project` initialization does not retroactively migrate the current CLI
-layout. A later CLI upgrade to exact `0.1.0-alpha.3` pins is package-regression only unless a
-separate authorization requires generic init or layout migration.
+layout. The exact-pin upgrade to `0.1.0-alpha.4` is package-regression only and is locally
+committed at `c5e011383fd6b056d271517580b8cfd7d59bb7c3` on `rewrite/typescript` (parent
+`b2b2af52df2bd337a341888c2512e74ac2b64c0c`). That commit is not pushed and is not remote adoption.
 
 Selective Module Distribution, if pursued, is a separate Wizloft CLI initiative. It is not a
 Harness Cycle 1 deliverable and is not Harness architecture.

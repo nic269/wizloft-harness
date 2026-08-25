@@ -1,7 +1,9 @@
 # Execution Plan — CLI Dogfood Retrospective and Hardening Cycle 1
 
-Status: Accepted contract; local implementation and packed delivery proof are complete, but the
-public-release and downstream-consumer gates are open.
+Status: Accepted contract; local alpha.3 implementation and packed delivery proof remain complete
+historical evidence. The selected alpha.4 coherent recovery in section 30 is proven through Git
+provenance and ordered downstream packets A4-10 through A4-14. Formal docs commit/push, external
+CLI/Meldmark pushes, committed OMP-profile discoverability, and broader readiness remain separate.
 Phase 0 committed. Portable-wrapper versus host-CLI clarification committed. Phase 1 committed at
 `fac903208236d59353a98e52158fe85b770fb8c2`. Phase 2 committed at
 `feb372e62c295c43fe234282b9371e4e5e6af985`. Phase 3A committed at
@@ -14,13 +16,11 @@ exposed and corrected an ESM-resolution defect at
 The dedicated Phase 4C rerun and proof-only correction are green and independently audited.
 Phase 5 implemented the local fourteen-package `0.1.0-alpha.3` release-ready candidate.
 
-The actual public graph is incomplete: only `@wizloft/harness-project@0.1.0-alpha.3` is published;
-the other Harness packages remain published at `0.1.0-alpha.2`. Immutable-partial-publication
-recovery, proof of all fourteen exact artifacts, `next` promotion, registry proof, G2B, Phase 6 P2,
-the release-dependent Meldmark gates in section 26, OMP Stage D, and formal plan closure are open.
-They require a later separately authorized coherent release.
-This alpha.3 recovery instruction is retained as history and superseded by the selected alpha.4
-sequence in section 30.
+The alpha.3 public graph remains immutable partial history: only
+`@wizloft/harness-project@0.1.0-alpha.3` was published as `latest` for that version, and the other
+thirteen packages' `latest` tags remain `0.1.0-alpha.2`. Do not repair, move, delete, unpublish, or
+retag alpha.3. That alpha.3 recovery instruction is retained as history and superseded by the
+completed alpha.4 sequence in section 30.
 
 This file owns the accepted alpha.3 onboarding contract.
 
@@ -117,7 +117,7 @@ Verified 2026-08-18 at Phase 0 start:
 
 The CLI Gate H0 layout is one consumer convention. It is not the generic alpha.3 standard.
 
-Durable local alpha.3 implementation state and actual public state:
+Durable local alpha.3 implementation state and immutable partial public history:
 
 | Surface | Observed |
 |---|---|
@@ -126,9 +126,22 @@ Durable local alpha.3 implementation state and actual public state:
 | Project privacy | public / non-private; Self-host remains private |
 | Project layer | derived DAG layer 7 through `@wizloft/harness-cli-adapter` |
 | Local proof | Phase 4C packed proof and Phase 5 release-readiness review complete |
-| Registry | incomplete: only `@wizloft/harness-project@0.1.0-alpha.3` is published; the other Harness packages remain at `0.1.0-alpha.2` |
-| Publication/provenance | no coherent fourteen-package alpha.3 graph, promotion proof, or G2B proof |
-| Downstream gates | Phase 6 P2, release-dependent Meldmark readiness, and OMP Stage D open |
+| Alpha.3 registry history | only `@wizloft/harness-project@0.1.0-alpha.3` was published; other packages remained `latest` `0.1.0-alpha.2` |
+| Alpha.3 publication/provenance | no coherent fourteen-package alpha.3 graph, promotion proof, or G2B proof |
+
+Durable alpha.4 public state:
+
+| Surface | Observed |
+|---|---|
+| Source commit `R` | `f662a454216d90c61c443c55a83165618d5e9843` |
+| Source tree | `68d5bb37d506b49301e2d3c433979b0c7fa64f2f` |
+| Frozen artifact-manifest SHA-256 | `553c0e4ee510b3087360b0e2e7910aa07adf6c8140b4fbff798049e703a482bd` |
+| Annotated tag | `harness-v0.1.0-alpha.4` object `7c70e518458eb4923d42353dcba7d2069adb7b04`, peeled to `R`, remote-pushed |
+| `candidate` / `next` | all fourteen packages `0.1.0-alpha.4` |
+| `latest` | thirteen packages `0.1.0-alpha.2`; `@wizloft/harness-project@0.1.0-alpha.3` |
+| Phase 6 P2 | A4-10 through A4-13 independently accepted; CLI/Meldmark commits local-only and unpushed |
+| OMP Stage D | A4-14 temp-only no-remote pass; committed-profile discoverability open |
+| Remaining | docs commit/push, external pushes, and broader readiness separate |
 
 
 ---
@@ -1646,7 +1659,8 @@ runtime execution. It does not start Phase 4C or change release identity, packag
 Status: proof-only current apply/dry-run correction green at
 `2b035e011f44da991543cbc24177985ccccd1084`; independent Auditor review passed; Phase 4C proof
 is closed. Phase 5 subsequently implemented the local release-ready candidate without changing
-this historical proof boundary; release/promotion provenance and Phase 6 P2 remain open.
+this historical proof boundary; release/promotion provenance and Phase 6 P2 remained open at
+that checkpoint and were later closed by the section 30 alpha.4 sequence.
 
 Owns isolated packed-tarball resolution and generated-repository packaged-runtime proof only.
 
@@ -1739,41 +1753,49 @@ The fourteen-package lockstep `0.1.0-alpha.3` graph includes public
 `@wizloft/harness-project` at derived layer 7. Phase 5 is a release-ready local implementation,
 supported by the completed Phase 4C packed proof. It is not proof of a coherent public release.
 
-Only `@wizloft/harness-project@0.1.0-alpha.3` is published. The other Harness packages remain
-published at `0.1.0-alpha.2`. A later release packet must first prove the already-published project
-artifact is byte/provenance-identical to the frozen candidate. Any mismatch stops for an Owner
-decision and a new coherent version. If it matches, publish the remaining thirteen exact artifacts,
-then prove all fourteen in the registry, the intended dist-tags, and matching Git provenance.
-No publication, dist-tag, tag, or push is authorized by this plan correction.
+Only `@wizloft/harness-project@0.1.0-alpha.3` was published. The other Harness packages remained
+published at `0.1.0-alpha.2` as `latest`. A later release packet was required to first prove the
+already-published project artifact is byte/provenance-identical to the frozen candidate. Any
+mismatch stops for an Owner decision and a new coherent version. If it matches, publish the
+remaining thirteen exact artifacts, then prove all fourteen in the registry, the intended
+dist-tags, and matching Git provenance.
+No publication, dist-tag, tag, or push is authorized by this historical plan correction.
 This alpha.3 completion route is retained as history and superseded by the alpha.4 sequence in
 section 30.
 
 ### Phase 6 — External consumer sequence
 
-Status: open; prior results based on a coherent alpha.3-publication premise are not closure proof.
+Status: alpha.4 ordered consumer proofs A4-10 through A4-13 are independently accepted. Wizloft CLI
+and Meldmark durable commits are local only and unpushed; they are not remote adoption. Prior
+results based on a coherent alpha.3-publication premise remain non-closure history.
 
-After a later separately authorized coherent release and independent registry/Git-provenance proof:
+Completed alpha.4 sequence:
 
-1. Prove a clean exact-version public-registry consumer.
-2. Prove the Wizloft CLI exact-pin upgrade and regression.
-3. Prove a fresh/CLEAN released initializer smoke.
-4. Prove a distinct existing-project released initializer smoke.
-5. Prove Meldmark released initialization and target validation.
+1. A4-10 exact-version public-registry consumer.
+2. A4-11 Wizloft CLI exact-pin upgrade at `c5e011383fd6b056d271517580b8cfd7d59bb7c3` on
+   `rewrite/typescript` (parent `b2b2af52df2bd337a341888c2512e74ac2b64c0c`); not pushed.
+3. A4-12 fresh/CLEAN and existing-project released initializer smokes.
+4. A4-13 Meldmark released initialization and target validation at
+   `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` on `main` (parent
+   `a35cf34a2e2418eaacda6cef39218235d50566b8`); no remote, not pushed.
 
-External repository changes and pushes require their own exact authority.
-This alpha.3-dependent consumer sequence is retained as history and superseded by section 30.
+External repository pushes require their own exact authority.
 
 ### OMP Stage D — interoperability dogfood
 
-Status: open and release-dependent.
+Status: alpha.4 A4-14 independently accepted as a temp-only no-remote fixture proof.
+Committed-profile discoverability remains open.
 
-A historical temp-only exercise used clean Harness source
+Alpha.4 fixture lineage: `f662a454216d90c61c443c55a83165618d5e9843` →
+`431efa300230663a565fd23cc897a39e01a2a29b` → `21ca6a67e8c73546eef5f8f91c4a7380a8066ef8`.
+`.omp/` remained ignored/local-only. Do not copy that overlay into Harness source.
+
+A historical alpha.3-premise temp-only exercise used clean Harness source
 `bfbad5cde7979d28b80ef98d10fc29949bec0a3b`, a no-remote fixture, generated bootstrap
 `222d7501`, and Worker candidate `70bb4342`. It made no Harness source, registry, push, or
-publication change, and `.omp/` remained ignored/local-only. Because it relied on the invalid
-coherent-publication premise, it does not close Stage D. Run Stage D only after a later coherent
-release is proved and a separate exact packet authorizes the work.
-This alpha.3-dependent Stage D instruction is retained as history and superseded by section 30.
+publication change. Because it relied on the invalid coherent-publication premise, it does not
+close Stage D. This alpha.3-dependent Stage D instruction is retained as history and superseded by
+section 30.
 
 ---
 
@@ -1987,7 +2009,8 @@ Proof layering is explicit:
 
 ## 26. Meldmark readiness
 
-Six local implementation gates are complete; four release-dependent gates remain open:
+Six local implementation gates remain complete. The four release-dependent alpha.3 gates below are
+retained as history and superseded by the completed alpha.4 proofs in section 30.
 
 - [x] CLEAN fixture is green — Phase 4A/4C local acceptance.
 - [x] EXISTING fixture is green — Phase 4A/4C local acceptance.
@@ -2000,19 +2023,29 @@ Six local implementation gates are complete; four release-dependent gates remain
 - [ ] Wizloft CLI exact alpha.3 pin regression is green against that released graph.
 - [ ] Meldmark is initialized and target-validated with the released command.
 
-These gates require a later separately authorized coherent release. They do not authorize registry
-mutation, Git provenance changes, either external push, or local OMP changes.
+Alpha.4 released-consumer gates:
+
+- [x] `0.1.0-alpha.4` is published and independently proved as one coherent fourteen-package
+  `candidate`/`next` graph. `latest` remains thirteen packages at `0.1.0-alpha.2` and
+  `@wizloft/harness-project@0.1.0-alpha.3`.
+- [x] A clean external npm consumer proves that released graph (A4-10).
+- [x] Wizloft CLI exact alpha.4 pin regression is green against that released graph and locally
+  committed at `c5e011383fd6b056d271517580b8cfd7d59bb7c3`; not pushed.
+- [x] Meldmark is initialized and target-validated with the released command and locally committed
+  at `3f4ab1a6b29b90e82112ffbf64a853183cb0de30`; no remote, not pushed.
+
+These alpha.4 proofs do not authorize either external push or local OMP-profile commit.
 These alpha.3-dependent readiness gates are retained as history and superseded by section 30.
 
-Required Meldmark command shape:
+Required Meldmark command shape, now the released alpha.4 command:
 
 ```text
-npx --yes @wizloft/harness-project@0.1.0-alpha.3 init \
+npx --yes @wizloft/harness-project@0.1.0-alpha.4 init \
   --root <meldmark-checkout> \
   --project-id meldmark \
   --dry-run
 
-npx --yes @wizloft/harness-project@0.1.0-alpha.3 init \
+npx --yes @wizloft/harness-project@0.1.0-alpha.4 init \
   --root <meldmark-checkout> \
   --project-id meldmark
 ```
@@ -2122,48 +2155,51 @@ not claim `wizloft` or `wizharness`.
 
 ## 30. Alpha.4 immutable-partial-publication recovery authority
 
-Status: `0.1.0-alpha.4` is the selected coherent fourteen-package recovery target, pending local
-implementation and proof. Nothing in this section claims that alpha.4 is implemented, packed,
-published, promoted, tagged, pushed, or externally validated.
+Status: selected coherent fourteen-package recovery target `0.1.0-alpha.4` is implemented, frozen,
+published on `candidate` and `next`, Git-proven, and independently proved through ordered
+downstream packets A4-10 through A4-14. Formal documentation commit/push, external CLI/Meldmark
+pushes, committed OMP-profile discoverability, and broader readiness remain separate and are not
+authorized here.
 
-The partial alpha.3 public state remains historical truth:
-`@wizloft/harness-project@0.1.0-alpha.3` alone is published, while the other thirteen packages
-remain at `0.1.0-alpha.2`. That alpha.3 artifact is not recovery evidence for alpha.4. Do not
-repair, move, delete, unpublish, retag, or otherwise mutate any alpha.3 version or tag, and do not
-rewrite the completed alpha.3 implementation or proof phases above.
+The partial alpha.3 public state remains immutable historical truth and is not repaired:
+`@wizloft/harness-project@0.1.0-alpha.3` remains the project package `latest`, while the other
+thirteen packages remain at `latest` `0.1.0-alpha.2`. Do not repair, move, delete, unpublish, retag,
+or otherwise mutate any alpha.3 version or tag, and do not rewrite the completed alpha.3
+implementation or proof phases above.
 ADRs [0012](../../decisions/0012-public-package-release-contract.md) and
-[0013](../../decisions/0013-project-onboarding-and-discovery.md) remain unchanged; neither those
-ADRs nor this documentation-only authority permits publication or any external mutation.
+[0013](../../decisions/0013-project-onboarding-and-discovery.md) remain unchanged.
 
-The packed-proof retention and SHA-256 tooling correction is a separate prerequisite packet. The
-corrected proof must use one build and one pack, retain its artifact directory outside the
-repository, and write the SHA-256 completion manifest last. Before that manifest exists, the
-candidate is incomplete. After it exists and an independent Auditor accepts the freeze, the
-candidate is immutable: comparison, publication, and registry proof must use those exact fourteen
-artifacts without rebuilding or repacking them. Publication follows the seven dependency-derived
-layers owned by `scripts/release-contract.mjs`.
+### Frozen identities
 
-Recovery proceeds only through separate exact packets:
+| Surface | Value |
+|---|---|
+| Source commit `R` | `f662a454216d90c61c443c55a83165618d5e9843` |
+| Source tree | `68d5bb37d506b49301e2d3c433979b0c7fa64f2f` |
+| Frozen artifact-manifest SHA-256 | `553c0e4ee510b3087360b0e2e7910aa07adf6c8140b4fbff798049e703a482bd` |
+| Annotated tag | `harness-v0.1.0-alpha.4` object `7c70e518458eb4923d42353dcba7d2069adb7b04`, peeled to `R`, remote-pushed |
+| Registry `candidate` / `next` | all fourteen packages `0.1.0-alpha.4` |
+| Registry `latest` | thirteen packages `0.1.0-alpha.2`; `@wizloft/harness-project@0.1.0-alpha.3` |
 
-1. accept this alpha.4 authority addendum after independent audit;
-2. correct packed-proof artifact retention and SHA-256 completion-manifest tooling;
-3. implement the alpha.4 lockstep identity, independently audit it, and commit release candidate
-   `R`;
-4. perform the one-build/one-pack external artifact freeze and independently audit it;
-5. separately approve the local annotated alpha.4 tag policy;
-6. publish the exact frozen candidate in seven dependency-derived layers;
-7. independently prove exact registry bytes and behavior for all fourteen packages;
-8. separately approve and perform fourteen-package `next` promotion, then prove the post-`next`
-   graph;
-9. push matching Git provenance and complete an independent Git-to-binary audit;
-10. prove an exact-registry Phase 6 consumer;
-11. prove the Wizloft CLI exact-pin regression;
-12. prove the released CLEAN and EXISTING initializer smokes;
-13. prove Meldmark released initialization and target validation;
-14. rerun and independently validate OMP Stage D; and
-15. reconcile formal closure documents and separately authorize their push.
+### Recovery packets
 
-Each packet must start from a live baseline and frozen allowlist and must satisfy its own stop
-gates and verification contract. Registry mutation, Git mutation or push, external-repository
-work, and OMP action require later exact Owner authorization; this docs-only authority performs
-none of them.
+| # | Packet | Status |
+|---|---|---|
+| 1 | alpha.4 authority addendum after independent audit | complete |
+| 2 | packed-proof artifact retention and SHA-256 completion-manifest tooling | complete |
+| 3 | alpha.4 lockstep identity, independent audit, commit `R` | complete at `f662a454216d90c61c443c55a83165618d5e9843` |
+| 4 | one-build/one-pack external artifact freeze and independent audit | complete; manifest SHA-256 `553c0e4ee510b3087360b0e2e7910aa07adf6c8140b4fbff798049e703a482bd` |
+| 5 | local annotated alpha.4 tag policy | complete |
+| 6 | publish exact frozen candidate in seven dependency-derived layers | complete; fourteen `candidate` tags at `0.1.0-alpha.4` |
+| 7 | independently prove exact registry bytes and behavior for all fourteen packages | complete |
+| 8 | fourteen-package `next` promotion and post-`next` proof | complete; fourteen `next` tags at `0.1.0-alpha.4` |
+| 9 | push matching Git provenance and independent Git-to-binary audit | complete; tag object `7c70e518458eb4923d42353dcba7d2069adb7b04` on origin |
+| 10 | exact-registry Phase 6 consumer (A4-10) | complete; evidence seal SHA-256 `4a4ebcfa8178c7b2775c7fcfcaefd24cd701ac0102f7eafffa1e77c076ce11ee` |
+| 11 | Wizloft CLI exact-pin regression (A4-11) | complete as local durable commit `c5e011383fd6b056d271517580b8cfd7d59bb7c3` on `rewrite/typescript` (parent `b2b2af52df2bd337a341888c2512e74ac2b64c0c`); not pushed |
+| 12 | released CLEAN and EXISTING initializer smokes (A4-12) | complete; evidence seal SHA-256 `f992c5ebd45f52caee460583e0a48d3e24df1827389e37c1ecaffdb955f744c6` |
+| 13 | Meldmark released initialization and target validation (A4-13) | complete as local durable commit `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` on `main` (parent `a35cf34a2e2418eaacda6cef39218235d50566b8`); no remote, not pushed |
+| 14 | OMP Stage D (A4-14) | complete as temp-only no-remote fixture proof; fixture lineage `f662a454216d90c61c443c55a83165618d5e9843` → `431efa300230663a565fd23cc897a39e01a2a29b` → `21ca6a67e8c73546eef5f8f91c4a7380a8066ef8`; `.omp/` ignored/local-only; committed-profile discoverability remains open |
+| 15 | formal closure documents and separately authorized docs push | this docs-only reconciliation records the facts above as a candidate; independent audit is required for commit eligibility; the candidate itself authorizes no commit or push; push remains separately authorized |
+
+Each completed packet started from a live baseline and frozen allowlist and satisfied its own stop
+gates and verification contract. This section authorizes no registry, Git, external-repository, or
+OMP mutation.

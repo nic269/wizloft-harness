@@ -1,22 +1,28 @@
 # Readiness Checklist for Other Projects
 
-The local fourteen-package `0.1.0-alpha.3` implementation and packed proof are complete. The public
-release, Phase 6 external-consumer proof, release-dependent Meldmark gates, OMP Stage D, and formal
-active-plan closure remain open.
+The coherent alpha.4 `candidate`/`next` graph, Git provenance, Phase 6 P2 proofs, local
+CLI/Meldmark commits, and temp-only Stage D proof are complete. External CLI/Meldmark pushes,
+committed-profile discoverability, and broader adoption remain open. The candidate itself
+authorizes neither docs commit nor push; docs push remains separately authorized.
+Alpha.3 partial publication remains immutable history.
 
 ## Release readiness
 
 - [x] Phase 4C real packaged-runtime proof is committed and green.
-- [x] Fourteen-package `0.1.0-alpha.3` release graph is implemented.
+- [x] Fourteen-package `0.1.0-alpha.3` release graph was implemented locally. That version remains
+  immutable partial public history and was not repaired.
 - [x] All packed manifests use exact versions and no local protocols.
 - [x] Exact-minimum Node proof is recorded as a current release-gate result.
-- [ ] All fourteen exact `0.1.0-alpha.3` artifacts are published as one coherent graph.
-- [ ] Registry dist-tags and Git-to-binary provenance are independently proved.
-- [ ] A clean registry consumer installs the exact fourteen-package graph.
+- [x] All fourteen exact `0.1.0-alpha.4` artifacts are published as one coherent `candidate`/`next`
+  graph. `latest` remains thirteen packages at `0.1.0-alpha.2` and
+  `@wizloft/harness-project@0.1.0-alpha.3`.
+- [x] Alpha.4 `candidate`/`next` dist-tags and Git-to-binary provenance are independently proved.
+- [x] A clean registry consumer installs the exact fourteen-package alpha.4 graph.
 
 ## Initializer readiness
 
-In-repo Phase 4A/4C proofs are complete. These are not published-consumer proofs.
+In-repo Phase 4A/4C proofs are complete. Released-consumer CLEAN/EXISTING smokes are also complete
+under A4-12.
 
 - [x] CLEAN repository initialization passes.
 - [x] EXISTING repository initialization preserves user bytes.
@@ -39,11 +45,18 @@ In-repo Phase 4A/4C proofs are complete. These are not published-consumer proofs
 
 ## Consumer readiness
 
-- [ ] Wizloft CLI exact pins are regression-tested against the coherent public alpha.3 graph.
-- [ ] Fresh-project released smoke is completed after coherent publication.
-- [ ] Existing-project released smoke is completed after coherent publication.
-- [ ] Meldmark is initialized and target-validated against the coherent public alpha.3 graph.
-- [ ] OMP Stage D is rerun after coherent publication under separate authority and independent audit.
+These are proof-complete. Local durable commits are not remote adoption.
+
+- [x] Wizloft CLI exact pins are regression-tested against the coherent public alpha.4 graph and
+  committed locally at `c5e011383fd6b056d271517580b8cfd7d59bb7c3` on `rewrite/typescript` (parent
+  `b2b2af52df2bd337a341888c2512e74ac2b64c0c`); the commit is not pushed.
+- [x] Fresh-project released CLEAN smoke is complete against alpha.4.
+- [x] Existing-project released EXISTING smoke is complete against alpha.4.
+- [x] Meldmark is initialized and target-validated against the coherent public alpha.4 graph and
+  committed locally at `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` on `main` (parent
+  `a35cf34a2e2418eaacda6cef39218235d50566b8`); no remote, not pushed.
+- [x] OMP Stage D passed as a temp-only no-remote fixture under independent audit. `.omp/` remained
+  ignored/local-only.
 
 ## Documentation readiness
 
@@ -52,8 +65,8 @@ In-repo Phase 4A/4C proofs are complete. These are not published-consumer proofs
   HEAD/index/worktree verification.
 - [x] Roadmap separates implementation, release, and publication.
 - [x] Work-packet templates are installed.
-- [ ] OMP agent profiles are installed and discoverable in a committed tree; temp-only Stage D
-  deliberately kept `.omp/` ignored/local-only.
+- [ ] OMP agent profiles are installed and discoverable in a committed tree; Stage D deliberately
+  kept `.omp/` ignored/local-only.
 - [x] Orca permission/worktree settings are documented.
 - [x] A new Coordinator can continue without conversation history.
 

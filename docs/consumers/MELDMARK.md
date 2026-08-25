@@ -18,12 +18,13 @@ Harness core must not contain Meldmark assessment semantics. Those belong in Mel
 
 Meldmark must not hand-copy the Wizloft CLI Gate H0 layout.
 
-It waits for released `0.1.0-alpha.3` and is initialized with `@wizloft/harness-project`, not a
-hand-authored `dev/harness` tree.
+It is initialized with released `@wizloft/harness-project@0.1.0-alpha.4`, not a hand-authored
+`dev/harness` tree. The local durable commit is `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` on
+`main` (parent `a35cf34a2e2418eaacda6cef39218235d50566b8`). That checkout has no remote and the
+commit is not pushed; do not infer remote adoption.
 
 Meldmark does not need Wizloft CLI installed to use Harness. The canonical portable project
 command remains `node .wizloft/harness/run.mjs`. A future host CLI is convenience only.
 
-Meldmark readiness remains gated on clean, existing, idempotent, and released initializer proof
-from Hardening Cycle 1. Do not initialize Meldmark from an unpublished workspace checkout unless a
-later turn explicitly authorizes that exception.
+Do not initialize Meldmark from an unpublished workspace checkout unless a later turn explicitly
+authorizes that exception.

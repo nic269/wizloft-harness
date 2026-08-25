@@ -32,21 +32,25 @@ Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 
 ## Current status
 
-Slices 0–6, MUH, Self-host, External Package Release Readiness, and the local alpha.3
-implementation are complete. Phase 4C historically proved the fourteen packed artifacts and
-Phase 5 produced a fourteen-package `0.1.0-alpha.3` release-ready candidate.
+Slices 0–6, MUH, Self-host, External Package Release Readiness, the local alpha.3
+implementation, and the selected alpha.4 coherent recovery are complete as recorded here.
 
-The public release is incomplete. Only `@wizloft/harness-project@0.1.0-alpha.3` is published; the
-other Harness packages remain published at `0.1.0-alpha.2`. There is therefore no coherent public
-fourteen-package alpha.3 graph, no valid `candidate`/`next` promotion or Git-to-binary provenance
-proof, and no completed Phase 6 consumer or OMP Stage D release proof.
+Alpha.3 remains immutable partial history: only `@wizloft/harness-project@0.1.0-alpha.3` was
+published for that version, and `latest` still points at thirteen packages on `0.1.0-alpha.2` plus
+that project artifact. Do not repair, move, delete, unpublish, or retag alpha.3.
 
-The active plan remains open for a later, separately authorized coherent release. First prove the
-already-published project artifact is byte-for-byte and provenance-identical to the frozen
-candidate; a mismatch stops for an Owner decision and a new coherent version. If it matches,
-publish the remaining thirteen exact artifacts, prove all fourteen in registry state and matching
-Git provenance, then rerun the Phase 6 external consumer sequence and Stage D. No publish, tag,
-push, external-consumer, or local OMP action is authorized by this status correction.
+The current public prerelease graph is fourteen packages at lockstep `0.1.0-alpha.4` on both
+`candidate` and `next`. Source commit `R` is `f662a454216d90c61c443c55a83165618d5e9843` (tree
+`68d5bb37d506b49301e2d3c433979b0c7fa64f2f`). The frozen artifact-manifest SHA-256 is
+`553c0e4ee510b3087360b0e2e7910aa07adf6c8140b4fbff798049e703a482bd`. Annotated tag
+`harness-v0.1.0-alpha.4` object `7c70e518458eb4923d42353dcba7d2069adb7b04` is remote-pushed and
+peels to `R`. Ordered downstream proofs A4-10 through A4-14 are independently accepted. Wizloft CLI
+and Meldmark have local durable commits that are not pushed; OMP Stage D passed as a temp-only
+no-remote fixture with `.omp/` ignored. Committed-profile discoverability, external pushes, formal
+docs commit/push, and broader readiness remain separate.
+
+This status record authorizes no publish, tag, push, registry mutation, external-repository push,
+or OMP profile commit.
 
 ## Development
 

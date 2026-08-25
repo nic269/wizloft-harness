@@ -11,6 +11,12 @@ For Orca-managed independent worktrees, the provided wrapper scripts can also la
 Auditor as separate main OMP processes with role-specific tool surfaces. A readable local role
 prompt under `.omp/prompts/` is an optional customization and is appended only when present.
 
+## Current operating boundary
+
+A repository `.omp/` tree remains an optional ignored overlay, not a supplied asset. Alpha.4
+Stage D passed as a temp-only no-remote fixture and kept `.omp/` local-only. That proof does not
+install committed agent profiles or close discoverability in a fresh clone.
+
 ## Install OMP
 
 Follow OMP's official installation, then verify:
@@ -163,5 +169,5 @@ These paths are optional ignored overlay files, not repository-supplied assets:
 - `.omp/prompts/*.md` — optional main-session role prompts; wrappers append a prompt only when that file is readable.
 - `.omp/agents/*.md` — optional task-agent definitions.
 
-Do not duplicate the entire Harness contract into every agent file. Once alpha.3 initializes the
+Do not duplicate the entire Harness contract into every agent file. Once Harness initializes the
 repository, the canonical Harness instructions live under `.wizloft/harness/INSTRUCTIONS.md`.

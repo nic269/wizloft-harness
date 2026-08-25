@@ -9,11 +9,11 @@
 - `plans/active/0002-external-package-release-readiness.md` — completed external package
   release-readiness plan.
 - `plans/active/0003-cli-dogfood-hardening-cycle-1.md` — accepted alpha.3 onboarding contract
-  with completed local implementation proof and reopened release gates. The local fourteen-package
-  `0.1.0-alpha.3` candidate is release-ready, but the public graph is incomplete: only
-  `@wizloft/harness-project@0.1.0-alpha.3` is published and the other packages remain at alpha.2.
-  Coherent publication, registry and Git-provenance proof, Phase 6 external consumers, and OMP
-  Stage D require a later separately authorized release.
+  with completed local implementation proof. Alpha.3 public state remains immutable partial
+  history. Section 30 records the completed alpha.4 coherent `candidate`/`next` graph, Git
+  provenance, and A4-10 through A4-14 downstream proof. Formal docs commit/push, external
+  CLI/Meldmark pushes, committed OMP-profile discoverability, and broader readiness remain
+  separate.
 - `consumers/WIZLOFT-CLI.md` — first external dogfood/rewrite contract.
 - `consumers/MELDMARK.md` — later domain-rich consumer.
 - `references/` — reference map and pinned baselines.

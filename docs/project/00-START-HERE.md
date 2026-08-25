@@ -2,26 +2,31 @@
 
 ## Current mission
 
-The local fourteen-package alpha.3 implementation and packed proof are complete, but the public
-release is incomplete. Only `@wizloft/harness-project@0.1.0-alpha.3` is published; the other
-Harness packages remain published at alpha.2. The active plan is open for coherent publication,
-registry and Git-provenance proof, Phase 6 external consumers, and OMP Stage D.
+The selected alpha.4 coherent fourteen-package recovery is proven. All fourteen packages are
+`0.1.0-alpha.4` on `candidate` and `next`, Git provenance matches frozen artifacts, and ordered
+downstream proofs A4-10 through A4-14 are independently accepted. Alpha.3 remains immutable
+partial history and must not be repaired. This docs candidate requires independent audit for
+commit eligibility and authorizes no commit or push; push remains separately authorized.
+External CLI/Meldmark pushes, committed OMP-profile discoverability, and broader readiness
+remain separately authorized.
 
 ## Current checkpoint
 
-- Operational baseline: clean checked-out `main`
+- Operational baseline: clean checked-out `main` with HEAD, index, and worktree resolved live
 - Baseline verification: capture `git rev-parse HEAD` and verify index/worktree status live; do not
   use a documentation-embedded SHA as the expected current HEAD
-- Local candidate: fourteen packages implemented at lockstep `0.1.0-alpha.3`; Phase 4C packed proof
-  and Phase 5 release-readiness evidence remain valid
-- Public graph: incomplete; only `@wizloft/harness-project@0.1.0-alpha.3` is published, while the
-  other Harness packages remain published at `0.1.0-alpha.2`
-- Publication/promotion/G2B: no coherent alpha.3 graph or completed registry/Git-provenance proof
-- Phase 6 P2 and release-dependent Meldmark readiness gates: open
-- OMP Stage D: open; a prior temp-only no-remote exercise made no source or registry change and
-  cannot close the gate under the invalid publication premise
-- Boundary: no publish, tag, push, Phase 6, external-consumer, or local OMP action without a new
-  exact Owner packet
+- Alpha.4 source `R` / frozen provenance: `f662a454216d90c61c443c55a83165618d5e9843` (tree
+  `68d5bb37d506b49301e2d3c433979b0c7fa64f2f`)
+- Frozen artifact-manifest SHA-256:
+  `553c0e4ee510b3087360b0e2e7910aa07adf6c8140b4fbff798049e703a482bd`
+- Git tag: annotated `harness-v0.1.0-alpha.4` object `7c70e518458eb4923d42353dcba7d2069adb7b04`,
+  remote-pushed, peeled to `R`
+- Public prerelease graph: fourteen packages at `0.1.0-alpha.4` on `candidate` and `next`
+- `latest`: thirteen packages `0.1.0-alpha.2`; `@wizloft/harness-project@0.1.0-alpha.3`
+- Phase 6 P2 and Stage D: independently accepted as proof; CLI/Meldmark commits are local-only;
+  Stage D was temp-only with `.omp/` ignored
+- Boundary: no publish, retag, unpublish, external push, docs commit/push, or committed-profile
+  action without a new exact Owner packet
 
 ## Reading order for a new Coordinator
 
@@ -43,10 +48,10 @@ git rev-parse HEAD
 git diff --cached --name-status
 ```
 
-Once live preflight confirms clean checked-out `main`, preserve the local implementation evidence
-without treating it as public-release proof. Do not publish, promote, tag, push, run Phase 6, or
-change local OMP state without a separate exact Owner packet. A later coherent release and
-independent registry/Git-provenance proof must precede Phase 6 external consumers and Stage D.
+Once live preflight confirms clean checked-out `main`, preserve alpha.3 history and the proven
+alpha.4 graph. Do not publish, promote, tag, push, push external consumers, or change local OMP
+state without a separate exact Owner packet. Local CLI/Meldmark commits and temp-only Stage D are
+not remote adoption or committed-profile discoverability.
 
 ## Definition of a successful handoff
 

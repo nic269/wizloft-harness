@@ -1,67 +1,78 @@
 # Next Goals
 
-The local fourteen-package alpha.3 implementation is release-ready, but the active plan remains
-open because the public release is incomplete.
+The selected alpha.4 coherent recovery and ordered downstream proofs are complete. Remaining goals
+are separately authorized push, profile, docs-closure, and broader-readiness decisions. Alpha.3
+remains immutable partial history.
 
-## Goal 1 — authorize and prove one coherent alpha.3 release
+## Historical alpha.3 recovery goals
 
-Only `@wizloft/harness-project@0.1.0-alpha.3` is published; the other Harness packages remain at
-alpha.2. A later exact Owner packet must first prove the published project artifact is
-byte/provenance-identical to the frozen candidate. A mismatch stops for an Owner decision and new
-coherent version. If it matches, publish the remaining thirteen exact artifacts and independently
-prove all fourteen in the registry, the intended dist-tags, and matching Git provenance.
+The alpha.3 goals below are retained as history. They were superseded by the completed alpha.4
+path.
 
-## Goal 2 — complete Phase 6 external consumers
+### Goal 1 — authorize and prove one coherent alpha.3 release
 
-Only after the coherent release is proved, run the ordered exact-version consumer, Wizloft CLI,
-fresh/CLEAN initializer, existing-project initializer, and Meldmark gates. External repository
-changes and pushes remain separately authorized.
+Only `@wizloft/harness-project@0.1.0-alpha.3` was published; the other Harness packages remained at
+alpha.2 as `latest`. That partial publication was not repaired. A later exact Owner packet selected
+`0.1.0-alpha.4` instead of completing the alpha.3 graph.
 
-## Goal 3 — complete Stage D
+### Goal 2 — complete Phase 6 external consumers
 
-Treat the prior temp-only OMP attempt as historical boundary evidence, not completion. After the
-coherent release is proved, obtain a separate exact packet, rerun Stage D, and independently audit
-it. Do not commit or install an OMP profile under this status correction.
+Superseded by the completed alpha.4 A4-10 through A4-13 proofs.
 
-## Goal 4 — broader readiness
+### Goal 3 — complete Stage D
 
-Reassess `08-READY-FOR-OTHER-PROJECTS.md` only after coherent publication, Phase 6, Stage D,
-external-adoption decisions, and committed-profile discoverability provide valid evidence.
+The prior alpha.3-premise temp-only OMP attempt remains historical boundary evidence, not
+completion. Alpha.4 Stage D later passed as a separate temp-only fixture.
 
-## Superseding alpha.4 recovery path
+### Goal 4 — broader readiness
 
-The alpha.3 recovery goal above is retained as history but is superseded.
-`0.1.0-alpha.4` is the selected coherent fourteen-package target, pending local implementation and
-proof. The partial alpha.3 public truth does not change: only
-`@wizloft/harness-project@0.1.0-alpha.3` is published, and the other thirteen packages remain at
-alpha.2. Never use that project artifact as alpha.4 recovery evidence or repair, move, delete,
+Still open. Reassess `08-READY-FOR-OTHER-PROJECTS.md` only after external-adoption decisions and
+committed-profile discoverability provide valid evidence.
+
+## Completed alpha.4 recovery
+
+`0.1.0-alpha.4` is the selected coherent fourteen-package target and is now implemented, frozen,
+published on `candidate` and `next`, Git-proven, and independently proved through A4-10 through
+A4-14. Never use the alpha.3 project artifact as recovery evidence or repair, move, delete,
 unpublish, or retag alpha.3.
 
-### Goal 1 — implement and freeze the alpha.4 candidate
+Frozen identities:
 
-Under separate exact packets, first correct packed-proof retention and SHA-256 completion-manifest
-tooling, then implement and independently audit/commit the local lockstep alpha.4 identity. The
-corrected proof must use one build and one pack, retain its artifact directory outside the
-repository, and write the SHA-256 completion manifest last. A further independent audit of that
-complete artifact set freezes the candidate. Do not rebuild or repack it.
+- source `R` `f662a454216d90c61c443c55a83165618d5e9843` / tree
+  `68d5bb37d506b49301e2d3c433979b0c7fa64f2f`
+- artifact-manifest SHA-256
+  `553c0e4ee510b3087360b0e2e7910aa07adf6c8140b4fbff798049e703a482bd`
+- tag object `7c70e518458eb4923d42353dcba7d2069adb7b04`, remote-pushed
 
-### Goal 2 — publish and prove the exact frozen graph
+Local external commits, not remote adoption:
 
-After separate approval of the local annotated alpha.4 tag policy, later exact Owner authority may
-publish those exact fourteen artifacts in the seven release-contract dependency-derived layers.
-Independently prove exact registry bytes and behavior, then separately promote all fourteen
-packages to `next` and prove the post-promotion graph. Only afterward may matching Git provenance
-be pushed and independently audited against the binaries. Candidate publication, registry proof,
-promotion/proof, and Git push/Git-to-binary audit are separate packets.
+- Wizloft CLI `c5e011383fd6b056d271517580b8cfd7d59bb7c3` on `rewrite/typescript` (parent
+  `b2b2af52df2bd337a341888c2512e74ac2b64c0c`), unpushed
+- Meldmark `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` on `main` (parent
+  `a35cf34a2e2418eaacda6cef39218235d50566b8`), no remote
 
-### Goal 3 — revalidate downstream gates
+Stage D passed as a temp-only no-remote fixture; `.omp/` remained ignored/local-only.
 
-Only after the registry and Git proof is accepted, route separate packets for the exact-registry
-consumer, Wizloft CLI exact-pin regression, released CLEAN/EXISTING smokes, Meldmark, and OMP Stage
-D. External repositories and OMP each retain their own authority and stop gates.
+## Remaining goals
 
-### Goal 4 — reconcile final documentation
+### Goal 1 — documentation candidate commit/push boundary
 
-Only after every preceding gate is independently accepted may a final docs packet reconcile
-status, handoff, goals, and active-plan closure. No registry, Git, external-repository, or OMP
-action is authorized by this goals record.
+Independent audit is required for this docs-only candidate's commit eligibility. The candidate
+itself authorizes no commit or push. Push remains separately authorized.
+
+### Goal 2 — separately decide external remote adoption
+
+Wizloft CLI push and any Meldmark remote configuration/push require their own repository-specific
+authority and live ref preflight. Proof completion is not remote adoption.
+
+### Goal 3 — separately decide committed OMP-profile discoverability
+
+Do not copy the Stage D `.omp/` overlay into Harness source. Committed-profile discoverability
+remains open.
+
+### Goal 4 — broader readiness
+
+Reassess `08-READY-FOR-OTHER-PROJECTS.md` only after the remaining push and profile decisions
+provide valid evidence.
+
+No registry, Git, external-repository, or OMP action is authorized by this goals record.

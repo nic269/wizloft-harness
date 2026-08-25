@@ -116,18 +116,19 @@ Commit: `f13d4d56e720336083764609f62fdd0a3341fa8b`
 
 - The local fourteen-package `0.1.0-alpha.3` implementation remained the release-ready candidate.
 - Only `@wizloft/harness-project@0.1.0-alpha.3` was actually published.
-- The other Harness packages remain published at `0.1.0-alpha.2`.
-- Prior records claiming all fourteen publications, coherent `candidate`/`next` promotion, sealed
-  registry proof, or Git-to-binary closure are not current completion evidence.
+- The other Harness packages remained published at `0.1.0-alpha.2` as `latest`.
+- Records claiming all fourteen alpha.3 publications, coherent alpha.3 `candidate`/`next`
+  promotion, sealed alpha.3 registry proof, or alpha.3 Git-to-binary closure are not completion
+  evidence. That partial public history is immutable and was not repaired.
 
 ### Phase 6 P2 — external consumers
 
 - Work was attempted on registry consumption, the Wizloft CLI, released initializer smokes, and
-  Meldmark.
-- Because the coherent fourteen-package alpha.3 public graph did not exist, that work cannot close
-  Phase 6 or the release-dependent Meldmark gates.
-- Any retained local external-repository commits are not proof of a coherent public release or
-  remote adoption.
+  Meldmark under the invalid coherent alpha.3-publication premise.
+- Because the coherent fourteen-package alpha.3 public graph did not exist, that work could not
+  close Phase 6 or the release-dependent Meldmark gates.
+- Any retained local external-repository commits from that attempt are not proof of a coherent
+  public alpha.3 release or remote adoption.
 
 ### OMP Stage D — temp-only interoperability attempt
 
@@ -148,8 +149,42 @@ Commit: `f13d4d56e720336083764609f62fdd0a3341fa8b`
 - Required a later packet to compare the already-published project artifact byte/provenance against
   the frozen candidate, stop for an Owner decision/new coherent version on mismatch, or publish the
   remaining thirteen and prove all fourteen on match.
-- Kept publication, tagging, pushing, Phase 6, and local OMP work behind later separate Owner
-  decisions and exact packets.
+- The later Owner decision selected `0.1.0-alpha.4` rather than repairing alpha.3.
+
+## Alpha.4 coherent recovery
+
+### Source, freeze, registry, and Git provenance
+
+- Commit `R`: `f662a454216d90c61c443c55a83165618d5e9843` (tree
+  `68d5bb37d506b49301e2d3c433979b0c7fa64f2f`).
+- Frozen artifact-manifest SHA-256:
+  `553c0e4ee510b3087360b0e2e7910aa07adf6c8140b4fbff798049e703a482bd`.
+- Annotated tag `harness-v0.1.0-alpha.4` object `7c70e518458eb4923d42353dcba7d2069adb7b04` is
+  remote-pushed and peels to `R`.
+- All fourteen packages are published at `0.1.0-alpha.4` on `candidate` and `next`.
+- `latest` is unchanged: thirteen packages at `0.1.0-alpha.2` and
+  `@wizloft/harness-project@0.1.0-alpha.3`.
+
+### Phase 6 P2 — alpha.4 downstream proof
+
+- A4-10 exact-registry consumer independently accepted; evidence seal SHA-256
+  `4a4ebcfa8178c7b2775c7fcfcaefd24cd701ac0102f7eafffa1e77c076ce11ee`.
+- A4-11 Wizloft CLI exact-pin regression independently accepted, then committed locally as
+  `c5e011383fd6b056d271517580b8cfd7d59bb7c3` on `rewrite/typescript` (parent
+  `b2b2af52df2bd337a341888c2512e74ac2b64c0c`). Not pushed.
+- A4-12 released CLEAN/EXISTING smokes independently accepted; evidence seal SHA-256
+  `f992c5ebd45f52caee460583e0a48d3e24df1827389e37c1ecaffdb955f744c6`.
+- A4-13 Meldmark released initialization and target validation independently accepted, then
+  committed locally as `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` on `main` (parent
+  `a35cf34a2e2418eaacda6cef39218235d50566b8`). No remote, not pushed.
+
+### OMP Stage D — alpha.4 temp-only pass
+
+- A4-14 independently accepted on a no-remote fixture.
+- Fixture lineage: `f662a454216d90c61c443c55a83165618d5e9843` →
+  `431efa300230663a565fd23cc897a39e01a2a29b` → `21ca6a67e8c73546eef5f8f91c4a7380a8066ef8`.
+- `.omp/` remained ignored/local-only. This does not close committed-profile discoverability or
+  broader readiness.
 
 ## What the proof strategy accomplished
 
