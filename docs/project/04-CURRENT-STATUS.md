@@ -13,9 +13,10 @@ Snapshot date: **2026-08-25**
 | Public prerelease graph | fourteen packages at lockstep `0.1.0-alpha.4` on `candidate` and `next` |
 | `latest` | thirteen packages remain `0.1.0-alpha.2`; `@wizloft/harness-project@0.1.0-alpha.3` |
 | Alpha.3 history | immutable partial publication; do not repair, move, delete, unpublish, or retag |
+| 2026-09-02 npm incident containment | five malicious `0.1.1-alpha.3` artifacts deprecated; compromised `beta`/`alpha` tags moved to verified `0.1.0-alpha.4`; zero tags remain on the malicious version; local sweep and network-off clean-room alpha.4 proof passed; broad bypass-2FA token revocation awaits interactive npm authentication |
 | Phase 6 P2 | A4-10 through A4-13 independently accepted. CLI `c5e011383fd6b056d271517580b8cfd7d59bb7c3` is local/unpushed; Meldmark `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` is local with no remote |
 | OMP Stage D | A4-14 temp-only no-remote fixture passed; `.omp/` ignored/local-only; committed-profile discoverability open |
-| Active plan | section 30 steps 1–14 complete; this docs reconciliation is a candidate. Independent audit is required for commit eligibility; the candidate itself authorizes no commit or push. Push remains separately authorized. External pushes and broader readiness remain separate |
+| Active plans | CLI dogfood section 30 steps 1–14 complete; npm supply-chain recovery is active at `docs/plans/active/0004-npm-supply-chain-recovery.md`, with registry containment complete and interactive credential closure pending. Neither plan authorizes a recovery publication |
 
 ## Current operating objective
 
@@ -77,3 +78,6 @@ Downstream proof is complete as proof, with these durability boundaries:
 
 Registry, Git, external-repository, and OMP actions require later exact Owner authorization; this
 status record authorizes none.
+
+The 2026-09-02 incident containment is recorded separately in
+`docs/security/2026-09-02-npm-supply-chain-containment.md`. It authorizes no recovery publication.

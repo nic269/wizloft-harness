@@ -91,20 +91,21 @@ The consumer may evolve this structure if tests/clarity justify a better shape.
 
 ## Hardening Cycle 1 posture
 
-Wizloft CLI remains the original `0.1.0-alpha.2` dogfood consumer. Its Gate H0 / product Harness
-layout is CLI-owned.
+Wizloft CLI's original Gate H0 / product Harness layout is historical. Formal
+generic project onboarding was committed locally as
+`5edb36c6e7f5601d0b50dab047c3d9cb38eda1d8` on `rewrite/typescript`. Its
+tracked marker names `@wizloft/harness-project@0.1.0-alpha.4` and its generated
+portable runner makes the repository independently operable without Wizloft CLI
+installed.
 
-Generic project onboarding remains independent of Wizloft CLI. A Harness-initialized repository is
-operable through `node .wizloft/harness/run.mjs` without the CLI installed.
+This does not change the executable ownership boundary. `wizloft harness` and
+`wizharness` remain Wizloft CLI product UX, while ordinary generic project
+commands use the repository-pinned runtime through
+`node .wizloft/harness/run.mjs`. A future host convenience adapter may load
+that same project-local runtime directly; it must not replace it with a
+host-bundled version.
 
-A future `wizloft harness` / `wizharness` convenience may detect the repository marker and invoke
-the project-local `@wizloft/harness-project` (`runProjectHarness`) directly. Ordinary project
-commands must use the repository-pinned runtime, not a host-bundled Harness version.
+External repository pushes require their own authority. Selective Module
+Distribution, if pursued, remains a separate Wizloft CLI initiative rather
+than a Harness Cycle 1 deliverable or Harness architecture.
 
-Generic `@wizloft/harness-project` initialization does not retroactively migrate the current CLI
-layout. The exact-pin upgrade to `0.1.0-alpha.4` is package-regression only and is locally
-committed at `c5e011383fd6b056d271517580b8cfd7d59bb7c3` on `rewrite/typescript` (parent
-`b2b2af52df2bd337a341888c2512e74ac2b64c0c`). That commit is not pushed and is not remote adoption.
-
-Selective Module Distribution, if pursued, is a separate Wizloft CLI initiative. It is not a
-Harness Cycle 1 deliverable and is not Harness architecture.
