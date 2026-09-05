@@ -20,6 +20,8 @@ concurrency:
 
 env:
   RECOVERY_VERSION: 0.1.2-alpha.1
+  NODE_VERSION: 24.20.0
+  NPM_VERSION: 11.19.0
 
 jobs:
   verify-and-freeze:
@@ -105,8 +107,13 @@ jobs:
       - name: Install exact OIDC-capable npm runtime
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: 24.20.0
+          node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
+
+      - name: Assert exact publication runtime
+        run: |
+          test "$(node --version)" = "v${NODE_VERSION}"
+          test "$(npm --version)" = "${NPM_VERSION}"
 
       - name: Download the frozen release packet
         uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
@@ -133,8 +140,13 @@ jobs:
       - name: Install exact Node runtime
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: 24.20.0
+          node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
+
+      - name: Assert exact registry-proof runtime
+        run: |
+          test "$(node --version)" = "v${NODE_VERSION}"
+          test "$(npm --version)" = "${NPM_VERSION}"
 
       - name: Download the frozen release packet
         uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
