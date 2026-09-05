@@ -1,0 +1,161 @@
+name: Publish recovery release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact recovery version from the annotated harness-v* tag
+        required: true
+        type: string
+      confirmation:
+        description: Type "publish recovery release" to authorize registry mutation
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: npm-recovery-publication
+  cancel-in-progress: false
+
+env:
+  RECOVERY_VERSION: 0.1.2-alpha.1
+
+jobs:
+  verify-and-freeze:
+    if: inputs.confirmation == 'publish recovery release' && inputs.version == '0.1.2-alpha.1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the selected release tag
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Verify annotated release identity
+        env:
+          EXPECTED_VERSION: ${{ inputs.version }}
+        run: |
+          test "$EXPECTED_VERSION" = "$RECOVERY_VERSION"
+          test "$GITHUB_REF" = "refs/tags/harness-v${EXPECTED_VERSION}"
+          test "$(node -p "require('./package.json').version")" = "$EXPECTED_VERSION"
+          test "$(git cat-file -t "harness-v${EXPECTED_VERSION}")" = "tag"
+
+      - name: Build pinned proof environment
+        run: docker build --no-cache --tag wizloft-harness-release --file .github/release.Dockerfile .
+
+      - name: Install dependencies without lifecycle scripts
+        run: |
+          docker run --rm --network bridge \
+            --user "$(id -u):$(id -g)" \
+            --env HOME=/tmp \
+            --env CI=true \
+            --volume "$PWD:/workspace" \
+            wizloft-harness-release \
+            pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Run full verification without credentials or network
+        run: |
+          docker run --rm --network none \
+            --env HOME=/tmp \
+            --env CI=true \
+            --user "$(id -u):$(id -g)" \
+            --volume "$PWD:/workspace" \
+            wizloft-harness-release \
+            pnpm verify
+
+      - name: Freeze, scan before imports, and prove without network
+        run: |
+          docker run --rm --network none --read-only \
+            --user "$(id -u):$(id -g)" \
+            --env HOME=/tmp \
+            --env CI=true \
+            --tmpfs /tmp:rw,noexec,nosuid,size=1g \
+            --volume "$PWD:/workspace:ro" \
+            --volume "$RUNNER_TEMP:/runner-temp" \
+            wizloft-harness-release \
+            node scripts/prove-packed-consumer.mjs --artifacts-dir /runner-temp/release-artifacts
+
+      - name: Retain the exact frozen release packet
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        with:
+          name: harness-${{ inputs.version }}-frozen-release
+          path: ${{ runner.temp }}/release-artifacts
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+
+  publish-candidate:
+    needs: verify-and-freeze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    environment: npm-recovery
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out the selected release tag
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Install exact OIDC-capable npm runtime
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.20.0
+          package-manager-cache: false
+
+      - name: Download the frozen release packet
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+        with:
+          name: harness-${{ inputs.version }}-frozen-release
+          path: ${{ runner.temp }}/release-artifacts
+
+      - name: Re-hash and publish only the frozen candidate graph
+        run: node scripts/publish-release-candidate.mjs publish "$RUNNER_TEMP/release-artifacts"
+
+  prove-registry-consumer:
+    needs: publish-candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Check out the selected release tag
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Install exact Node runtime
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.20.0
+          package-manager-cache: false
+
+      - name: Download the frozen release packet
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+        with:
+          name: harness-${{ inputs.version }}-frozen-release
+          path: ${{ runner.temp }}/release-artifacts
+
+      - name: Prove exact-version registry consumer
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          consumer="$RUNNER_TEMP/registry-consumer"
+          mkdir "$consumer"
+          git -C "$consumer" init --quiet
+          npm exec --yes --registry=https://registry.npmjs.org \
+            --package="@wizloft/harness-project@${RELEASE_VERSION}" -- \
+            wizloft-harness-project init --root "$consumer" --project-id registry-proof \
+            --adapters agents,claude --json
+          node "$consumer/.wizloft/harness/run.mjs" inspect --json
+          node "$consumer/.wizloft/harness/run.mjs" validation run --json --input \
+            '{"correlationId":"registry-proof","changedPaths":[".wizloft/PROJECT.md"]}'
+
+      - name: Re-fetch registry bytes and audit every dist-tag
+        run: node scripts/publish-release-candidate.mjs verify "$RUNNER_TEMP/release-artifacts"
