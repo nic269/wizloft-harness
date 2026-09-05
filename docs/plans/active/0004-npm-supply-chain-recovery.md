@@ -35,26 +35,27 @@ August 2026 policy. Do not create another bypass token as a workaround.
 
 Before configuring npm Trusted Publishing:
 
-- [ ] Merge the reviewed manual `.github/workflows/publish.yml` workflow.
+- [x] Merge the reviewed manual `.github/workflows/publish.yml` workflow.
 - [x] Keep dependency installation, verification, packed imports, and registry-consumer proof in
   jobs without `id-token: write`.
 - [x] Limit the publication job to `contents: read`, `actions: read`, and `id-token: write`.
 - [x] Pin the GitHub actions, Node `24.20.0`, npm `11.19.0`, pnpm `11.10.0`, and the release
   container image digest; disable dependency caching and lifecycle scripts.
 - [x] Build, inspect, and freeze all fourteen tarballs before any registry write.
-- [x] Publish dependency-first only from the downloaded and re-hashed frozen artifact set.
+- [x] Configure dependency-first publication only from the downloaded and re-hashed frozen artifact
+  set.
 - [x] Protect `main` against direct/force/deletion changes and protect `harness-v*` tags against
   update/deletion.
 - [ ] Register `nic269/wizloft-harness`, workflow `publish.yml`, environment `npm-recovery`, and
   direct `npm publish` permission as trusted publisher for each public package.
 - [ ] Disallow traditional publish tokens after a successful dry consumer proof.
 
-The Owner made the repository public on 2026-09-05. The recovery release is therefore eligible for
+The Owner made the repository public on 2026-09-06. The recovery release is therefore eligible for
 npm provenance after the exact trusted publishers and token-free workflow are active.
 
 ## Gate R3 — Recovery release decision
 
-- [x] Owner selected coherent fourteen-package version `0.1.2-alpha.1` on 2026-09-05.
+- [x] Owner selected coherent fourteen-package version `0.1.2-alpha.1` on 2026-09-06.
 - [x] The identity sorts above malicious `0.1.1-alpha.3` without legitimizing that sequence.
 - [x] Synchronize and verify the complete lockstep graph at the selected identity.
 
@@ -92,6 +93,47 @@ remote dynamic imports, dynamic execution sinks, and obfuscated long lines acros
 JavaScript and declared bin before any packed import executes. It re-inspects the packet after
 packed execution; the proof container mounts reviewed source read-only, and later verification
 cannot access the packet.
+
+### Frozen pre-publication checkpoint — 2026-09-06
+
+This evidence checkpoint is intentionally post-tag documentation on `main`; it does not move the
+protected release tag.
+
+- Annotated tag object: `5487574ad9d08d2f2655b192635b5d34f13f6e9c`.
+- Tag target/source commit: `f2f19dbe26ce7975059d692012beea829ac5ec64`.
+- Source tree: `570639882e2e1ca66b44518321ffb03f26e82af1`.
+- Release-manifest SHA-256:
+  `2d392e9af14eef40651e7ff0dbe617044487ca03750451753756b79925ef0978`.
+- Exact Linux amd64 toolchain: Node `24.20.0`, npm `11.19.0`, pnpm `11.10.0`.
+- Credential-free, network-off `pnpm verify`, packed external-consumer proof, generated-project
+  inspect, and the final repeated artifact inspection passed.
+- `scripts/inspect-release-artifacts.mjs` owns the exact malicious SHA-1, SHA-512, executable
+  SHA-256, loader-text, remote-import, execution-sink, and obfuscated-line indicators recovered
+  from the preserved OSV and npm registry incident evidence. It rejects non-regular package
+  members and scans every shipped `.js`, `.mjs`, `.cjs`, and declared bin, not only entrypoints.
+- Read-only registry preflight confirmed that none of the fourteen `0.1.2-alpha.1` identities
+  existed. No publication workflow was dispatched.
+- Publication remains unauthorized: interactive revocation of `wizloft-release`, confirmation of
+  the remaining token inventory, npm account 2FA and recovery-method inspection, and all fourteen
+  exact trusted-publisher registrations remain incomplete. Registry proof, moving-tag promotion,
+  and Boilerplate adoption therefore remain blocked.
+
+| Package | Tarball | SHA-256 | SHA-512 |
+|---|---|---|---|
+| `@wizloft/harness-kernel` | `wizloft-harness-kernel-0.1.2-alpha.1.tgz` | `7e46d2755ef82e46a722d53e770d17e4673337bacfc0a18da200ab3ad424790e` | `sha512-HoLESGnzO77+doEoYP8mLoliWIF3lN3fSKjrfBiBrH1bcNtMkVz84TwpKS0oWWktd1b5nI5kKwNp7+z/lntjig==` |
+| `@wizloft/harness-authority` | `wizloft-harness-authority-0.1.2-alpha.1.tgz` | `34d59b1be9ff0196ba35b338dc422c7bed8251bda1f80bee2b0292c955d6b1ac` | `sha512-m22uNwvM3D7QKaMgFUTnMbG/zcb4MehTBRhuIWS9oBMoMiH/UjvxNl7YLNhnhAvIXXiovVWuNc1ynLyy6fytvg==` |
+| `@wizloft/harness-context` | `wizloft-harness-context-0.1.2-alpha.1.tgz` | `91a05a4cc7b1c904440bf63c8c02e7ae38faee78f9fb059b3c6c41ac847b2bff` | `sha512-mX3AV9HBcQi2h+o7oDJauvw2v0fgsWtVAvvNIv3e17ZDanRGhZgsfaV1/Us0TXS+8hkLRElywmJpKtjrYZ/ZcA==` |
+| `@wizloft/harness-evidence` | `wizloft-harness-evidence-0.1.2-alpha.1.tgz` | `8f844d10d71227d1aae0fc6fa9379e9c3b218322dd19087eab71f4c9921ad9a7` | `sha512-kMqHo2TCIEg4edzRD7T2AcwHXWSgtep1StjNRllNK40JGK172AWQ55SbmP+z1ooCPfCHoYNT9cPPGQyolIHhfw==` |
+| `@wizloft/harness-memory` | `wizloft-harness-memory-0.1.2-alpha.1.tgz` | `5845468f225827722740ec5c00400ca3e98386cafa7985a5f73301456bdc9509` | `sha512-lGCIYotkmBcIWLJOkx02NCSjT6z7Vi/6hux61lFWMiHPvkMVnbJIkGpAlNoqZrNH6NktioDpfwBF+FWYS/meaw==` |
+| `@wizloft/harness-validation` | `wizloft-harness-validation-0.1.2-alpha.1.tgz` | `4aa9399fd90790a7de817dd8c7c0f9eb4eaf103bc968a95b014383a01aa6458d` | `sha512-D/JbmM8lEL+LdvtdZU3bEQ1uARQ8rAn6yIWuT4WBQVhaUIrkvHiKQWm6mffAouLiSnjXZn/gTHl7+23zKM4uSA==` |
+| `@wizloft/harness` | `wizloft-harness-0.1.2-alpha.1.tgz` | `0a939c4417fa531b22a7ed4b4fa3e09c5221013ed412f5716c53cdbf3a9500d2` | `sha512-uKBU8YSjrw2FBvDKuLQBB5oW6cpuUGvrcQ05veUOUTg8xN8L65uU7BkJG/X/BhbnxArHmwUu73BFV/VelA9ovA==` |
+| `@wizloft/harness-commands` | `wizloft-harness-commands-0.1.2-alpha.1.tgz` | `cdcc398b857d64801220e1a78d814ac19a6b3a1e0df607a89142395e0b3adf4f` | `sha512-u0SqncxxOVDG3oYgDoJ/WW9xViZpIrN4sgx7Giwbjo2eeYkhRyBuKzepSuUf13p83WQoEMjT+SfI6GoAx9zgNA==` |
+| `@wizloft/harness-cli-adapter` | `wizloft-harness-cli-adapter-0.1.2-alpha.1.tgz` | `e15a320ffad2143e2c6f6502a482cd21c8edaa7aa3f50a17b6deb8afcc331158` | `sha512-pGGG+O95Cxs9cKBuQmbEraPe6yVsXW/mlN+qOiQcAXvNADQtmdTACNe17F/ZtQvZsahneuCEMBj6s1L0SRCXsQ==` |
+| `@wizloft/harness-plugin-file-events` | `wizloft-harness-plugin-file-events-0.1.2-alpha.1.tgz` | `68d2137e8cc426bc3e2f006a143f0bff1c98aade42da1fa77186b2fc69898d8b` | `sha512-YYqKG4vcGwpmfVYM+TSVh+HMFH3fMOdNjiXoEUo/zs+K/k/IJsHSfSS6e3rCGVqlWHIpAixH+ctzTynlohw/KQ==` |
+| `@wizloft/harness-plugin-file-memory` | `wizloft-harness-plugin-file-memory-0.1.2-alpha.1.tgz` | `6985cf8977eab4bc9282e007bbce143e17c60fc1ba72ad9cd93e6eda950dab17` | `sha512-vzzu2KdNFGiwBqIeVUJlRVOphro1EEJn2cxpfctgvKf05LEHFqm3W0xNZP3ouPwAx5CnhNdmCBl5frjmKmYwXw==` |
+| `@wizloft/harness-plugin-memory-context` | `wizloft-harness-plugin-memory-context-0.1.2-alpha.1.tgz` | `467db17fd2f3de2060d1bdb1bdb16791fa87f79e0dd695777cfc359da4155bfa` | `sha512-ebH2LjafRLGaXNd6lfHJ5qnX5xCZCXHdA/CS/rzohg2RpAAWy5oZHpuEcCb/N5SXH53MkTwb2l9VFgc/wVnw5w==` |
+| `@wizloft/harness-plugin-repository-files` | `wizloft-harness-plugin-repository-files-0.1.2-alpha.1.tgz` | `8f51bdafe3ce79ea92ade6fa8bee718208210f7bc9b709af5f3a5685f8e79e8f` | `sha512-Ru3xO04m4savzlkhxZTHI/xtfCz4HcgQvbqiGtz/vYk1psv9hHwoJgeF16fceMgrKOkN0yohXzVGenmhmpil6g==` |
+| `@wizloft/harness-project` | `wizloft-harness-project-0.1.2-alpha.1.tgz` | `c8b80f3c25fb22b718b85c30a2734db50ab9ef24d8526a3ca0a37d19bd83ef39` | `sha512-46Ec/kzXD7Guve5jmwVqK6NjqMcy9LEpDKJFGQerT1I7Ooavq/r9tV11K8zX09kCBYc+6V6cAmeMC7GlvIfA8A==` |
 
 ## Stop conditions
 
