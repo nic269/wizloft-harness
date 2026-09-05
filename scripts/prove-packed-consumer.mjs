@@ -23,6 +23,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
+import { inspectReleaseArtifacts } from './inspect-release-artifacts.mjs';
 import {
   inspectPackedInternalDependencies,
   inspectReleaseContract,
@@ -223,7 +224,9 @@ async function finalizeReleaseArtifacts(
       version: artifact.manifest.version,
       filename: artifact.filename,
       size: artifact.size,
+      sha1: artifact.shasum,
       sha256: artifact.sha256,
+      sha512: artifact.integrity,
     };
   });
   assert.equal(artifacts.length, 14);
@@ -850,7 +853,8 @@ console.log('External packed consumer scenario passed.');
 
 let artifactsDirectory = null;
 let artifactCompletionOutputWritten = false;
-let proofRootRemoved = false;
+let artifactCompletion = null;
+let artifactInspection = null;
 try {
   const artifactMode = artifactsDestination !== null;
   const source = artifactMode ? await inspectCleanSource() : null;
@@ -877,6 +881,16 @@ try {
   const tarballByName = new Map();
   const packedArtifacts = new Map();
   for (const entry of PUBLIC_PACKAGES) {
+    const sourceManifest = JSON.parse(
+      await readFile(path.join(repositoryRoot, entry.directory, 'package.json'), 'utf8'),
+    );
+    for (const lifecycle of ['prepack', 'prepare', 'prepublish', 'postpack']) {
+      assert.equal(
+        sourceManifest.scripts?.[lifecycle],
+        undefined,
+        `${entry.name} must not execute ${lifecycle} while packing`,
+      );
+    }
     const before = new Set(await readdir(tarballsRoot));
     await run('pnpm', ['pack', '--pack-destination', childTarballsRoot], {
       cwd: path.join(repositoryRoot, entry.directory),
@@ -973,6 +987,28 @@ try {
     });
   }
   assert.equal(packedArtifacts.size, 14);
+  const [{ stdout: npmVersion }, { stdout: pnpmVersion }] = await Promise.all([
+    run('npm', ['--version']),
+    run('pnpm', ['--version']),
+  ]);
+  const tools = {
+    node: process.version,
+    npm: npmVersion.trim(),
+    pnpm: pnpmVersion.trim(),
+  };
+  if (artifactsDirectory !== null) {
+    artifactCompletion = await finalizeReleaseArtifacts(
+      artifactsDirectory,
+      releaseVersion,
+      source,
+      tools,
+      packedArtifacts,
+    );
+    artifactInspection = await inspectReleaseArtifacts(artifactsDirectory.anchor);
+    assert.equal(artifactInspection.releaseVersion, releaseVersion);
+    assert.deepEqual(artifactInspection.source, source);
+    assert.equal(artifactInspection.manifestSha256, artifactCompletion.sha256);
+  }
 
   const dependencies = Object.fromEntries(
     PUBLIC_PACKAGES.map((entry) => [
@@ -1030,27 +1066,15 @@ try {
 
   await proveGeneratedProjectOfflineInspect(releaseVersion, packedArtifacts);
 
-  const [{ stdout: npmVersion }, { stdout: pnpmVersion }] = await Promise.all([
-    run('npm', ['--version']),
-    run('pnpm', ['--version']),
-  ]);
-  const tools = {
-    node: process.version,
-    npm: npmVersion.trim(),
-    pnpm: pnpmVersion.trim(),
-  };
-  await rm(proofRoot, { force: true, recursive: true });
-  proofRootRemoved = true;
-  let artifactCompletion = null;
   if (artifactsDirectory !== null) {
-    artifactCompletion = await finalizeReleaseArtifacts(
-      artifactsDirectory,
-      releaseVersion,
-      source,
-      tools,
-      packedArtifacts,
+    const finalInspection = await inspectReleaseArtifacts(artifactsDirectory.anchor);
+    assert.deepEqual(
+      finalInspection,
+      artifactInspection,
+      'frozen release packet changed after packed execution',
     );
   }
+
   console.log(
     JSON.stringify(
       {
@@ -1090,5 +1114,5 @@ try {
     }
     await artifactsDirectory.handle.close();
   }
-  if (!proofRootRemoved) await rm(proofRoot, { force: true, recursive: true });
+  await rm(proofRoot, { force: true, recursive: true });
 }

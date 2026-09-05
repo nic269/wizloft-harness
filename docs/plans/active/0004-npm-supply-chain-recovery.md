@@ -1,6 +1,6 @@
 # npm Supply-Chain Recovery
 
-Status: Active; registry containment complete; no recovery publication authorized.
+Status: Active; Owner selected `0.1.2-alpha.1`; publication remains gated.
 
 ## Objective
 
@@ -35,28 +35,30 @@ August 2026 policy. Do not create another bypass token as a workaround.
 
 Before configuring npm Trusted Publishing:
 
-1. add a reviewed, manual release workflow under `.github/workflows/`;
-2. restrict its permissions to `contents: read` and `id-token: write`;
-3. use a GitHub-hosted runner, exact Node/pnpm versions, no dependency cache, and frozen lockfiles;
-4. build and freeze all fourteen tarballs before any registry write;
-5. publish dependency-first from the frozen artifact set;
-6. protect `main` and `harness-v*` release tags before enabling the workflow;
-7. register that exact workflow as trusted publisher for each public package;
-8. disallow traditional publish tokens after a successful dry consumer proof.
+- [ ] Merge the reviewed manual `.github/workflows/publish.yml` workflow.
+- [x] Keep dependency installation, verification, packed imports, and registry-consumer proof in
+  jobs without `id-token: write`.
+- [x] Limit the publication job to `contents: read`, `actions: read`, and `id-token: write`.
+- [x] Pin the GitHub actions, Node `24.20.0`, npm `11.19.0`, pnpm `11.10.0`, and the release
+  container image digest; disable dependency caching and lifecycle scripts.
+- [x] Build, inspect, and freeze all fourteen tarballs before any registry write.
+- [x] Publish dependency-first only from the downloaded and re-hashed frozen artifact set.
+- [x] Protect `main` against direct/force/deletion changes and protect `harness-v*` tags against
+  update/deletion.
+- [ ] Register `nic269/wizloft-harness`, workflow `publish.yml`, environment `npm-recovery`, and
+  direct `npm publish` permission as trusted publisher for each public package.
+- [ ] Disallow traditional publish tokens after a successful dry consumer proof.
 
-The repository is private. npm OIDC trusted publishing can still remove long-lived publish tokens,
-but npm's automatic public provenance attestation is unavailable for public packages built from a
-private source repository. Making the repository public is a separate Owner decision and is not part
-of this plan.
+The Owner made the repository public on 2026-09-05. The recovery release is therefore eligible for
+npm provenance after the exact trusted publishers and token-free workflow are active.
 
 ## Gate R3 — Recovery release decision
 
-Do not reuse or repair `0.1.1-alpha.3`. Select one coherent fourteen-package version that sorts above
-the malicious version. `0.1.2-alpha.1` is the recommended recovery identity because it avoids
-legitimizing the attacker-created `0.1.1-alpha.3` sequence while restoring SemVer precedence.
+- [x] Owner selected coherent fourteen-package version `0.1.2-alpha.1` on 2026-09-05.
+- [x] The identity sorts above malicious `0.1.1-alpha.3` without legitimizing that sequence.
+- [x] Synchronize and verify the complete lockstep graph at the selected identity.
 
-The version remains a decision gate. Selecting it requires an exact Owner-approved release packet;
-this plan does not authorize version edits, tags, publication, or promotion.
+Version selection does not authorize publication before Gates R1, R2, and R4 are complete.
 
 ## Gate R4 — Exact release packet
 
@@ -72,6 +74,24 @@ The later packet must record and prove:
 - dependency-layer publication order;
 - exact-version registry consumer proof before any moving tag;
 - post-publish confirmation that no tag points to a deprecated malicious artifact.
+
+The selected packet uses annotated tag `harness-v0.1.2-alpha.1`, workflow `publish.yml`, and the
+tag-restricted `npm-recovery` GitHub environment. Dispatch is CLI-only because the GitHub UI exposes
+a branch selector:
+
+```sh
+gh workflow run publish.yml --ref harness-v0.1.2-alpha.1 \
+  -f version=0.1.2-alpha.1 -f confirmation='publish recovery release'
+```
+
+The workflow has a three-job credential boundary: credential-free isolated verification/freeze,
+minimal OIDC candidate publication, then credential-free exact-version registry consumer and
+all-dist-tag proof. The frozen artifact inspector rejects the five published malicious tarball
+SHA-1/SHA-512 indicators, the five malicious executable SHA-256 indicators, recorded loader strings,
+remote dynamic imports, dynamic execution sinks, and obfuscated long lines across every shipped
+JavaScript and declared bin before any packed import executes. It re-inspects the packet after
+packed execution; the proof container mounts reviewed source read-only, and later verification
+cannot access the packet.
 
 ## Stop conditions
 

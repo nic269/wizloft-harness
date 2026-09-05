@@ -71,6 +71,10 @@ test('CLEAN apply materializes, writes marker last, and a second apply is zero-d
   assert.equal(installer.calls[0], 'install');
   const marker = await readFile(path.join(root, '.wizloft/harness/project.json'), 'utf8');
   assert.match(marker, /"schema": "wizloft.harness.project"/);
+  const instructions = await readFile(path.join(root, '.wizloft/harness/INSTRUCTIONS.md'), 'utf8');
+  assert.match(instructions, /inspect --json/u);
+  assert.match(instructions, /validation run/u);
+  assert.match(instructions, /memory remember/u);
   const planned = await planProjectInitialization({ root, projectId: 'example' });
   assert.equal(planned.state, 'current');
   assert.deepEqual(planned.operations, []);
