@@ -892,9 +892,19 @@ try {
       );
     }
     const before = new Set(await readdir(tarballsRoot));
-    await run('pnpm', ['pack', '--pack-destination', childTarballsRoot], {
-      cwd: path.join(repositoryRoot, entry.directory),
-    });
+    await run(
+      'pnpm',
+      [
+        '--store-dir',
+        path.join(proofRoot, 'pnpm-store'),
+        'pack',
+        '--pack-destination',
+        childTarballsRoot,
+      ],
+      {
+        cwd: path.join(repositoryRoot, entry.directory),
+      },
+    );
     const created = (await readdir(tarballsRoot)).filter(
       (name) => name.endsWith('.tgz') && !before.has(name),
     );

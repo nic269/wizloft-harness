@@ -54,7 +54,7 @@ jobs:
             --env CI=true \
             --volume "$PWD:/workspace" \
             wizloft-harness-release \
-            pnpm install --frozen-lockfile --ignore-scripts
+            pnpm --store-dir /tmp/pnpm-store install --frozen-lockfile --ignore-scripts
 
       - name: Run full verification without credentials or network
         run: |
@@ -64,7 +64,7 @@ jobs:
             --user "$(id -u):$(id -g)" \
             --volume "$PWD:/workspace" \
             wizloft-harness-release \
-            pnpm verify
+            pnpm --store-dir /tmp/pnpm-store verify
 
       - name: Freeze, scan before imports, and prove without network
         run: |
