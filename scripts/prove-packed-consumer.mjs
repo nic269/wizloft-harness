@@ -895,8 +895,7 @@ try {
     await run(
       'pnpm',
       [
-        '--store-dir',
-        path.join(proofRoot, 'pnpm-store'),
+        `--config.store-dir=${path.join(proofRoot, 'pnpm-store')}`,
         'pack',
         '--pack-destination',
         childTarballsRoot,
