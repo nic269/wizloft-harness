@@ -1,6 +1,6 @@
 # Stable 0.2.0 Release
 
-Status: Active; exact file-provider bootstrap published, stable OIDC resume repair in progress.
+Status: Active; stable graph promoted and first-party consumers adopted, legacy retirement pending.
 
 ## Outcome
 
@@ -135,19 +135,20 @@ SHA-256 is `c351ccd700c6908396f1368c496d2bb952ac2c4b8f93701c657d32436382e38f`.
 
 ## Gate S6 — Stable promotion
 
-- [ ] Complete the npm step-up challenge for the isolated short-lived interactive web-login session;
-  never store it in repository or CI configuration.
+- [x] Complete the npm step-up challenges through the isolated short-lived interactive web-login
+  session; no credential was stored in repository or CI configuration.
 - [x] Re-verify all four exact versions and current tags before mutation.
-- [ ] Move `latest` and `next` for all four retained names to `0.2.0` as one reviewed operation.
-- [ ] For the new package, normalize any npm-created first-publication tag to the same final state.
-- [ ] Re-verify the coherent graph, then log out, delete the isolated userconfig, and revoke the
-  session credential.
-- [ ] Keep `candidate` only if retained as explicit release evidence; otherwise remove it in the same
-  reviewed session.
+- [x] Move `latest` and `next` for all four retained names to `0.2.0`.
+- [x] Normalize the npm-created file-provider `latest` tag to the coherent final state.
+- [x] Re-verify the coherent graph, log out, delete the isolated userconfig, and revoke the session
+  credential.
+- [x] Retain `candidate` on all four names as explicit stable publication evidence.
+
+All four retained names now map `latest`, `next`, and `candidate` to exact `0.2.0`.
 
 ## Gate S7 — Consumer adoption and retirement
 
-- [ ] Update and verify first-party consumers using exact `0.2.0` before unqualified installs.
+- [x] Update and verify first-party consumers using exact `0.2.0` before unqualified installs.
 - [ ] Execute `docs/plans/active/0006-legacy-package-retirement.md` only after adoption succeeds.
 - [ ] Record final tag, packet, provenance, consumer, and retirement evidence in current status.
 
