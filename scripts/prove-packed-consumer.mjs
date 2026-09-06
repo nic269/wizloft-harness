@@ -56,6 +56,12 @@ async function run(command, args, options = {}) {
 
 const PROJECT_NAME = '@wizloft/harness-project';
 const LOCAL_PROTOCOL_PATTERN = /(?:workspace|file|link):/u;
+const DEPENDENCY_FIELDS = [
+  'dependencies',
+  'devDependencies',
+  'optionalDependencies',
+  'peerDependencies',
+];
 
 function isContainedPath(root, candidate) {
   const relative = path.relative(root, candidate);
@@ -77,6 +83,37 @@ function parseArtifactsDestination(args) {
   assert.notEqual(args[1], '', '--artifacts-dir requires a destination');
   assert.equal(path.isAbsolute(args[1]), true, '--artifacts-dir must be an absolute path');
   return path.normalize(args[1]);
+}
+
+async function canonicalizePackedTarball(entry, tarballPath, destination) {
+  const packageKey = entry.name.replaceAll('/', '-').replace('@', '');
+  const canonicalRoot = path.join(proofRoot, 'canonical-pack', packageKey);
+  await mkdir(canonicalRoot, { recursive: true });
+  await run('tar', ['-xzf', tarballPath, '-C', canonicalRoot]);
+  const packageRoot = path.join(canonicalRoot, 'package');
+  const manifestPath = path.join(packageRoot, 'package.json');
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  for (const field of DEPENDENCY_FIELDS) {
+    if (manifest[field] === undefined) continue;
+    manifest[field] = Object.fromEntries(
+      Object.entries(manifest[field]).sort(([left], [right]) =>
+        left < right ? -1 : left > right ? 1 : 0,
+      ),
+    );
+  }
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+  const packArgs = ['pack', packageRoot, '--pack-destination', destination, '--ignore-scripts'];
+  await unlink(tarballPath);
+  await run('npm', packArgs);
+  const firstBytes = await readFile(tarballPath);
+  await unlink(tarballPath);
+  await run('npm', packArgs);
+  assert.deepEqual(
+    await readFile(tarballPath),
+    firstBytes,
+    `${entry.name} canonical tarball must be byte-reproducible`,
+  );
 }
 
 async function stableDirectoryPath(handle) {
@@ -908,7 +945,13 @@ try {
       (name) => name.endsWith('.tgz') && !before.has(name),
     );
     assert.equal(created.length, 1, `${entry.name} must create exactly one tarball`);
-    tarballByName.set(entry.name, created[0]);
+    const tarballName = created[0];
+    await canonicalizePackedTarball(
+      entry,
+      path.join(childTarballsRoot, tarballName),
+      childTarballsRoot,
+    );
+    tarballByName.set(entry.name, tarballName);
   }
   assert.equal(tarballByName.size, PUBLIC_PACKAGES.length);
   assert.equal(tarballByName.has(PROJECT_NAME), true);
