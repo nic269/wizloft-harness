@@ -117,23 +117,27 @@ authoritative artifact identities, and still requires SLSA provenance for each O
 
 - [x] Dispatch `publish-stable.yml` from `harness-v0.2.0`; run `34019988098` stopped safely before
   publication.
-- [ ] Review and merge the bounded resume repair, restrict `npm-stable` to
+- [x] Review and merge the bounded resume repair as PR #18, restrict `npm-stable` to
   `harness-v0.2.0-resume.1`, create that protected annotated tag, and dispatch it.
-- [ ] Verify the existing file-provider bootstrap artifact, then publish the other three packages
+- [x] Verify the existing file-provider bootstrap artifact, then publish the other three packages
   dependency-first from an exact reproduction of the authoritative packet to temporary `candidate`.
-- [ ] Verify each registry tarball byte-for-byte against the authoritative artifact identities.
-- [ ] Verify npm signatures for all four packages and SLSA provenance for the three OIDC-published
-  packages resolves to `publish-stable.yml`, `refs/tags/harness-v0.2.0-resume.1`, and the exact
-  resume commit.
-- [ ] Install `@wizloft/harness-project@0.2.0` in a credential-free repository and run inspect plus
+- [x] Verify each registry tarball byte-for-byte against the authoritative artifact identities.
+- [x] Verify npm signatures for all four packages and SLSA provenance for the three OIDC-published
+  packages resolves to `publish-stable.yml`, `refs/tags/harness-v0.2.0-resume.1`, and resume commit
+  `bb4c763d987e4050c5194dd807246cb694e3ac76`.
+- [x] Install `@wizloft/harness-project@0.2.0` in a credential-free repository and run inspect plus
   Validation.
-- [ ] Import every Harness and file-provider public subpath from the registry-installed graph.
+- [x] Import every Harness and file-provider public subpath from the registry-installed graph.
+
+Run `34020713589` passed freeze, exact bootstrap preflight, dependency-ordered OIDC publication,
+credential-free registry consumer proof, and final cryptographic verification. Its retained manifest
+SHA-256 is `c351ccd700c6908396f1368c496d2bb952ac2c4b8f93701c657d32436382e38f`.
 
 ## Gate S6 — Stable promotion
 
-- [ ] Use an isolated short-lived interactive npm web-login session; never store it in repository or
-  CI configuration.
-- [ ] Re-verify all four exact versions and current tags before mutation.
+- [ ] Complete the npm step-up challenge for the isolated short-lived interactive web-login session;
+  never store it in repository or CI configuration.
+- [x] Re-verify all four exact versions and current tags before mutation.
 - [ ] Move `latest` and `next` for all four retained names to `0.2.0` as one reviewed operation.
 - [ ] For the new package, normalize any npm-created first-publication tag to the same final state.
 - [ ] Re-verify the coherent graph, then log out, delete the isolated userconfig, and revoke the
