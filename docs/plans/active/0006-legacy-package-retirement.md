@@ -1,6 +1,6 @@
 # Legacy Package Retirement
 
-Status: Planned; stable graph and consumers proven, exact owner authorization pending.
+Status: Complete; exact-version deprecations, moving-tag removals, and registry verification closed.
 
 ## Outcome
 
@@ -34,7 +34,7 @@ The retained package names `@wizloft/harness-kernel`, `@wizloft/harness`, and
 - [x] Prove an exact-version external consumer and generated project from the registry.
 - [x] Promote the approved stable tags and verify the four-package graph again.
 - [x] Migrate and verify every known first-party consumer before changing legacy package metadata.
-- [ ] Obtain separate owner authorization for the exact deprecation messages and dist-tag removals.
+- [x] Obtain separate owner authorization for the exact deprecation messages and dist-tag removals.
 
 No legacy registry mutation may begin while any precondition is incomplete.
 
@@ -66,39 +66,47 @@ warnings, and 25 moving-tag removals across the eleven retirement targets.
 
 ### Apply migration guidance
 
-- [ ] Deprecate each non-malicious legacy version with its exact replacement import, for example:
+- [x] Deprecate each non-malicious legacy version with its exact replacement import, for example:
   `Package consolidated; migrate to @wizloft/harness/authority. See the 0.2 migration guide.`
-- [ ] Preserve the existing OSV-specific security message on every malicious `0.1.1-alpha.3`
+- [x] Preserve the existing OSV-specific security message on every malicious `0.1.1-alpha.3`
   artifact byte-for-byte. A wildcard deprecation is forbidden because it could overwrite that
   stronger warning.
-- [ ] Never unpublish, delete, republish, or replace historical tarballs.
+- [x] Never unpublish, delete, republish, or replace historical tarballs.
 
 ### Retire moving prerelease channels
 
-- [ ] Remove `candidate`, `next`, `alpha`, and `beta` tags from legacy package names where present,
+- [x] Remove `candidate`, `next`, `alpha`, and `beta` tags from legacy package names where present,
   after exact-version deprecation succeeds.
-- [ ] Do not attempt to retarget a legacy package tag to a differently named consolidated package.
-- [ ] Keep the unavoidable npm-created `latest` mapping if npm refuses its removal; its target must
+- [x] Do not attempt to retarget a legacy package tag to a differently named consolidated package.
+- [x] Keep the unavoidable npm-created `latest` mapping if npm refuses its removal; its target must
   be deprecated with migration guidance.
 
 ### Harden dormant packages
 
-- [ ] Keep package-level two-factor enforcement and disallow bypass-2FA tokens.
-- [ ] Retain trusted-publisher settings until retirement verification closes; removing them is a
+- [x] Keep package-level two-factor enforcement and disallow bypass-2FA tokens.
+- [x] Retain trusted-publisher settings until retirement verification closes; removing them is a
   separate defense-in-depth decision, not required for deprecation.
-- [ ] Confirm package maintainers and organization access did not expand during the operation.
+- [x] Confirm package maintainers and organization access did not expand during the operation.
 
 ## Verification
 
-- [ ] Read every version's deprecation message back from the registry.
-- [ ] Confirm the three malicious versions retain their exact security warnings.
-- [ ] Confirm no retirement target exposes `candidate`, `next`, `alpha`, or `beta` unless npm made a
+- [x] Read every version's deprecation message back from the registry.
+- [x] Confirm the three malicious versions retain their exact security warnings.
+- [x] Confirm no retirement target exposes `candidate`, `next`, `alpha`, or `beta` unless npm made a
   specific removal impossible and that exception is recorded.
-- [ ] Confirm no dist-tag across retained or retired names resolves to malicious `0.1.1-alpha.3`.
-- [ ] Install each retained consolidated package at the supported exact version in a credential-free
+- [x] Confirm no dist-tag across retained or retired names resolves to malicious `0.1.1-alpha.3`.
+- [x] Install each retained consolidated package at the supported exact version in a credential-free
   consumer and rerun project initialization plus Validation.
-- [ ] Record final registry evidence in the current-status document; never revise historical release
+- [x] Record final registry evidence in the current-status document; never revise historical release
   hashes or incident records.
+
+Registry read-back at `2026-09-06T09:35:42.243Z` confirmed all 55 migration deprecations, the three
+byte-identical OSV warnings, and removal of all 25 proposed moving tags. Each retired name retains
+only npm's unavoidable `latest` tag at deprecated `0.1.0-alpha.2`. No retained or retired tag targets
+malicious `0.1.1-alpha.3`. A fresh credential-free install imported all fourteen stable public
+modules from exact `0.2.0`; a separately initialized exact `@wizloft/harness-project@0.2.0`
+repository passed inspect and `@wizloft/harness-project:runtime-health` Validation. The isolated npm
+retirement session was then logged out and removed.
 
 ## Rollback boundary
 
