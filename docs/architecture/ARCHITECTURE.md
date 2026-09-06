@@ -55,39 +55,41 @@ Kernel registries and capability services are scoped to one resolved Harness run
 - **Validation** — discovers and executes proof appropriate to work/change context.
 - **Evidence** — normalizes proof/outcomes for humans, agents, and future automation.
 
-They are first-party ecosystem packages, not kernel internals.
+They are first-party ecosystem modules, not kernel internals. Their public entrypoints live under
+`@wizloft/harness` subpaths.
 
 ## Target package topology
 
-The target workspace topology is:
+The target public workspace topology is:
 
 ```text
 packages/
   kernel/              @wizloft/harness-kernel
-  context/             @wizloft/harness-context
-  authority/           @wizloft/harness-authority
-  memory/              @wizloft/harness-memory
-  validation/          @wizloft/harness-validation
-  evidence/            @wizloft/harness-evidence
-  commands/            @wizloft/harness-commands
-  cli-adapter/         @wizloft/harness-cli-adapter
   harness/             @wizloft/harness
+    authority.ts       @wizloft/harness/authority
+    context.ts         @wizloft/harness/context
+    evidence.ts        @wizloft/harness/evidence
+    memory.ts          @wizloft/harness/memory
+    validation.ts      @wizloft/harness/validation
+    commands.ts        @wizloft/harness/commands
+    cli.ts             @wizloft/harness/cli
+  file-providers/      @wizloft/harness-file-providers
+    events.ts          @wizloft/harness-file-providers/events
+    memory.ts          @wizloft/harness-file-providers/memory
+    memory-context.ts  @wizloft/harness-file-providers/memory-context
+    repository.ts      @wizloft/harness-file-providers/repository
   project/             @wizloft/harness-project
-plugins/
-  repository-files/
-  file-events/
-  file-memory/
-  memory-context/
 profiles/
-  self-host/           @wizloft/harness-profile-self-host
+  self-host/           @wizloft/harness-profile-self-host (private)
   base/                deferred until real shared responsibility exists
 ```
 
-`@wizloft/harness` is the public consumer-facing SDK facade. `@wizloft/harness-project` is the
-public project-tooling package for pre-runtime repository initialization and the generated
-project-local runner. This topology is a target architecture, not a requirement to scaffold empty
-packages. Each package should be created only when its implementation slice gives it a real
-responsibility.
+`@wizloft/harness` is the public consumer-facing SDK facade and owns logically separate capability,
+command, and IO-free CLI-adapter subpaths. `@wizloft/harness-file-providers` groups first-party
+file-backed integrations while keeping their runtime plugin ids distinct. `@wizloft/harness-project`
+is the public project-tooling package for pre-runtime repository initialization and the generated
+project-local runner. Package boundaries exist only where dependencies, ownership, or lifecycle
+justify their release and security cost.
 
 ## Durability planes
 
@@ -286,7 +288,7 @@ collections, listeners, disposers, or registry internals. Inspection remains ava
 shutdown and after disposal; disposed snapshots retain resolved plugin metadata but have no active
 capabilities.
 
-`@wizloft/harness-commands` is a bounded SDK command executor over the public facade, not a kernel
+`@wizloft/harness/commands` is a bounded SDK command executor over the public facade, not a kernel
 capability or command registry. It owns the stable v0 command ids `harness.inspect`,
 `context.resolve`, `authority.resolve`, `memory.remember`, `memory.recall`, `memory.transition`,
 `validation.select`, `validation.run`, `evidence.list`, and `events.read`. Unknown/untyped requests
@@ -294,7 +296,7 @@ are validated at runtime. Expected operational/domain failures become deeply imm
 JSON-compatible command-error envelopes; completed negative domain results such as Authority
 ambiguity/conflict or a Validation report with `ok: false` remain normal result envelopes.
 
-`@wizloft/harness-cli-adapter` parses only Harness-module argv, invokes the command executor, and
+`@wizloft/harness/cli` parses only Harness-module argv, invokes the command executor, and
 returns rendered `{ exitCode, stdout, stderr }` data. It owns module-local `--json`, `--help`, and
 Harness subcommand help, but never performs process IO, exits a process, runs shell commands, loads a
 profile, or owns executable branding/version/root options. JSON mode emits exactly one envelope on
@@ -305,19 +307,18 @@ negative validation proof, and `2` for invalid argv/usage/unknown CLI commands.
 The dependency direction is:
 
 ```text
-kernel + capability packages
+@wizloft/harness-kernel
         -> @wizloft/harness
-        -> @wizloft/harness-commands
-        -> @wizloft/harness-cli-adapter
+        -> @wizloft/harness-file-providers
         -> @wizloft/harness-project
 ```
 
-`@wizloft/harness-project` also depends directly on the public providers and kernel contracts its
+`@wizloft/harness-project` depends directly on the facade, file providers, and kernel contracts its
 generated profile and runner import. Publish layer remains DAG-derived, not a fixed special case.
 
 Event history/replay is not a kernel capability. Commands use only the facade's optional reader;
-file-events may be adapted structurally by the embedding application without depending on the
-facade package.
+the events provider may be adapted structurally by the embedding application without depending on
+the facade root entrypoint.
 
 ## DeepSeek interoperability seam
 

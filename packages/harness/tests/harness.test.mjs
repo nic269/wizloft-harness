@@ -1,14 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-
-import { AUTHORITY_CAPABILITY } from '@wizloft/harness-authority';
-import { CONTEXT_CAPABILITY } from '@wizloft/harness-context';
-import { EVIDENCE_CAPABILITY } from '@wizloft/harness-evidence';
 import { declareCapability } from '@wizloft/harness-kernel';
-import { MEMORY_CAPABILITY } from '@wizloft/harness-memory';
-import { VALIDATION_CAPABILITY } from '@wizloft/harness-validation';
-
+import { AUTHORITY_CAPABILITY } from '../dist/authority.js';
+import { CONTEXT_CAPABILITY } from '../dist/context.js';
+import { EVIDENCE_CAPABILITY } from '../dist/evidence.js';
 import { createHarness, defineProfile, HarnessError } from '../dist/index.js';
+import { MEMORY_CAPABILITY } from '../dist/memory.js';
+import { VALIDATION_CAPABILITY } from '../dist/validation.js';
 
 function profileWithServices(calls) {
   return defineProfile({

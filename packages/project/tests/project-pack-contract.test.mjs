@@ -18,36 +18,13 @@ const repositoryRoot = path.resolve(fileURLToPath(new URL('../../../', import.me
 const PROJECT_NAME = '@wizloft/harness-project';
 const PROJECT_DEPENDENCIES = Object.freeze([
   '@wizloft/harness',
-  '@wizloft/harness-authority',
-  '@wizloft/harness-cli-adapter',
-  '@wizloft/harness-commands',
-  '@wizloft/harness-context',
-  '@wizloft/harness-evidence',
+  '@wizloft/harness-file-providers',
   '@wizloft/harness-kernel',
-  '@wizloft/harness-plugin-file-events',
-  '@wizloft/harness-plugin-file-memory',
-  '@wizloft/harness-plugin-memory-context',
-  '@wizloft/harness-plugin-repository-files',
-  '@wizloft/harness-validation',
 ]);
 const EXPECTED_LAYERS = Object.freeze([
   ['@wizloft/harness-kernel'],
-  [
-    '@wizloft/harness-authority',
-    '@wizloft/harness-context',
-    '@wizloft/harness-evidence',
-    '@wizloft/harness-memory',
-    '@wizloft/harness-plugin-file-events',
-  ],
-  [
-    '@wizloft/harness-plugin-file-memory',
-    '@wizloft/harness-plugin-memory-context',
-    '@wizloft/harness-plugin-repository-files',
-    '@wizloft/harness-validation',
-  ],
   ['@wizloft/harness'],
-  ['@wizloft/harness-commands'],
-  ['@wizloft/harness-cli-adapter'],
+  ['@wizloft/harness-file-providers'],
   [PROJECT_NAME],
 ]);
 const LOCAL_PROTOCOL_PATTERN = /(?:workspace|file|link):/u;
@@ -87,20 +64,7 @@ function computeDependencyLayers(graph) {
   return layers;
 }
 
-function isReachable(graph, source, target) {
-  const pending = [...graph.get(source)];
-  const visited = new Set();
-  while (pending.length > 0) {
-    const current = pending.pop();
-    if (current === target) return true;
-    if (visited.has(current)) continue;
-    visited.add(current);
-    pending.push(...graph.get(current));
-  }
-  return false;
-}
-
-test('packed project closes the intended fourteen-artifact runtime graph', async (context) => {
+test('packed project closes the intended four-artifact runtime graph', async (context) => {
   const proofRoot = await mkdtemp(path.join(os.tmpdir(), 'wizloft-project-pack-contract-'));
   context.after(() => rm(proofRoot, { force: true, recursive: true }));
   const tarballsRoot = path.join(proofRoot, 'tarballs');
@@ -112,12 +76,12 @@ test('packed project closes the intended fourteen-artifact runtime graph', async
   assert.deepEqual(releaseInspection.errors, []);
   const releaseVersion = releaseInspection.releaseVersion;
   const proofEntries = [...PUBLIC_PACKAGES];
-  assert.equal(PUBLIC_PACKAGES.length, 14);
+  assert.equal(PUBLIC_PACKAGES.length, 4);
   assert.equal(
     PUBLIC_PACKAGES.some((entry) => entry.name === PROJECT_NAME),
     true,
   );
-  assert.equal(proofEntries.length, 14);
+  assert.equal(proofEntries.length, 4);
   assert.equal(new Set(proofEntries.map(({ name }) => name)).size, proofEntries.length);
 
   const packageRoots = new Map();
@@ -177,17 +141,15 @@ test('packed project closes the intended fourteen-artifact runtime graph', async
   const projectManifest = manifests.get(PROJECT_NAME);
   assert.equal(projectManifest.private, undefined);
   assert.deepEqual(Object.keys(projectManifest.dependencies ?? {}).sort(), PROJECT_DEPENDENCIES);
-  assert.equal(projectManifest.dependencies['@wizloft/harness-memory'], undefined);
   assert.equal(projectManifest.optionalDependencies, undefined);
   assert.equal(projectManifest.peerDependencies, undefined);
   for (const dependency of PROJECT_DEPENDENCIES) {
     assert.equal(projectManifest.dependencies[dependency], releaseVersion);
   }
-  assert.equal(isReachable(graph, PROJECT_NAME, '@wizloft/harness-memory'), true);
 
   const layers = computeDependencyLayers(graph);
   assert.deepEqual(layers, EXPECTED_LAYERS);
-  assert.equal(layers.findIndex((layer) => layer.includes(PROJECT_NAME)) + 1, 7);
+  assert.equal(layers.findIndex((layer) => layer.includes(PROJECT_NAME)) + 1, 4);
 
   const projectRoot = packageRoots.get(PROJECT_NAME);
   await lstat(path.join(projectRoot, 'package.json'));

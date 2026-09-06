@@ -134,10 +134,10 @@ Capability-specific multiplicity stays inside the owning service. For example, `
 - first-party event ids use `wizloft.<domain>.<event>`;
 - project/domain event ids use `<project>.<domain>.<event>`.
 
-Package names and runtime plugin ids serve different purposes. For example, package
-`@wizloft/harness-plugin-file-events` registers runtime plugin id
-`@wizloft/file-events`. v0 documents this convention without adding kernel namespace
-registries or namespace-ownership enforcement.
+Package names and runtime plugin ids serve different purposes. For example,
+`@wizloft/harness-file-providers/events` registers runtime plugin id `@wizloft/file-events`. v0
+documents this convention without adding kernel namespace registries or namespace-ownership
+enforcement.
 
 ## Plugin categories
 

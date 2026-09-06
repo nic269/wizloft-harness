@@ -18,7 +18,7 @@ async function copyReleaseFixture(targetRoot) {
   await mkdir(targetRoot, { recursive: true });
   await cp(path.join(repositoryRoot, 'package.json'), path.join(targetRoot, 'package.json'));
   await cp(path.join(repositoryRoot, 'LICENSE'), path.join(targetRoot, 'LICENSE'));
-  for (const workspaceRoot of ['packages', 'plugins', 'profiles']) {
+  for (const workspaceRoot of ['packages', 'profiles']) {
     await mkdir(path.join(targetRoot, workspaceRoot), { recursive: true });
   }
   for (const entry of PUBLIC_PACKAGES) {
@@ -27,10 +27,10 @@ async function copyReleaseFixture(targetRoot) {
     for (const file of ['package.json', 'README.md', 'LICENSE']) {
       await cp(path.join(repositoryRoot, entry.directory, file), path.join(target, file));
     }
-    if (entry.pluginSource !== undefined) {
-      const sourceTarget = path.join(targetRoot, entry.pluginSource);
+    for (const pluginSource of entry.pluginSources) {
+      const sourceTarget = path.join(targetRoot, pluginSource);
       await mkdir(path.dirname(sourceTarget), { recursive: true });
-      await cp(path.join(repositoryRoot, entry.pluginSource), sourceTarget);
+      await cp(path.join(repositoryRoot, pluginSource), sourceTarget);
     }
   }
   const selfHostTarget = path.join(targetRoot, 'profiles/self-host');
@@ -49,29 +49,36 @@ test('release contract accepts exactly the approved public package set', async (
   const inspection = await inspectReleaseContract(repositoryRoot);
 
   assert.deepEqual(inspection.errors, []);
-  assert.equal(inspection.releaseVersion, '0.1.2-alpha.3');
-  assert.equal(inspection.publicPackages.length, 14);
-  assert.equal(new Set(PUBLIC_PACKAGES.map(({ name }) => name)).size, 14);
+  assert.equal(inspection.releaseVersion, '0.2.0-alpha.1');
+  assert.equal(inspection.publicPackages.length, 4);
+  assert.deepEqual(
+    PUBLIC_PACKAGES.map(({ name }) => name),
+    [
+      '@wizloft/harness-kernel',
+      '@wizloft/harness',
+      '@wizloft/harness-file-providers',
+      '@wizloft/harness-project',
+    ],
+  );
   const project = PUBLIC_PACKAGES.find((entry) => entry.name === '@wizloft/harness-project');
   assert.notEqual(project, undefined);
   assert.equal(project.directory, 'packages/project');
   assert.deepEqual(project.dependencies, [
     '@wizloft/harness',
-    '@wizloft/harness-authority',
-    '@wizloft/harness-cli-adapter',
-    '@wizloft/harness-commands',
-    '@wizloft/harness-context',
-    '@wizloft/harness-evidence',
+    '@wizloft/harness-file-providers',
     '@wizloft/harness-kernel',
-    '@wizloft/harness-plugin-file-events',
-    '@wizloft/harness-plugin-file-memory',
-    '@wizloft/harness-plugin-memory-context',
-    '@wizloft/harness-plugin-repository-files',
-    '@wizloft/harness-validation',
   ]);
   assert.deepEqual(project.devDependencies, []);
-  assert.equal(project.pluginSource, undefined);
-  assert.equal(project.dependencies.includes('@wizloft/harness-memory'), false);
+  assert.deepEqual(project.pluginSources, []);
+  const providers = PUBLIC_PACKAGES.find(
+    (entry) => entry.name === '@wizloft/harness-file-providers',
+  );
+  assert.deepEqual(Object.keys(providers.exports).sort(), [
+    './events',
+    './memory',
+    './memory-context',
+    './repository',
+  ]);
 });
 
 test('release contract rejects identity drift, plugin drift, and accidental publication', async (context) => {
@@ -82,19 +89,19 @@ test('release contract rejects identity drift, plugin drift, and accidental publ
     await readFile(path.join(fixtureRoot, 'package.json'), 'utf8'),
   ).version;
 
-  const authorityManifestPath = path.join(fixtureRoot, 'packages/authority/package.json');
-  const authorityManifest = JSON.parse(await readFile(authorityManifestPath, 'utf8'));
-  authorityManifest.version = '0.0.0';
-  await writeFile(authorityManifestPath, JSON.stringify(authorityManifest));
+  const harnessManifestPath = path.join(fixtureRoot, 'packages/harness/package.json');
+  const harnessManifest = JSON.parse(await readFile(harnessManifestPath, 'utf8'));
+  harnessManifest.version = '0.0.0';
+  await writeFile(harnessManifestPath, JSON.stringify(harnessManifest));
 
-  const authoritySourcePath = path.join(fixtureRoot, 'packages/authority/src/index.ts');
+  const authoritySourcePath = path.join(fixtureRoot, 'packages/harness/src/authority.ts');
   const authoritySource = await readFile(authoritySourcePath, 'utf8');
   await writeFile(
     authoritySourcePath,
     authoritySource.replace(`version: '${fixtureReleaseVersion}'`, "version: '9.9.9'"),
   );
 
-  const unlistedRoot = path.join(fixtureRoot, 'plugins/unlisted');
+  const unlistedRoot = path.join(fixtureRoot, 'packages/unlisted');
   await mkdir(unlistedRoot);
   await writeFile(
     path.join(unlistedRoot, 'package.json'),
@@ -104,17 +111,17 @@ test('release contract rejects identity drift, plugin drift, and accidental publ
   const inspection = await inspectReleaseContract(fixtureRoot);
   assert.equal(
     inspection.errors.some((error) =>
-      error.includes('@wizloft/harness-authority version must equal root release version'),
+      error.includes('@wizloft/harness version must equal root release version'),
     ),
     true,
   );
   assert.equal(
-    inspection.errors.includes('@wizloft/harness-authority must not use placeholder version 0.0.0'),
+    inspection.errors.includes('@wizloft/harness must not use placeholder version 0.0.0'),
     true,
   );
   assert.equal(
     inspection.errors.includes(
-      `@wizloft/harness-authority runtime plugin version must equal ${fixtureReleaseVersion}`,
+      `@wizloft/harness runtime plugin version in packages/harness/src/authority.ts must equal ${fixtureReleaseVersion}`,
     ),
     true,
   );
@@ -134,30 +141,28 @@ test('release contract models internal development dependencies and rejects peer
   const baseline = await inspectReleaseContract(fixtureRoot);
   assert.deepEqual(baseline.errors, []);
 
-  const authorityManifestPath = path.join(fixtureRoot, 'packages/authority/package.json');
-  const authorityManifest = JSON.parse(await readFile(authorityManifestPath, 'utf8'));
-  authorityManifest.peerDependencies = { '@wizloft/harness-context': 'workspace:*' };
-  authorityManifest.optionalDependencies = { '@wizloft/harness-memory': 'workspace:*' };
-  await writeFile(authorityManifestPath, JSON.stringify(authorityManifest));
+  const harnessManifestPath = path.join(fixtureRoot, 'packages/harness/package.json');
+  const harnessManifest = JSON.parse(await readFile(harnessManifestPath, 'utf8'));
+  harnessManifest.peerDependencies = { '@wizloft/harness-kernel': 'workspace:*' };
+  harnessManifest.optionalDependencies = { '@wizloft/harness-file-providers': 'workspace:*' };
+  await writeFile(harnessManifestPath, JSON.stringify(harnessManifest));
 
   const inspection = await inspectReleaseContract(fixtureRoot);
   assert.equal(
     inspection.errors.includes(
-      '@wizloft/harness-authority internal peerDependencies.@wizloft/harness-context is not approved by release graph',
+      '@wizloft/harness internal peerDependencies.@wizloft/harness-kernel is not approved by release graph',
     ),
     true,
   );
   assert.equal(
     inspection.errors.includes(
-      '@wizloft/harness-authority internal optionalDependencies.@wizloft/harness-memory is not approved by release graph',
+      '@wizloft/harness internal optionalDependencies.@wizloft/harness-file-providers is not approved by release graph',
     ),
     true,
   );
   assert.equal(
     inspection.errors.some((error) =>
-      error.includes(
-        '@wizloft/harness-plugin-memory-context internal development dependency graph',
-      ),
+      error.includes('@wizloft/harness internal development dependency graph'),
     ),
     false,
   );

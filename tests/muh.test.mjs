@@ -3,19 +3,18 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-
-import { authorityPlugin } from '../packages/authority/dist/index.js';
-import { createHarnessCliAdapter } from '../packages/cli-adapter/dist/index.js';
-import { createCommandExecutor } from '../packages/commands/dist/index.js';
-import { contextPlugin } from '../packages/context/dist/index.js';
-import { evidencePlugin } from '../packages/evidence/dist/index.js';
+import { fileEventsPlugin, readFileEvents } from '../packages/file-providers/dist/events.js';
+import { fileMemoryPlugin } from '../packages/file-providers/dist/memory.js';
+import { memoryContextPlugin } from '../packages/file-providers/dist/memory-context.js';
+import { repositoryFilesPlugin } from '../packages/file-providers/dist/repository.js';
+import { authorityPlugin } from '../packages/harness/dist/authority.js';
+import { createHarnessCliAdapter } from '../packages/harness/dist/cli.js';
+import { createCommandExecutor } from '../packages/harness/dist/commands.js';
+import { contextPlugin } from '../packages/harness/dist/context.js';
+import { evidencePlugin } from '../packages/harness/dist/evidence.js';
 import { createHarness, defineProfile } from '../packages/harness/dist/index.js';
+import { VALIDATION_CAPABILITY, validationPlugin } from '../packages/harness/dist/validation.js';
 import { requireCapability } from '../packages/kernel/dist/index.js';
-import { VALIDATION_CAPABILITY, validationPlugin } from '../packages/validation/dist/index.js';
-import { fileEventsPlugin, readFileEvents } from '../plugins/file-events/dist/index.js';
-import { fileMemoryPlugin } from '../plugins/file-memory/dist/index.js';
-import { memoryContextPlugin } from '../plugins/memory-context/dist/index.js';
-import { repositoryFilesPlugin } from '../plugins/repository-files/dist/index.js';
 
 test('MUH composes real providers through the facade, commands, and CLI adapter', async (context) => {
   const root = await mkdtemp(path.join(tmpdir(), 'wizloft-harness-muh-'));

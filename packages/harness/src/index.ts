@@ -1,24 +1,4 @@
 import {
-  AUTHORITY_CAPABILITY,
-  AuthorityError,
-  type AuthorityRequest,
-  type AuthorityResolution,
-  type AuthorityService,
-} from '@wizloft/harness-authority';
-import {
-  CONTEXT_CAPABILITY,
-  ContextError,
-  type ContextRequest,
-  type ContextResolution,
-  type ContextService,
-} from '@wizloft/harness-context';
-import {
-  EVIDENCE_CAPABILITY,
-  EvidenceError,
-  type EvidenceRecord,
-  type EvidenceService,
-} from '@wizloft/harness-evidence';
-import {
   assertEventTypeId,
   type CapabilityToken,
   composeProfile,
@@ -34,6 +14,26 @@ import {
   type MaybePromise,
 } from '@wizloft/harness-kernel';
 import {
+  AUTHORITY_CAPABILITY,
+  AuthorityError,
+  type AuthorityRequest,
+  type AuthorityResolution,
+  type AuthorityService,
+} from './authority.js';
+import {
+  CONTEXT_CAPABILITY,
+  ContextError,
+  type ContextRequest,
+  type ContextResolution,
+  type ContextService,
+} from './context.js';
+import {
+  EVIDENCE_CAPABILITY,
+  EvidenceError,
+  type EvidenceRecord,
+  type EvidenceService,
+} from './evidence.js';
+import {
   MEMORY_CAPABILITY,
   MemoryError,
   type MemoryRecord,
@@ -41,7 +41,7 @@ import {
   type RecallMemoryQuery,
   type RememberMemoryInput,
   type TransitionMemoryInput,
-} from '@wizloft/harness-memory';
+} from './memory.js';
 import {
   VALIDATION_CAPABILITY,
   ValidationError,
@@ -50,7 +50,7 @@ import {
   type ValidationRequest,
   type ValidationSelection,
   type ValidationService,
-} from '@wizloft/harness-validation';
+} from './validation.js';
 
 export type {
   JsonArray,

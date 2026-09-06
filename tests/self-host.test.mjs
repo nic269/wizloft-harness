@@ -4,9 +4,10 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-
-import { createHarnessCliAdapter } from '../packages/cli-adapter/dist/index.js';
-import { createCommandExecutor } from '../packages/commands/dist/index.js';
+import { readFileEvents } from '../packages/file-providers/dist/events.js';
+import { memoryContextPlugin } from '../packages/file-providers/dist/memory-context.js';
+import { createHarnessCliAdapter } from '../packages/harness/dist/cli.js';
+import { createCommandExecutor } from '../packages/harness/dist/commands.js';
 import { createHarness, defineProfile } from '../packages/harness/dist/index.js';
 import {
   createCapabilityToken,
@@ -14,8 +15,6 @@ import {
   HarnessKernelError,
   requireCapability,
 } from '../packages/kernel/dist/index.js';
-import { readFileEvents } from '../plugins/file-events/dist/index.js';
-import { memoryContextPlugin } from '../plugins/memory-context/dist/index.js';
 import {
   createSelfHostProfile,
   SELF_HOST_AUTHORITY_SOURCES,

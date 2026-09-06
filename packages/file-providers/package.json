@@ -1,5 +1,5 @@
 {
-  "name": "@wizloft/harness-project",
+  "name": "@wizloft/harness-file-providers",
   "version": "0.2.0-alpha.1",
   "type": "module",
   "files": [
@@ -7,34 +7,41 @@
     "README.md",
     "LICENSE"
   ],
-  "bin": {
-    "wizloft-harness-project": "./dist/bin.js"
-  },
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+    "./events": {
+      "types": "./dist/events.d.ts",
+      "import": "./dist/events.js"
+    },
+    "./memory": {
+      "types": "./dist/memory.d.ts",
+      "import": "./dist/memory.js"
+    },
+    "./memory-context": {
+      "types": "./dist/memory-context.d.ts",
+      "import": "./dist/memory-context.js"
+    },
+    "./repository": {
+      "types": "./dist/repository.d.ts",
+      "import": "./dist/repository.js"
     }
   },
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "test": "pnpm build && node --test tests/*.test.mjs",
-    "typecheck": "pnpm --filter @wizloft/harness-project^... build && tsc --project tsconfig.json --noEmit"
+    "typecheck": "pnpm --filter @wizloft/harness-kernel build && pnpm --filter @wizloft/harness build && tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
     "@wizloft/harness": "workspace:*",
-    "@wizloft/harness-file-providers": "workspace:*",
     "@wizloft/harness-kernel": "workspace:*"
   },
   "license": "MIT",
   "engines": {
     "node": ">=22.13.0"
   },
-  "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nic269/wizloft-harness.git",
-    "directory": "packages/project"
+    "directory": "packages/file-providers"
   },
   "homepage": "https://github.com/nic269/wizloft-harness#readme",
   "bugs": {

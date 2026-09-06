@@ -42,11 +42,10 @@ test('workspace exposes the complete root verification contract', async () => {
   }
 });
 
-test('workspace discovers target package roots without requiring packages to exist', async () => {
+test('workspace discovers the package and private-profile roots', async () => {
   const workspace = await readRepositoryFile('pnpm-workspace.yaml');
 
   assert.match(workspace, /- packages\/\*/u);
-  assert.match(workspace, /- plugins\/\*/u);
   assert.match(workspace, /- profiles\/\*/u);
 });
 
@@ -54,7 +53,7 @@ test('workspace contract rejects packages that can escape root verification', as
   const fixtureRoot = await mkdtemp(path.join(tmpdir(), 'wizloft-harness-workspace-'));
   context.after(() => rm(fixtureRoot, { force: true, recursive: true }));
 
-  for (const root of ['packages', 'plugins', 'profiles']) {
+  for (const root of ['packages', 'profiles']) {
     await mkdir(path.join(fixtureRoot, root), { recursive: true });
   }
 
@@ -97,7 +96,7 @@ test('workspace contract rejects packages that can escape root verification', as
       },
     }),
   );
-  const linkedPackageRoot = path.join(fixtureRoot, 'plugins', 'linked');
+  const linkedPackageRoot = path.join(fixtureRoot, 'profiles', 'linked');
   await symlink(linkedPackageSource, linkedPackageRoot, 'dir');
 
   const inspection = await inspectWorkspace(fixtureRoot);
@@ -124,7 +123,6 @@ test('workspace contract rejects symlinked workspace roots', async (context) => 
   const externalPackages = path.join(fixtureRoot, 'external-packages');
   await mkdir(externalPackages);
   await symlink(externalPackages, path.join(fixtureRoot, 'packages'), 'dir');
-  await mkdir(path.join(fixtureRoot, 'plugins'));
   await mkdir(path.join(fixtureRoot, 'profiles'));
 
   const inspection = await inspectWorkspace(fixtureRoot);

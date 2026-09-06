@@ -99,12 +99,12 @@ async function packProofSet(proofRoot, releaseVersion) {
   await mkdir(tarballsRoot, { recursive: true });
   await mkdir(extractedRoot, { recursive: true });
   const proofEntries = [...PUBLIC_PACKAGES];
-  assert.equal(PUBLIC_PACKAGES.length, 14);
+  assert.equal(PUBLIC_PACKAGES.length, 4);
   assert.equal(
     PUBLIC_PACKAGES.some((entry) => entry.name === PROJECT_NAME),
     true,
   );
-  assert.equal(proofEntries.length, 14);
+  assert.equal(proofEntries.length, 4);
 
   const packages = new Map();
   for (const entry of proofEntries) {
@@ -134,7 +134,7 @@ async function packProofSet(proofRoot, releaseVersion) {
       shasum: createHash('sha1').update(bytes).digest('hex'),
     });
   }
-  assert.equal(packages.size, 14);
+  assert.equal(packages.size, PUBLIC_PACKAGES.length);
   return packages;
 }
 
@@ -296,15 +296,24 @@ function commandValue(result) {
 }
 
 let resolutionProbeId = 0;
+function resolvableSpecifier(packageName) {
+  const entry = PUBLIC_PACKAGES.find(({ name }) => name === packageName);
+  assert.notEqual(entry, undefined, `unknown public package ${packageName}`);
+  if (Object.hasOwn(entry.exports, '.')) return packageName;
+  const subpath = Object.keys(entry.exports)[0];
+  assert.notEqual(subpath, undefined, `${packageName} must expose at least one subpath`);
+  return `${packageName}${subpath.slice(1)}`;
+}
 
 async function resolveFromContext(contextRoot, dependencyNames, cwd) {
   const probePath = path.join(
     contextRoot,
     `.runtime-resolution-probe-${process.pid}-${resolutionProbeId++}.mjs`,
   );
+  const specifiers = dependencyNames.map(resolvableSpecifier);
   await writeFile(
     probePath,
-    `const names = ${JSON.stringify(dependencyNames)};\nprocess.stdout.write(JSON.stringify(names.map((name) => import.meta.resolve(name))));\n`,
+    `const names = ${JSON.stringify(specifiers)};\nprocess.stdout.write(JSON.stringify(names.map((name) => import.meta.resolve(name))));\n`,
   );
   try {
     const result = await runOk(process.execPath, [probePath], { cwd });
@@ -402,7 +411,7 @@ async function assertRuntimeResolution(
     }
   }
   assert.deepEqual([...reachedNames].sort(), [...packages.keys()].sort());
-  assert.equal(reachedNames.has('@wizloft/harness-memory'), true);
+  assert.equal(reachedNames.has('@wizloft/harness-file-providers'), true);
   assert.equal(registryRequests.length, requestsBeforeResolution);
 }
 
