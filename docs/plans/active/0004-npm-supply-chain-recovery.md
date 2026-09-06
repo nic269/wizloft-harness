@@ -1,6 +1,6 @@
 # npm Supply-Chain Recovery
 
-Status: Active; `0.1.2-alpha.1` is partially published and recovery resume is gated.
+Status: Active; `0.1.2-alpha.1` failed exact-byte closure; replacement recovery identity required.
 
 ## Objective
 
@@ -46,7 +46,7 @@ Before configuring npm Trusted Publishing:
   set.
 - [x] Protect `main` against direct/force/deletion changes and protect `harness-v*` tags against
   update/deletion.
-- [ ] Register `nic269/wizloft-harness`, workflow `publish.yml`, environment `npm-recovery`, and
+- [x] Register `nic269/wizloft-harness`, workflow `publish.yml`, environment `npm-recovery`, and
   direct `npm publish` permission as trusted publisher for each public package.
 - [ ] Disallow traditional publish tokens after a successful dry consumer proof.
 
@@ -125,6 +125,33 @@ protected release tag.
   annotated automation tag; it must rebuild the immutable release source, prove every existing
   package's bytes and `candidate` tag before mutation, and publish only missing artifacts.
 
+### Post-publication exact-byte failure — 2026-09-06
+
+- Resume run `34007261290` published the remaining eight packages and passed its regenerated-packet
+  registry/consumer proof. That proof was insufficient: it compared registry bytes to a new packet
+  produced during the resume run rather than to the authoritative frozen packet above.
+- An independent audit against `release-artifacts.json` found twelve exact matches and two failures:
+  - `@wizloft/harness`: frozen SHA-256
+    `0a939c4417fa531b22a7ed4b4fa3e09c5221013ed412f5716c53cdbf3a9500d2`; registry SHA-256
+    `e9013f75880045f4ae24d619ad1e933d69d526c771fcaf946a1bac3535ba727e`.
+  - `@wizloft/harness-project`: frozen SHA-256
+    `c8b80f3c25fb22b718b85c30a2734db50ab9ef24d8526a3ca0a37d19bd83ef39`; registry SHA-256
+    `0bbeeddb71f8f1fc60c2980a36f7563f1a54deb5448f187608f164db3b21bf32`.
+- Member-level comparison found no executable or runtime-file drift. In both mismatches only packed
+  `package/package.json` differed, and only dependency-key order changed.
+- Repeated `pnpm pack` calls from the same source, dependency state, and pinned toolchain reproduced
+  different dependency-key orders and tarball digests for both packages. The `pnpm pack`
+  workspace-protocol rewrite is therefore not byte-deterministic for this graph.
+- Exact-byte closure failed even though the dependency mappings are semantically equal. Do not
+  promote `next`, do not accept `0.1.2-alpha.1` as the recovery release, and do not revise the
+  authoritative frozen manifest after publication.
+- Boilerplate was returned to verified `0.1.0-alpha.4` with a zero-operation re-init and clean Git
+  worktree. The invalid alpha.1 validation event and Memory record created during the aborted
+  adoption were removed.
+- The packing proof now canonicalizes dependency-map order, repacks with pinned npm, and requires
+  two consecutive canonical packs to be byte-identical. A new coherent version and packet remain
+  required.
+
 | Package | Tarball | SHA-256 | SHA-512 |
 |---|---|---|---|
 | `@wizloft/harness-kernel` | `wizloft-harness-kernel-0.1.2-alpha.1.tgz` | `7e46d2755ef82e46a722d53e770d17e4673337bacfc0a18da200ab3ad424790e` | `sha512-HoLESGnzO77+doEoYP8mLoliWIF3lN3fSKjrfBiBrH1bcNtMkVz84TwpKS0oWWktd1b5nI5kKwNp7+z/lntjig==` |
@@ -145,8 +172,8 @@ protected release tag.
 ## Stop conditions
 
 Stop without publishing if interactive account closure is incomplete, branch/tag protection is not
-active, a package lacks the exact trusted publisher, rebuilt content differs materially from the
-frozen artifact, or registry state changes after preflight. The only partial-publication exception
-is the reviewed resume path: before every mutation it must prove each existing immutable package
-against the frozen SHA-1/SHA-256/SHA-512 and exact `candidate` tag, then publish only missing
-artifacts without moving `harness-v0.1.2-alpha.1`.
+active, a package lacks the exact trusted publisher, rebuilt content differs from the frozen
+artifact, or registry state changes after preflight. A partial-publication resume may skip an
+existing immutable package only after comparing it to the original authoritative frozen manifest,
+never to a regenerated packet. Any exact-byte mismatch invalidates the release identity; do not
+revise frozen evidence to match registry state.
