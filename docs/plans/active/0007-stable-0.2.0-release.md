@@ -1,6 +1,6 @@
 # Stable 0.2.0 Release
 
-Status: Active; source and publication boundary preparation only.
+Status: Blocked before tag creation on npm's first-publication trust boundary.
 
 ## Outcome
 
@@ -33,22 +33,23 @@ Dependency order is kernel → harness → file-providers → project. All inter
 
 ## Gate S1 — Stable source
 
-- [ ] Set the root release identity to `0.2.0` and synchronize the four public manifests plus eight
+- [x] Set the root release identity to `0.2.0` and synchronize the four public manifests plus eight
   runtime plugin versions.
-- [ ] Update ADR 0014, current status, migration documentation, and release tests.
-- [ ] Run `pnpm release:verify` from the reviewed release source.
-- [ ] Merge the release source through a pull request with a clean linear-history result.
+- [x] Update ADR 0014, current status, migration documentation, and release tests.
+- [x] Run `pnpm release:verify` from the reviewed release source.
+- [x] Merge the release source through PR #15 as commit
+  `fd50dba17e7ebff7b666b41d5fe51cdbdf13157f`.
 
 ## Gate S2 — Separate publication boundary
 
-- [ ] Add `.github/workflows/publish-stable.yml`, pinned to `0.2.0`, exact tag
+- [x] Add `.github/workflows/publish-stable.yml`, pinned to `0.2.0`, exact tag
   `harness-v0.2.0`, Node 24.20.0, npm 11.19.0, pnpm 11.10.0, and pinned GitHub actions.
-- [ ] Add a stable-only publisher that requires GitHub Actions OIDC, rejects npm/repository tokens,
+- [x] Add a stable-only publisher that requires GitHub Actions OIDC, rejects npm/repository tokens,
   verifies the annotated tag and original artifact manifest, publishes dependency-first to a
   temporary `candidate` tag, and cryptographically verifies registry bytes and provenance.
-- [ ] Keep verification/freeze and registry-consumer jobs credential-free; grant `id-token: write`
+- [x] Keep verification/freeze and registry-consumer jobs credential-free; grant `id-token: write`
   only to the minimal publish job.
-- [ ] Create GitHub environment `npm-stable` restricted to exact tag `harness-v0.2.0`.
+- [x] Create GitHub environment `npm-stable` restricted to exact tag `harness-v0.2.0`.
 - [ ] Configure the three existing packages to trust repository `nic269/wizloft-harness`, workflow
   `publish-stable.yml`, environment `npm-stable`.
 
@@ -68,13 +69,37 @@ replace this gate with a dummy version, temporary token, local publish, or prove
 
 ## Gate S4 — Immutable packet and tag
 
-- [ ] Freeze the four canonical tarballs twice and require byte-identical output.
-- [ ] Scan every shipped executable and JavaScript file using the retained incident IOC checks.
-- [ ] Record source commit/tree, per-artifact SHA-1/SHA-256/SHA-512, sizes, and manifest SHA-256.
+- [x] Freeze the four canonical tarballs twice and require byte-identical output.
+- [x] Scan every shipped executable and JavaScript file using the retained incident IOC checks.
+- [x] Record source commit/tree, per-artifact SHA-1/SHA-256/SHA-512, sizes, and manifest SHA-256.
 - [ ] Reconfirm `0.2.0` is absent for all four package names immediately before tagging.
-- [ ] Restrict `npm-stable` to exact tag `harness-v0.2.0`.
+- [x] Restrict `npm-stable` to exact tag `harness-v0.2.0`.
 - [ ] Create and push protected annotated tag `harness-v0.2.0` only after every preceding item is
   complete.
+
+### Frozen packet evidence
+
+- Source commit: `fd50dba17e7ebff7b666b41d5fe51cdbdf13157f`
+- Source tree: `d9ed45f07efd7c9fb2e4fe2f1e04d5de674da4a3`
+- Manifest SHA-256: `19f441cc1af17d4b9f2f44c2e7c479fba3b011a943aa22a84dad075caacd17b5`
+- Retained packet: `/tmp/harness-0.2.0-packet-a.KvKY69`
+- Independent byte-identical packet: `/tmp/harness-0.2.0-packet-b.kITL9v`
+- `@wizloft/harness-kernel`: 21,866 bytes; SHA-1
+  `63da209ff459ad2d3ca351876673a217e5556d63`; SHA-256
+  `93be03dca7db51d1ef26f63b1980b93c0d13ea11e80c9f8e720a30118c4d398e`; SHA-512
+  `sha512-XbTRKw1MnWbidoHUbotzhd1cTQuka39S5XykjhvIErZlWGBrEoev+Nhkx8wHtBP2Wt31HGLSsy5JJ/aswvrnDA==`.
+- `@wizloft/harness`: 36,949 bytes; SHA-1 `c5677fc2d36a67b098754b902ca76e2e385a7970`;
+  SHA-256 `def2311c7fe475c0762132de31d462cf61e939f1ec7f86654605cbcf53fd4cfb`;
+  SHA-512
+  `sha512-yhR8U1e6JLLjDcoV1lbzExxk4NqgPgU9M21oCWoFxLZ0xK8L0cJ/qAqoz+3NI9r754irnDC5E8EV4e8UM0e2tw==`.
+- `@wizloft/harness-file-providers`: 12,293 bytes; SHA-1
+  `1f1398686869b16ebab350f206df0adf0ae3fee4`; SHA-256
+  `734609ab24a1018cc16cc59fd262bbfc9e704456742a3089af3a219c44a00b9b`; SHA-512
+  `sha512-MVpU/uQPr0xTKUABUUePr/3ATnVABO/xD5ZIbIOm87n8ISuVfpkf0TqgmJyYE67JazQVLsJVdXM0XQK4sUvAww==`.
+- `@wizloft/harness-project`: 55,192 bytes; SHA-1
+  `df4a805d0cdd3c4980c97755606e41c760ddc902`; SHA-256
+  `754a3b8ea52f48ed318dd79256c65b192972c9fff8d2a7e7671d60ee36bbc65e`; SHA-512
+  `sha512-UnNcGq5E/t2mgnrqPverG//V649MQ4EwH0Q9cRUAgxftOizny04P4YkBD0aiouhs/gAtrOWyx96d4HIZWZdSJg==`.
 
 ## Gate S5 — Publish and prove
 
