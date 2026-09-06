@@ -17,6 +17,7 @@ const EXPECTED_PACKAGES = Object.freeze([
   '@wizloft/harness-file-providers',
   '@wizloft/harness-project',
 ]);
+const INTERACTIVE_BOOTSTRAP_PACKAGE = '@wizloft/harness-file-providers';
 const REGISTRY = 'https://registry.npmjs.org';
 const REGISTRY_WAIT_MS = 5 * 60 * 1000;
 const POLL_MS = 5_000;
@@ -99,7 +100,7 @@ function assertProvenanceClaims(artifact, verifiedPackage, release) {
   );
 }
 
-async function verifyRegistryProvenance(release, artifacts) {
+async function verifyRegistryEvidence(release, artifacts, { requireProvenance = true } = {}) {
   if (artifacts.length === 0) return;
   const auditRoot = await mkdtemp(path.join(tmpdir(), 'harness-stable-provenance-'));
   try {
@@ -117,23 +118,24 @@ async function verifyRegistryProvenance(release, artifacts) {
       )}\n`,
     );
     await runNpm(['install', '--ignore-scripts', '--no-audit', '--fund=false'], auditRoot);
-    const { stdout } = await runNpm(
-      ['audit', 'signatures', '--json', '--include-attestations'],
-      auditRoot,
-    );
+    const auditArguments = ['audit', 'signatures', '--json'];
+    if (requireProvenance) auditArguments.push('--include-attestations');
+    const { stdout } = await runNpm(auditArguments, auditRoot);
     const audit = JSON.parse(stdout);
     assert.deepEqual(audit.invalid, [], 'npm found invalid registry signatures or attestations');
     assert.deepEqual(audit.missing, [], 'npm found missing registry signatures or attestations');
-    for (const artifact of artifacts) {
-      const verifiedPackage = audit.verified.find(
-        ({ name, version }) => name === artifact.name && version === artifact.version,
-      );
-      assert.notEqual(
-        verifiedPackage,
-        undefined,
-        `${artifact.name}@${artifact.version} was not cryptographically verified`,
-      );
-      assertProvenanceClaims(artifact, verifiedPackage, release);
+    if (requireProvenance) {
+      for (const artifact of artifacts) {
+        const verifiedPackage = audit.verified.find(
+          ({ name, version }) => name === artifact.name && version === artifact.version,
+        );
+        assert.notEqual(
+          verifiedPackage,
+          undefined,
+          `${artifact.name}@${artifact.version} was not cryptographically verified`,
+        );
+        assertProvenanceClaims(artifact, verifiedPackage, release);
+      }
     }
   } finally {
     await rm(auditRoot, { recursive: true, force: true });
@@ -174,23 +176,27 @@ async function inspectPublishedArtifact(artifact, metadata) {
 }
 
 async function waitForPublishedArtifact(artifact, release) {
+  const requireProvenance = artifact.name !== INTERACTIVE_BOOTSTRAP_PACKAGE;
   const deadline = Date.now() + REGISTRY_WAIT_MS;
-  let provenanceError;
+  let verificationError;
   while (Date.now() < deadline) {
     const metadata = await registryMetadata(artifact.name, artifact.version);
     if (metadata !== null && (await inspectPublishedArtifact(artifact, metadata))) {
       try {
-        await verifyRegistryProvenance(release, [artifact]);
+        await verifyRegistryEvidence(release, [artifact], { requireProvenance });
         return;
       } catch (error) {
-        provenanceError = error;
+        verificationError = error;
       }
     }
     await new Promise((resolve) => setTimeout(resolve, POLL_MS));
   }
+  const expectedEvidence = requireProvenance
+    ? 'proven bytes, signature, and provenance'
+    : 'proven bytes and registry signature';
   throw new Error(
-    `${artifact.name}@${artifact.version} did not become queryable with proven bytes and provenance`,
-    { cause: provenanceError },
+    `${artifact.name}@${artifact.version} did not become queryable with ${expectedEvidence}`,
+    { cause: verificationError },
   );
 }
 
@@ -268,6 +274,11 @@ if (mode === 'preflight') {
   }
 } else if (mode === 'resume-preflight' || mode === 'resume') {
   state = await classifyArtifacts(release);
+  assert.equal(
+    state.existing.some(({ name }) => name === INTERACTIVE_BOOTSTRAP_PACKAGE),
+    true,
+    `${INTERACTIVE_BOOTSTRAP_PACKAGE}@${RELEASE_VERSION} must be interactively bootstrapped from this packet before OIDC resume`,
+  );
 }
 
 if (mode === 'preflight') {
@@ -316,9 +327,11 @@ if (mode === 'preflight') {
   const existingNames = new Set(state.existing.map(({ name }) => name));
   for (const artifact of release.artifacts) {
     if (existingNames.has(artifact.name)) {
-      console.log(
-        `Skipped ${artifact.name}@${artifact.version} after verifying bytes, provenance, and candidate`,
-      );
+      const evidence =
+        artifact.name === INTERACTIVE_BOOTSTRAP_PACKAGE
+          ? 'bytes, registry signature, and candidate'
+          : 'bytes, provenance, and candidate';
+      console.log(`Skipped ${artifact.name}@${artifact.version} after verifying ${evidence}`);
       continue;
     }
     assert.equal(

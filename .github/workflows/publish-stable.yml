@@ -80,8 +80,8 @@ jobs:
             wizloft-harness-release \
             node scripts/prove-packed-consumer.mjs --artifacts-dir /runner-temp/release-artifacts
 
-      - name: Verify fresh registry identities
-        run: node scripts/publish-stable-release.mjs preflight "$RUNNER_TEMP/release-artifacts"
+      - name: Verify absent or exact existing registry identities
+        run: node scripts/publish-stable-release.mjs resume-preflight "$RUNNER_TEMP/release-artifacts"
 
       - name: Retain the exact frozen stable packet
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
