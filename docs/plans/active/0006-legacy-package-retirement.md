@@ -1,6 +1,6 @@
 # Legacy Package Retirement
 
-Status: Planned; registry mutation is blocked until the consolidated release is published and consumer-proven.
+Status: Planned; stable graph and consumers proven, exact owner authorization pending.
 
 ## Outcome
 
@@ -29,11 +29,11 @@ The retained package names `@wizloft/harness-kernel`, `@wizloft/harness`, and
 
 ## Preconditions
 
-- [ ] Publish all four `0.2.0` artifacts from one reviewed source identity.
-- [ ] Verify exact registry bytes, npm signatures, SLSA provenance, and the annotated source tag.
-- [ ] Prove an exact-version external consumer and generated project from the registry.
-- [ ] Promote the approved stable tags and verify the four-package graph again.
-- [ ] Migrate and verify every known first-party consumer before changing legacy package metadata.
+- [x] Publish all four `0.2.0` artifacts from one reviewed source identity.
+- [x] Verify exact registry bytes, npm signatures, SLSA provenance, and the annotated source tag.
+- [x] Prove an exact-version external consumer and generated project from the registry.
+- [x] Promote the approved stable tags and verify the four-package graph again.
+- [x] Migrate and verify every known first-party consumer before changing legacy package metadata.
 - [ ] Obtain separate owner authorization for the exact deprecation messages and dist-tag removals.
 
 No legacy registry mutation may begin while any precondition is incomplete.
@@ -53,13 +53,16 @@ Every target currently maps `latest` to `0.1.0-alpha.2`, and `candidate` plus `n
 
 ### Freeze and preview
 
-- [ ] Re-fetch versions, dist-tags, existing deprecation messages, access policy, and trusted
-  publisher configuration for all eleven packages.
-- [ ] Fail closed if inventory differs from the recorded baseline or any tag targets a malicious
+- [x] Re-fetch versions, dist-tags, and existing deprecation messages for all eleven packages.
+  Existing package-access and trusted-publisher state remains owner-confirmed from recovery closure.
+- [x] Fail closed if inventory differs from the recorded baseline or any tag targets a malicious
   version.
-- [ ] Generate a machine-readable operation list containing package, exact version, old message,
-  proposed message, and proposed tag removal; review it before authentication.
-- [ ] Confirm no proposed operation touches a retained package or creates a new package version.
+- [x] Generate `/tmp/harness-legacy-retirement-preview.json` with package, exact version, old
+  message, proposed message, and proposed tag removal; review it before authentication.
+- [x] Confirm no proposed operation touches a retained package or creates a new package version.
+
+The frozen preview contains 55 non-malicious exact-version deprecations, three byte-preserved OSV
+warnings, and 25 moving-tag removals across the eleven retirement targets.
 
 ### Apply migration guidance
 
