@@ -20,15 +20,16 @@ to mirror every source module while those modules have no independent release ca
 
 ## Decision
 
-ADR 0012 remains authoritative history for releases through `0.1.2-alpha.3`. Beginning with the next
-release candidate, the public allowlist contains exactly:
+ADR 0012 remains authoritative history for releases through `0.1.2-alpha.3`. Beginning with the
+stable `0.2.0` release, the public allowlist contains exactly:
 
 - `@wizloft/harness-kernel` at `packages/kernel`;
 - `@wizloft/harness` at `packages/harness`;
 - `@wizloft/harness-file-providers` at `packages/file-providers`;
 - `@wizloft/harness-project` at `packages/project`.
 
-The first consolidated release identity is `0.2.0-alpha.1`.
+The first consolidated release identity is `0.2.0`. The owner selected a stable release instead of
+another prerelease after the four-package implementation and packed-consumer proof passed.
 
 `@wizloft/harness-kernel` remains a small public package containing composition mechanics, runtime
 contracts, diagnostics, events, profiles, and shared JSON/plugin types. It must not depend on the
@@ -81,8 +82,8 @@ the consolidated graph is published and consumer-proven.
 - Consumers using former package names must migrate to the documented subpaths.
 - Release tooling, generated templates, self-hosting, packed-consumer proof, and current
   documentation must switch atomically.
-- `0.2.0-alpha.1` implementation and packed proof do not authorize npm publication, dist-tag
-  changes, or deprecation of historical packages.
+- `0.2.0` implementation and packed proof do not bypass the exact-packet, trusted-publication,
+  registry-consumer, or separately reviewed legacy-retirement gates.
 
 ## Alternatives considered
 

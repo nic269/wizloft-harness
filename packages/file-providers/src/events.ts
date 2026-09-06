@@ -99,7 +99,7 @@ function parseEnvelope(line: string, lineNumber: number): EventEnvelope {
 
 export const fileEventsPlugin: WizloftPlugin<FileEventsConfig> = {
   name: FILE_EVENTS_PLUGIN_NAME,
-  version: '0.2.0-alpha.1',
+  version: '0.2.0',
   setup(context) {
     const path = validatePath(context.config);
     context.events.subscribeAll(async (event) => {

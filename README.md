@@ -35,14 +35,14 @@ Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 Slices 0–6, MUH, Self-host, External Package Release Readiness, alpha.3 recovery, and the alpha.4
 coherent publication are retained as completed history.
 
-The repository now implements the unpublished `0.2.0-alpha.1` four-package release candidate:
+The repository now implements the unpublished `0.2.0` four-package stable release:
 `@wizloft/harness-kernel`, `@wizloft/harness`, `@wizloft/harness-file-providers`, and
 `@wizloft/harness-project`. Capability, command, CLI-adapter, and first-party provider APIs remain
 separate modules exposed through explicit subpaths; runtime plugin and capability ids are unchanged.
 
-Published alpha versions and their dist-tags remain immutable historical state. This source change
-authorizes no publish, tag, push, registry mutation, external-repository push, deprecation, or OMP
-profile commit.
+Published alpha versions and their dist-tags remain immutable historical state. Publication,
+registry tag promotion, and legacy-package retirement follow the separately gated stable-release
+plan.
 
 ## Package topology and migration
 
@@ -56,7 +56,7 @@ New consumers install only the packages required by their boundary:
 
 The clean-cutover import map is:
 
-| Former package | `0.2.0-alpha.1` import |
+| Former package | `0.2.0` import |
 |---|---|
 | `@wizloft/harness-authority` | `@wizloft/harness/authority` |
 | `@wizloft/harness-context` | `@wizloft/harness/context` |

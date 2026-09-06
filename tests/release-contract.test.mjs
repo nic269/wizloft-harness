@@ -49,7 +49,7 @@ test('release contract accepts exactly the approved public package set', async (
   const inspection = await inspectReleaseContract(repositoryRoot);
 
   assert.deepEqual(inspection.errors, []);
-  assert.equal(inspection.releaseVersion, '0.2.0-alpha.1');
+  assert.equal(inspection.releaseVersion, '0.2.0');
   assert.equal(inspection.publicPackages.length, 4);
   assert.deepEqual(
     PUBLIC_PACKAGES.map(({ name }) => name),

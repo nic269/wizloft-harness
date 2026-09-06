@@ -540,7 +540,7 @@ export const VALIDATION_CAPABILITY =
 
 export const validationPlugin: WizloftPlugin = {
   name: VALIDATION_PLUGIN_NAME,
-  version: '0.2.0-alpha.1',
+  version: '0.2.0',
   requires: [requireCapability(EVIDENCE_CAPABILITY)],
   provides: [declareCapability(VALIDATION_CAPABILITY)],
   setup(context) {

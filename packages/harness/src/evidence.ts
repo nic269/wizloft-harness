@@ -209,7 +209,7 @@ export const EVIDENCE_CAPABILITY = createCapabilityToken<EvidenceService>(EVIDEN
 
 export const evidencePlugin: WizloftPlugin = {
   name: EVIDENCE_PLUGIN_NAME,
-  version: '0.2.0-alpha.1',
+  version: '0.2.0',
   provides: [declareCapability(EVIDENCE_CAPABILITY)],
   setup(context) {
     context.capabilities.provide(
