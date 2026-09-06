@@ -11,25 +11,26 @@ Snapshot date: **2026-09-06**
 | Frozen artifact manifest | SHA-256 `f19e07e15cf4c0e6ed3dffd7576476aad9d02806b6a55688ededa1fd89b53f53` |
 | Git tag | annotated `harness-v0.1.2-alpha.3` object `b9da397199b93d088e7c29c7a56151fb8a974fa0`, peeled to the source commit and remote-pushed |
 | Public prerelease graph | fourteen packages at lockstep `0.1.2-alpha.3` on `candidate` and `next`; exact registry bytes, npm signatures, and SLSA provenance independently verified |
-| Unpublished stable candidate | four-package `0.2.0` source merged through PR #15 at commit `fd50dba17e7ebff7b666b41d5fe51cdbdf13157f`, tree `d9ed45f07efd7c9fb2e4fe2f1e04d5de674da4a3`; two independent canonical packets are byte-identical with manifest SHA-256 `19f441cc1af17d4b9f2f44c2e7c479fba3b011a943aa22a84dad075caacd17b5`; no stable package is published or tagged |
+| Unpublished stable candidate | four-package `0.2.0` source merged through PR #15 at commit `fd50dba17e7ebff7b666b41d5fe51cdbdf13157f`; two Darwin proof packets are byte-identical but are not publication inputs; no stable package is published or tagged |
 | `latest` | intentionally unchanged: thirteen packages remain `0.1.0-alpha.2`; `@wizloft/harness-project@0.1.0-alpha.3` |
 | Failed release identities | alpha.1 is immutable failed exact-byte history; protected alpha.2 remains unpublished and must never be dispatched |
 | 2026-09-02 npm incident recovery | five malicious `0.1.1-alpha.3` artifacts remain deprecated; zero tags resolve to them; broad token revoked; all fourteen trusted publishers active; all fourteen package access policies disallow bypass-2FA tokens |
 | Boilerplate adoption | exact `0.1.2-alpha.3` merged as `66af9e6617a44e60f511c2bf6e692057ed0ec996`; validation Evidence and verified Memory write passed; exact-version re-init is zero-operation |
 | Phase 6 P2 | A4-10 through A4-13 independently accepted. CLI `c5e011383fd6b056d271517580b8cfd7d59bb7c3` is local/unpushed; Meldmark `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` is local with no remote |
 | OMP Stage D | A4-14 temp-only no-remote fixture passed; `.omp/` ignored/local-only; committed-profile discoverability open |
-| Active plans | stable `0.2.0` source, workflow, exact packet, and exact-tag GitHub environment are ready; publication is blocked before tag creation because npm offers no trusted-publisher setup for the new package before its first version; legacy retirement remains gated on registry proof and consumer migration |
+| Active plans | owner authorized one interactive 2FA first publication of the exact Linux-frozen `@wizloft/harness-file-providers@0.2.0` tarball; bootstrap-aware verification is being prepared while stable publication and legacy retirement remain gated |
 
 ## Current operating objective
 
 The coherent `0.1.2-alpha.3` graph remains the supported public prerelease on `candidate` and
-`next`. Stable `0.2.0` source and publication automation are merged, GitHub environment `npm-stable`
-accepts only `harness-v0.2.0`, and the four-package packet is repeatably frozen. npm requires
-`@wizloft/harness-file-providers` to exist before its trusted publisher can be configured, so no tag
-or registry mutation is authorized until the owner chooses how to cross that first-publication
-boundary. Treat the alpha.3 frozen manifest, annotated tag, successful publication run, independent
-registry proof, and Boilerplate adoption as the accepted published recovery baseline until the
-stable release closes.
+`next`. Stable `0.2.0` source and publication automation are merged, and GitHub environment
+`npm-stable` accepts only `harness-v0.2.0`. npm requires `@wizloft/harness-file-providers` to exist
+before its trusted publisher can be configured. The owner authorized one bounded exception:
+first-publish only the exact authoritative Linux tarball through an interactive 2FA session, verify
+its bytes and registry signature, attach Trusted Publishing, then publish the other three artifacts
+through OIDC. Treat the alpha.3 frozen manifest, annotated tag, successful publication run,
+independent registry proof, and Boilerplate adoption as the accepted published recovery baseline
+until the stable release closes.
 
 The npm supply-chain recovery is closed. Do not republish, retag, unpublish, regenerate the frozen
 packet, move `latest`, or use the retired alpha.2 tag without a new exact release packet and
