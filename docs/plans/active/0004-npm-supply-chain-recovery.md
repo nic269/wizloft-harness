@@ -1,6 +1,6 @@
 # npm Supply-Chain Recovery
 
-Status: Published and adopted; final traditional-token hardening awaits interactive npm 2FA.
+Status: Complete; coherent alpha.3 publication, adoption, and token-free package access are closed.
 
 ## Objective
 
@@ -48,13 +48,13 @@ Before configuring npm Trusted Publishing:
   update/deletion.
 - [x] Register `nic269/wizloft-harness`, workflow `publish.yml`, environment `npm-recovery`, and
   direct `npm publish` permission as trusted publisher for each public package.
-- [ ] Disallow traditional publish tokens after a successful dry consumer proof.
+- [x] Disallow traditional publish tokens after a successful dry consumer proof.
 
-2026-09-06 checkpoint: live package-settings re-verification confirms this policy for ten
-packages. npm returned `error loading page` while saving the remaining four:
-`@wizloft/harness-plugin-file-memory`, `@wizloft/harness-plugin-memory-context`,
-`@wizloft/harness-plugin-repository-files`, and `@wizloft/harness-project`. Leave the gate open and
-retry those settings later; do not infer persistence from an unsaved selected radio control.
+On 2026-09-06, live package-settings re-verification confirmed this policy for ten packages. npm
+initially returned `error loading page` for the remaining four. The Owner subsequently used a VPN
+and confirmed the setting was updated for `@wizloft/harness-plugin-file-memory`,
+`@wizloft/harness-plugin-memory-context`, `@wizloft/harness-plugin-repository-files`, and
+`@wizloft/harness-project`, closing the fourteen-package access boundary.
 
 The Owner made the repository public on 2026-09-06. The recovery release is therefore eligible for
 npm provenance after the exact trusted publishers and token-free workflow are active.
@@ -213,8 +213,8 @@ protected release tag.
   `f2c5ef68-f91c-4b76-a01c-16cf7fbb80eb`, verified Memory
   `498f9783-9ba4-45dc-b2cb-60d8cd3f9f69` was activated, and exact-version re-init reported
   `state: "current"` with zero operations.
-- Package-level traditional-token hardening is independently confirmed for ten packages. The four
-  packages named in Gate R2 remain open after npm returned an access-settings error.
+- Package-level traditional-token hardening is complete for all fourteen packages: ten were
+  independently re-verified and the Owner confirmed the final four after retrying through a VPN.
 
 | Package | SHA-256 | SHA-512 |
 |---|---|---|
