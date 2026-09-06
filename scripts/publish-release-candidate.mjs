@@ -176,7 +176,6 @@ if (mode === 'preflight' || mode === 'publish') {
     resumeState.existing.length > 0,
     'resume requires at least one proven existing package',
   );
-  assert.ok(resumeState.missing.length > 0, 'resume requires at least one missing package');
 }
 
 if (mode === 'preflight') {
