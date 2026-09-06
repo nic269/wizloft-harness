@@ -1,6 +1,6 @@
 # npm Supply-Chain Recovery
 
-Status: Active; `0.1.2-alpha.3` is authorized and source preparation is active.
+Status: Published and adopted; final traditional-token hardening awaits interactive npm 2FA.
 
 ## Objective
 
@@ -49,6 +49,12 @@ Before configuring npm Trusted Publishing:
 - [x] Register `nic269/wizloft-harness`, workflow `publish.yml`, environment `npm-recovery`, and
   direct `npm publish` permission as trusted publisher for each public package.
 - [ ] Disallow traditional publish tokens after a successful dry consumer proof.
+
+2026-09-06 checkpoint: live package-settings re-verification confirms this policy for ten
+packages. npm returned `error loading page` while saving the remaining four:
+`@wizloft/harness-plugin-file-memory`, `@wizloft/harness-plugin-memory-context`,
+`@wizloft/harness-plugin-repository-files`, and `@wizloft/harness-project`. Leave the gate open and
+retry those settings later; do not infer persistence from an unsaved selected radio control.
 
 The Owner made the repository public on 2026-09-06. The recovery release is therefore eligible for
 npm provenance after the exact trusted publishers and token-free workflow are active.
@@ -181,6 +187,53 @@ protected release tag.
 - Dist-tag promotion remains separate from OIDC publication. `npm dist-tag` requires an isolated
   short-lived interactive web-login userconfig, pre-verification, idempotent fourteen-package
   updates, post-verification, logout, deletion, and session-credential revocation.
+
+### Completed alpha.3 recovery — 2026-09-06
+
+- PR `#11` merged the lockstep alpha.3 graph and convergent workflow as source commit
+  `9ed8da5892878f4cff9ac5a33b98b406eda5ce2a`, tree
+  `f9446386633e56bc5a0e2952f591305eac2c29b6`.
+- Annotated tag `harness-v0.1.2-alpha.3` has tag object
+  `b9da397199b93d088e7c29c7a56151fb8a974fa0`, peels to the source commit, and is protected.
+- Before tag creation, the `npm-recovery` environment deployment policy was narrowed from
+  `harness-v*` to exact tag `harness-v0.1.2-alpha.3`; the retired alpha.2 tag cannot enter it.
+- The independently frozen merged-source packet contains fourteen artifacts. Its manifest SHA-256
+  is `f19e07e15cf4c0e6ed3dffd7576476aad9d02806b6a55688ededa1fd89b53f53`.
+- Trusted-publication run `34010498069` completed all three jobs: isolated verification/freeze,
+  convergent OIDC candidate publication, and credential-free exact-version registry consumer proof.
+- An independent local `verify` compared all fourteen registry tarballs to the original merged-source
+  packet, verified each `candidate` tag, cryptographically verified npm signatures and SLSA bundles,
+  and asserted the single tag/workflow/source commit for every package.
+- An isolated short-lived npm web-login session moved only `next` for all fourteen packages.
+  Post-verification proved `candidate` and `next` both resolve to `0.1.2-alpha.3`, with zero tags at
+  malicious `0.1.1-alpha.3`; the session was logged out and its userconfig deleted.
+- Boilerplate PR `#1`, merged as `66af9e6617a44e60f511c2bf6e692057ed0ec996`, adopted exact
+  alpha.3. Repository-local inspection
+  reported alpha.3 providers, runtime-health Validation passed with Evidence
+  `f2c5ef68-f91c-4b76-a01c-16cf7fbb80eb`, verified Memory
+  `498f9783-9ba4-45dc-b2cb-60d8cd3f9f69` was activated, and exact-version re-init reported
+  `state: "current"` with zero operations.
+- Package-level traditional-token hardening is independently confirmed for ten packages. The four
+  packages named in Gate R2 remain open after npm returned an access-settings error.
+
+| Package | SHA-256 | SHA-512 |
+|---|---|---|
+| `@wizloft/harness-kernel` | `f4020fea6a3644a3b62590eab21651586c285b832c65cb39590bac2cd5b0a65a` | `sha512-rIYwFTSfPQHrPOJLFR117bri2KUdWPSPnOZSXIFjVJYrwPWdJD3Qx+mLhzJ75BkISeNcpDnNnAax3aqxjpYIPA==` |
+| `@wizloft/harness-authority` | `554b77cc0b6b41341dbf5a3d7806bbc3d8c92e5bbeb79324d299a1e63e2efdad` | `sha512-gv0RoD27p3kzPZPEEMQ4Uuzyz7gGHiSYscM4t5/sVfr72JZFIxWrtaU7OySlcHmYQktXNbQTIqmsxShmFcsNgA==` |
+| `@wizloft/harness-context` | `603e0352d2d2be8f39896fe0087008a1b6bd05aa69e2e258b77c884beb347b99` | `sha512-G1JJTeboaGoP6ASU/dYKBEcaZ6SY1sZWR9q/597VmRBFJJA0Q1obFLdhHvVOZ8jJe1aRvVrQPFBSihqzUXsjxw==` |
+| `@wizloft/harness-evidence` | `820c7c3f8ed4f121eae9ee2af60b87f796eb803362b5e25e75a53e30361ee9cb` | `sha512-MBR0pQ74abjzCnTSO8jrxr9I9b9FjCxP9lWAJYuTVbVEFNpUXOkaI3F7Be9voQWMabMWpHdoBeVcqPTvGK08Pg==` |
+| `@wizloft/harness-memory` | `420a5300239ebafc60046991408d04e598f83520cadc55be3608616c30893bac` | `sha512-QoEP0FIqJ/w80MhvOUo0bGlWIsDWiarDN/UEMvEM4LLnkGtuXS+EIUDC+hodKMZViXIM2vZuuNMRMi+BMmqfJg==` |
+| `@wizloft/harness-validation` | `0e8db60605d4f24b38a30a057ba41d3183eb7f9e0e56a8df977d49c612f480a7` | `sha512-rEBXUJZ+3y25mStvl5WDW/A0vs3UC3oL+aovudbjajpfSBGqorfvLhfZmJ/4hXSNobkjYB3EER20BN9QfczHiA==` |
+| `@wizloft/harness` | `40b658f57feb9cb4b499a75248457071644d811025f5669c65f23f3cb2f76f84` | `sha512-ksixtfIjnVyyVl965nzpfhY+Umi8lVIFaJ9VT+ATSg5aC12M8KXI6Gjebi/STFCrLm9s63YEoLwTZYxsm5J28g==` |
+| `@wizloft/harness-commands` | `d02f6eea383e438de24c87a5c4107b059256a10f06b9c1be670dd066c08bb913` | `sha512-OmaxjhUljdroeYI8Z9GOonqNhy4lVGSz+ftTXbajM96l3JNNFwsgUExnLAtO3qa4j52W6mefk5NTzb90JBGcvA==` |
+| `@wizloft/harness-cli-adapter` | `499dfb291ca555541062e4f352b00fea49984984943cead41b523bc42f29713a` | `sha512-02R8d0fKjtYP0N/EDlCyWu3FqbtvQPE1vSzMXsDvjhbapFRFQh3PqnDj+TkESYv+DV2ja5PY0XYTpl6dDLptfQ==` |
+| `@wizloft/harness-plugin-file-events` | `903b91dd8a5d0bb58bc5dab080bd4fdf4dda1c18630e7332f9dc02318edb1354` | `sha512-CvTm7KBfLESkqVmcCOsehr/Icij6n+oKTl8VZPhn8bEAETAWsfxYH3cGgOyPBT7HKZthbOZ5jTIIHwokqO1o2Q==` |
+| `@wizloft/harness-plugin-file-memory` | `5546c0a98d162d3f6380d8d88b7a407ec076f9bd19e2dfd47d15eb9e0a75998e` | `sha512-K2vbtpjdKSEgzXZVSUor/TQfsKbOAlnXg4I2OLnM9NjyN6Kg3endxXBZiA10NvtH3RyNiXX4HwjlKpfgnRl2IA==` |
+| `@wizloft/harness-plugin-memory-context` | `1d244a0e1e57a54c2a1741103ce8bd64f938e2f42c1ffeb885a38744c55cc8b2` | `sha512-qv4WGb13n/qfZKo8GTA8onxIu8pN3etktRMc8J5NvDnJXiUlSILYY31b71hLoL7NSjNR55xQwCkscv5KPKdQKA==` |
+| `@wizloft/harness-plugin-repository-files` | `4f13f25cd2c0dd206147fd3770f5b9a7b82533dc1a518dbc301725cdfad30515` | `sha512-02eyPotQfjzc44pGM582kq8ltZw0YUkG2jtiZdrmLI9M86qjCI9IgJ+TXu7pY+70MxNENlHti1OOUDbMZyZr4g==` |
+| `@wizloft/harness-project` | `e47c35c4a353f5f87f10385943bd967a0277452441fad06f3679cd1eef27889a` | `sha512-Gz9m5GE6C4okYKPUNFFO9P26w96+qzUDmBm92q0N18rP09sBEwnM8dAca4uy9k5e087UJv63rshWKZdQ6MF0Lw==` |
+
+### Failed alpha.1 frozen artifact hashes
 
 | Package | Tarball | SHA-256 | SHA-512 |
 |---|---|---|---|

@@ -1,35 +1,37 @@
 # Current Status
 
-Snapshot date: **2026-08-25**
+Snapshot date: **2026-09-06**
 
 ## Repository and release state
 
 | Field | Current value |
 |---|---|
-| Harness baseline | clean checked-out `main`; resolve HEAD, index, and worktree live before each packet |
-| Alpha.4 source `R` / frozen provenance | `f662a454216d90c61c443c55a83165618d5e9843` / tree `68d5bb37d506b49301e2d3c433979b0c7fa64f2f` |
-| Frozen artifact manifest | SHA-256 `553c0e4ee510b3087360b0e2e7910aa07adf6c8140b4fbff798049e703a482bd` |
-| Git tag | annotated `harness-v0.1.0-alpha.4` object `7c70e518458eb4923d42353dcba7d2069adb7b04`, peeled to `R`, remote-pushed |
-| Public prerelease graph | fourteen packages at lockstep `0.1.0-alpha.4` on `candidate` and `next` |
-| `latest` | thirteen packages remain `0.1.0-alpha.2`; `@wizloft/harness-project@0.1.0-alpha.3` |
-| Alpha.3 history | immutable partial publication; do not repair, move, delete, unpublish, or retag |
-| 2026-09-02 npm incident containment | five malicious `0.1.1-alpha.3` artifacts deprecated; compromised `beta`/`alpha` tags moved to verified `0.1.0-alpha.4`; zero tags remain on the malicious version; local sweep and network-off clean-room alpha.4 proof passed; broad bypass-2FA token revocation awaits interactive npm authentication |
+| Harness baseline | coherent recovery release source commit `9ed8da5892878f4cff9ac5a33b98b406eda5ce2a`; resolve live refs before each new packet |
+| Alpha.3 source / tree | `9ed8da5892878f4cff9ac5a33b98b406eda5ce2a` / `f9446386633e56bc5a0e2952f591305eac2c29b6` |
+| Frozen artifact manifest | SHA-256 `f19e07e15cf4c0e6ed3dffd7576476aad9d02806b6a55688ededa1fd89b53f53` |
+| Git tag | annotated `harness-v0.1.2-alpha.3` object `b9da397199b93d088e7c29c7a56151fb8a974fa0`, peeled to the source commit and remote-pushed |
+| Public prerelease graph | fourteen packages at lockstep `0.1.2-alpha.3` on `candidate` and `next`; exact registry bytes, npm signatures, and SLSA provenance independently verified |
+| `latest` | intentionally unchanged: thirteen packages remain `0.1.0-alpha.2`; `@wizloft/harness-project@0.1.0-alpha.3` |
+| Failed release identities | alpha.1 is immutable failed exact-byte history; protected alpha.2 remains unpublished and must never be dispatched |
+| 2026-09-02 npm incident recovery | five malicious `0.1.1-alpha.3` artifacts remain deprecated; zero tags resolve to them; broad token revoked; all fourteen trusted publishers active; ten package access policies disallow bypass-2FA tokens and four remain pending after npm returned an access-settings error |
+| Boilerplate adoption | exact `0.1.2-alpha.3` merged as `66af9e6617a44e60f511c2bf6e692057ed0ec996`; validation Evidence and verified Memory write passed; exact-version re-init is zero-operation |
 | Phase 6 P2 | A4-10 through A4-13 independently accepted. CLI `c5e011383fd6b056d271517580b8cfd7d59bb7c3` is local/unpushed; Meldmark `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` is local with no remote |
 | OMP Stage D | A4-14 temp-only no-remote fixture passed; `.omp/` ignored/local-only; committed-profile discoverability open |
-| Active plans | CLI dogfood section 30 steps 1–14 complete; npm supply-chain recovery is active at `docs/plans/active/0004-npm-supply-chain-recovery.md`, with registry containment complete and interactive credential closure pending. Neither plan authorizes a recovery publication |
+| Active plans | CLI dogfood section 30 steps 1–14 complete; npm recovery publication, provenance proof, prerelease promotion, and Boilerplate adoption are complete; package-level token hardening and final closure remain active |
 
 ## Current operating objective
 
-Use clean checked-out `main` as the operational baseline. Before routing a packet, record the live
-`git rev-parse HEAD` result and verify the index and worktree are clean. A documentation-embedded
-SHA must not be treated as the expected current HEAD.
+The coherent `0.1.2-alpha.3` graph is the supported public prerelease on `candidate` and `next`.
+Treat its frozen manifest, annotated tag, successful publication run, independent registry proof, and
+Boilerplate adoption as the accepted recovery baseline. `latest` remains deliberately unchanged.
 
-Preserve alpha.3 as immutable partial history. Do not treat the proven alpha.4 `candidate`/`next`
-graph, local CLI/Meldmark commits, or temp-only Stage D as authorization to push externals, commit
-OMP profiles, or close broader readiness. This status record authorizes none of those actions.
+Complete the four remaining package-level publishing-access changes before closing the recovery
+plan. Do not republish, retag, unpublish, regenerate the frozen packet, or use the retired alpha.2
+tag to work around npm account-settings failures.
 
-Authority remains `docs/decisions/0012-public-package-release-contract.md` and the contract record
-in `docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`.
+Authority remains `docs/decisions/0012-public-package-release-contract.md`, the recovery record in
+`docs/plans/active/0004-npm-supply-chain-recovery.md`, and the broader contract record in
+`docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`.
 
 ## Historical correction checkpoint
 
@@ -45,22 +47,23 @@ The Phase 4C correction checkpoint below is historical. It is not the current ba
 
 Stop and request an owner decision if the next requested packet would:
 
-- publish, promote, tag, push, or mutate the registry without a new exact release packet;
-- retag, unpublish, or otherwise mutate alpha.3 or the frozen alpha.4 graph;
+- publish, promote, tag, or mutate release artifacts without a new exact release packet;
+- retag, unpublish, or revise the immutable alpha.1/alpha.3 registry records or dispatch alpha.2;
+- move `latest` without a separate explicit owner decision;
 - push Wizloft CLI or Meldmark, or configure a Meldmark remote, without repository-specific
   authority and live ref preflight;
-- commit/install OMP profiles or treat temp-only Stage D as committed-profile discoverability;
-- commit or push this documentation reconciliation without a later exact packet.
+- commit/install OMP profiles or treat temp-only Stage D as committed-profile discoverability.
 
-## Alpha.4 durable recovery facts
+## Superseded alpha.4 recovery baseline
 
-The selected coherent fourteen-package recovery target `0.1.0-alpha.4` is implemented, frozen,
-published on `candidate` and `next`, Git-proven, and independently proved through A4-10 through
-A4-14. It is not a `latest` promotion.
+Before the September incident recovery release, `0.1.0-alpha.4` was the coherent fourteen-package
+graph on `candidate` and `next`, Git-proven and independently exercised through A4-10 through A4-14.
+It was never promoted to `latest`. The accepted `0.1.2-alpha.3` release above now supersedes it on
+the supported prerelease channels.
 
-The partial alpha.3 public state remains authoritative history. The published alpha.3 project
-artifact never became alpha.4 recovery evidence and must not be repaired, moved, deleted,
-unpublished, or retagged.
+Earlier partial alpha.3 publication references in this historical section mean package version
+`0.1.0-alpha.3`, not the coherent recovery version `0.1.2-alpha.3`. Immutable historical artifacts
+must not be repaired, moved, deleted, unpublished, or retagged.
 
 Frozen identities:
 
