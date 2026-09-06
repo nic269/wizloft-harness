@@ -29,10 +29,10 @@ The retained package names `@wizloft/harness-kernel`, `@wizloft/harness`, and
 
 ## Preconditions
 
-- [ ] Publish all four `0.2.0-alpha.1` artifacts from one reviewed source identity.
+- [ ] Publish all four `0.2.0` artifacts from one reviewed source identity.
 - [ ] Verify exact registry bytes, npm signatures, SLSA provenance, and the annotated source tag.
 - [ ] Prove an exact-version external consumer and generated project from the registry.
-- [ ] Move only the approved consolidated prerelease tags and verify the four-package graph again.
+- [ ] Promote the approved stable tags and verify the four-package graph again.
 - [ ] Migrate and verify every known first-party consumer before changing legacy package metadata.
 - [ ] Obtain separate owner authorization for the exact deprecation messages and dist-tag removals.
 
