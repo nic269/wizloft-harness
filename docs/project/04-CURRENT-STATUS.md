@@ -13,11 +13,11 @@ Snapshot date: **2026-09-06**
 | Public prerelease graph | fourteen packages at lockstep `0.1.2-alpha.3` on `candidate` and `next`; exact registry bytes, npm signatures, and SLSA provenance independently verified |
 | `latest` | intentionally unchanged: thirteen packages remain `0.1.0-alpha.2`; `@wizloft/harness-project@0.1.0-alpha.3` |
 | Failed release identities | alpha.1 is immutable failed exact-byte history; protected alpha.2 remains unpublished and must never be dispatched |
-| 2026-09-02 npm incident recovery | five malicious `0.1.1-alpha.3` artifacts remain deprecated; zero tags resolve to them; broad token revoked; all fourteen trusted publishers active; ten package access policies disallow bypass-2FA tokens and four remain pending after npm returned an access-settings error |
+| 2026-09-02 npm incident recovery | five malicious `0.1.1-alpha.3` artifacts remain deprecated; zero tags resolve to them; broad token revoked; all fourteen trusted publishers active; all fourteen package access policies disallow bypass-2FA tokens |
 | Boilerplate adoption | exact `0.1.2-alpha.3` merged as `66af9e6617a44e60f511c2bf6e692057ed0ec996`; validation Evidence and verified Memory write passed; exact-version re-init is zero-operation |
 | Phase 6 P2 | A4-10 through A4-13 independently accepted. CLI `c5e011383fd6b056d271517580b8cfd7d59bb7c3` is local/unpushed; Meldmark `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` is local with no remote |
 | OMP Stage D | A4-14 temp-only no-remote fixture passed; `.omp/` ignored/local-only; committed-profile discoverability open |
-| Active plans | CLI dogfood section 30 steps 1–14 complete; npm recovery publication, provenance proof, prerelease promotion, and Boilerplate adoption are complete; package-level token hardening and final closure remain active |
+| Active plans | CLI dogfood section 30 steps 1–14 complete; npm recovery publication, provenance proof, prerelease promotion, Boilerplate adoption, token hardening, and closure are complete |
 
 ## Current operating objective
 
@@ -25,9 +25,9 @@ The coherent `0.1.2-alpha.3` graph is the supported public prerelease on `candid
 Treat its frozen manifest, annotated tag, successful publication run, independent registry proof, and
 Boilerplate adoption as the accepted recovery baseline. `latest` remains deliberately unchanged.
 
-Complete the four remaining package-level publishing-access changes before closing the recovery
-plan. Do not republish, retag, unpublish, regenerate the frozen packet, or use the retired alpha.2
-tag to work around npm account-settings failures.
+The npm supply-chain recovery is closed. Do not republish, retag, unpublish, regenerate the frozen
+packet, move `latest`, or use the retired alpha.2 tag without a new exact release packet and
+separate explicit owner authorization.
 
 Authority remains `docs/decisions/0012-public-package-release-contract.md`, the recovery record in
 `docs/plans/active/0004-npm-supply-chain-recovery.md`, and the broader contract record in
