@@ -122,8 +122,8 @@ jobs:
           name: harness-${{ inputs.version }}-frozen-release
           path: ${{ runner.temp }}/release-artifacts
 
-      - name: Re-hash and publish only the frozen candidate graph
-        run: node scripts/publish-release-candidate.mjs publish "$RUNNER_TEMP/release-artifacts"
+      - name: Verify existing packages and publish only missing frozen artifacts
+        run: node scripts/publish-release-candidate.mjs resume "$RUNNER_TEMP/release-artifacts"
 
   prove-registry-consumer:
     needs: publish-candidate

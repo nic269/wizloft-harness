@@ -139,10 +139,9 @@ protected release tag.
   - `@wizloft/harness-project`: frozen SHA-256
     `c8b80f3c25fb22b718b85c30a2734db50ab9ef24d8526a3ca0a37d19bd83ef39`; registry SHA-256
     `0bbeeddb71f8f1fc60c2980a36f7563f1a54deb5448f187608f164db3b21bf32`.
-- Provenance was also split. The first six packages attest
+- Provenance was also split across all fourteen packages. The first six attest
   `refs/tags/harness-v0.1.2-alpha.1` at source commit
-  `f2f19dbe26ce7975059d692012beea829ac5ec64`; the later
-  `@wizloft/harness` attestation records
+  `f2f19dbe26ce7975059d692012beea829ac5ec64`; the remaining eight attest
   `refs/tags/harness-v0.1.2-alpha.1-resume.2` at
   `dd28fd46a95e41464bb9772640a9fd36bba3fd19`. Replacing frozen hashes could not repair the
   resulting split release provenance.
@@ -170,6 +169,14 @@ protected release tag.
   `harness-v0.1.2-alpha.2` tag. No automation/resume tag may contribute provenance.
 - The workflow must freeze once, publish those exact files, and compare the registry to that
   original packet after publication.
+- The protected alpha.2 tag was created before review found that its baked workflow still used the
+  fail-closed fresh `publish` mode. It remains unpublished and must not be dispatched. Resolve it
+  either by an explicit protected-tag delete/recreate after merging convergence or by retiring
+  alpha.2 and selecting a later identity.
+- Convergent publication must classify all fourteen packages before each mutation, verify existing
+  bytes and `candidate`, cryptographically verify registry signatures and SLSA bundles with pinned
+  npm, assert the signed workflow ref/source commit against the same release tag, and publish only
+  missing frozen artifacts.
 - Dist-tag promotion remains separate from OIDC publication. `npm dist-tag` requires an isolated
   short-lived interactive web-login userconfig, pre-verification, idempotent fourteen-package
   updates, post-verification, logout, deletion, and session-credential revocation.

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { execFile as execFileCallback } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -13,8 +15,9 @@ const REGISTRY = 'https://registry.npmjs.org';
 const REGISTRY_WAIT_MS = 5 * 60 * 1000;
 const POLL_MS = 5_000;
 
-async function runNpm(args) {
+async function runNpm(args, cwd) {
   return execFile('npm', ['--registry', REGISTRY, ...args], {
+    cwd,
     encoding: 'utf8',
     maxBuffer: 10 * 1024 * 1024,
     env: process.env,
@@ -44,6 +47,92 @@ function digest(algorithm, bytes) {
 
 function sri(algorithm, bytes) {
   return `${algorithm}-${createHash(algorithm).update(bytes).digest('base64')}`;
+}
+
+function assertProvenanceClaims(artifact, verifiedPackage, release) {
+  assert.equal(verifiedPackage.name, artifact.name);
+  assert.equal(verifiedPackage.version, artifact.version);
+  assert.equal(verifiedPackage.registry, `${REGISTRY}/`);
+  assert.equal(
+    verifiedPackage.attestations?.provenance?.predicateType,
+    'https://slsa.dev/provenance/v1',
+    `${artifact.name} has no cryptographically verified SLSA provenance`,
+  );
+  const attestation = verifiedPackage.attestationBundles?.find(
+    ({ predicateType }) => predicateType === 'https://slsa.dev/provenance/v1',
+  );
+  assert.notEqual(attestation, undefined, `${artifact.name} has no verified SLSA attestation`);
+  const statement = JSON.parse(
+    Buffer.from(attestation.bundle.dsseEnvelope.payload, 'base64').toString('utf8'),
+  );
+  assert.equal(statement.predicateType, 'https://slsa.dev/provenance/v1');
+  assert.equal(statement.subject.length, 1, `${artifact.name} provenance must have one subject`);
+  assert.equal(
+    decodeURIComponent(statement.subject[0].name),
+    `pkg:npm/${artifact.name}@${artifact.version}`,
+    `${artifact.name} provenance subject mismatch`,
+  );
+  assert.equal(
+    statement.subject[0].digest.sha512,
+    Buffer.from(artifact.sha512.slice('sha512-'.length), 'base64').toString('hex'),
+    `${artifact.name} provenance digest mismatch`,
+  );
+  const expectedRef = `refs/tags/harness-v${artifact.version}`;
+  const workflow = statement.predicate.buildDefinition.externalParameters.workflow;
+  assert.deepEqual(workflow, {
+    ref: expectedRef,
+    repository: 'https://github.com/nic269/wizloft-harness',
+    path: '.github/workflows/publish.yml',
+  });
+  assert.equal(
+    statement.predicate.buildDefinition.resolvedDependencies.some(
+      ({ digest: dependencyDigest, uri }) =>
+        dependencyDigest?.gitCommit === release.source.commit && uri.endsWith(`@${expectedRef}`),
+    ),
+    true,
+    `${artifact.name} provenance source commit mismatch`,
+  );
+}
+
+async function verifyRegistryProvenance(release, artifacts) {
+  if (artifacts.length === 0) return;
+  const auditRoot = await mkdtemp(path.join(tmpdir(), 'harness-provenance-'));
+  try {
+    await writeFile(
+      path.join(auditRoot, 'package.json'),
+      `${JSON.stringify(
+        {
+          name: 'harness-provenance-verifier',
+          version: '1.0.0',
+          private: true,
+          dependencies: Object.fromEntries(artifacts.map(({ name, version }) => [name, version])),
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    await runNpm(['install', '--ignore-scripts', '--no-audit', '--fund=false'], auditRoot);
+    const { stdout } = await runNpm(
+      ['audit', 'signatures', '--json', '--include-attestations'],
+      auditRoot,
+    );
+    const audit = JSON.parse(stdout);
+    assert.deepEqual(audit.invalid, [], 'npm found invalid registry signatures or attestations');
+    assert.deepEqual(audit.missing, [], 'npm found missing registry signatures or attestations');
+    for (const artifact of artifacts) {
+      const verifiedPackage = audit.verified.find(
+        ({ name, version }) => name === artifact.name && version === artifact.version,
+      );
+      assert.notEqual(
+        verifiedPackage,
+        undefined,
+        `${artifact.name}@${artifact.version} was not cryptographically verified`,
+      );
+      assertProvenanceClaims(artifact, verifiedPackage, release);
+    }
+  } finally {
+    await rm(auditRoot, { recursive: true, force: true });
+  }
 }
 
 async function fetchRegistryTarball(metadata, artifact) {
@@ -88,27 +177,30 @@ async function classifyResumeArtifacts(release) {
       missing.push(artifact);
       continue;
     }
-    assert.equal(
-      await inspectPublishedArtifact(artifact, metadata),
-      true,
-      `${artifact.name} candidate tag does not resolve to ${artifact.version}`,
-    );
+    await waitForPublishedArtifact(artifact, release);
     existing.push(artifact);
   }
   return { existing, missing };
 }
 
-async function waitForPublishedArtifact(artifact) {
+async function waitForPublishedArtifact(artifact, release) {
   const deadline = Date.now() + REGISTRY_WAIT_MS;
+  let provenanceError;
   while (Date.now() < deadline) {
     const metadata = await registryMetadata(artifact.name, artifact.version);
     if (metadata !== null && (await inspectPublishedArtifact(artifact, metadata))) {
-      return;
+      try {
+        await verifyRegistryProvenance(release, [artifact]);
+        return;
+      } catch (error) {
+        provenanceError = error;
+      }
     }
     await new Promise((resolve) => setTimeout(resolve, POLL_MS));
   }
   throw new Error(
-    `${artifact.name}@${artifact.version} did not become queryable with proven bytes`,
+    `${artifact.name}@${artifact.version} did not become queryable with proven bytes and provenance`,
+    { cause: provenanceError },
   );
 }
 
@@ -172,10 +264,6 @@ if (mode === 'preflight' || mode === 'publish') {
   }
 } else if (mode === 'resume-preflight' || mode === 'resume') {
   resumeState = await classifyResumeArtifacts(release);
-  assert.ok(
-    resumeState.existing.length > 0,
-    'resume requires at least one proven existing package',
-  );
 }
 
 if (mode === 'preflight') {
@@ -201,7 +289,7 @@ if (mode === 'preflight') {
     ),
   );
 } else if (mode === 'verify') {
-  for (const artifact of release.artifacts) await waitForPublishedArtifact(artifact);
+  for (const artifact of release.artifacts) await waitForPublishedArtifact(artifact, release);
   console.log(
     JSON.stringify(
       { ok: true, mode, releaseVersion: release.releaseVersion, packages: 14 },
@@ -228,7 +316,7 @@ if (mode === 'preflight') {
       'public',
       '--provenance',
     ]);
-    await waitForPublishedArtifact(artifact);
+    await waitForPublishedArtifact(artifact, release);
     console.log(`Published ${artifact.name}@${artifact.version} with verified registry bytes`);
   }
   console.log(
