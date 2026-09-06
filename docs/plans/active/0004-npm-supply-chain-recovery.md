@@ -1,6 +1,6 @@
 # npm Supply-Chain Recovery
 
-Status: Active; `0.1.2-alpha.1` failed exact-byte closure; replacement recovery identity required.
+Status: Active; `0.1.2-alpha.2` is authorized and source preparation is active.
 
 ## Objective
 
@@ -55,9 +55,11 @@ npm provenance after the exact trusted publishers and token-free workflow are ac
 
 ## Gate R3 — Recovery release decision
 
-- [x] Owner selected coherent fourteen-package version `0.1.2-alpha.1` on 2026-09-06.
-- [x] The identity sorts above malicious `0.1.1-alpha.3` without legitimizing that sequence.
-- [x] Synchronize and verify the complete lockstep graph at the selected identity.
+- [x] Owner selected `0.1.2-alpha.1` on 2026-09-06; exact-byte and source-provenance closure later
+  failed.
+- [x] Owner selected coherent replacement version `0.1.2-alpha.2` on 2026-09-06.
+- [x] The replacement sorts above malicious `0.1.1-alpha.3` and invalid `0.1.2-alpha.1`.
+- [x] Synchronize the complete lockstep graph at the replacement identity.
 
 Version selection does not authorize publication before Gates R1, R2, and R4 are complete.
 
@@ -76,13 +78,13 @@ The later packet must record and prove:
 - exact-version registry consumer proof before any moving tag;
 - post-publish confirmation that no tag points to a deprecated malicious artifact.
 
-The selected packet uses immutable release tag `harness-v0.1.2-alpha.1`, workflow `publish.yml`, and
-the tag-restricted `npm-recovery` GitHub environment. The initial dispatch was CLI-only because the
-GitHub UI exposes a branch selector:
+The replacement packet uses immutable release tag `harness-v0.1.2-alpha.2`, workflow `publish.yml`,
+and the tag-restricted `npm-recovery` GitHub environment. Dispatch is CLI-only because the GitHub UI
+exposes a branch selector:
 
 ```sh
-gh workflow run publish.yml --ref harness-v0.1.2-alpha.1 \
-  -f version=0.1.2-alpha.1 -f confirmation='publish recovery release'
+gh workflow run publish.yml --ref harness-v0.1.2-alpha.2 \
+  -f version=0.1.2-alpha.2 -f confirmation='publish recovery release'
 ```
 
 The initial workflow had a three-job credential boundary: credential-free isolated
@@ -94,7 +96,7 @@ across every shipped JavaScript and declared bin before any packed import execut
 the packet after packed execution; the proof container mounts reviewed source read-only, and later
 verification cannot access the packet.
 
-### Frozen pre-publication checkpoint — 2026-09-06
+### Failed alpha.1 frozen pre-publication checkpoint — 2026-09-06
 
 This evidence checkpoint is intentionally post-tag documentation on `main`; it does not move the
 protected release tag.
@@ -137,6 +139,13 @@ protected release tag.
   - `@wizloft/harness-project`: frozen SHA-256
     `c8b80f3c25fb22b718b85c30a2734db50ab9ef24d8526a3ca0a37d19bd83ef39`; registry SHA-256
     `0bbeeddb71f8f1fc60c2980a36f7563f1a54deb5448f187608f164db3b21bf32`.
+- Provenance was also split. The first six packages attest
+  `refs/tags/harness-v0.1.2-alpha.1` at source commit
+  `f2f19dbe26ce7975059d692012beea829ac5ec64`; the later
+  `@wizloft/harness` attestation records
+  `refs/tags/harness-v0.1.2-alpha.1-resume.2` at
+  `dd28fd46a95e41464bb9772640a9fd36bba3fd19`. Replacing frozen hashes could not repair the
+  resulting split release provenance.
 - Member-level comparison found no executable or runtime-file drift. In both mismatches only packed
   `package/package.json` differed, and only dependency-key order changed.
 - Repeated `pnpm pack` calls from the same source, dependency state, and pinned toolchain reproduced
@@ -145,12 +154,25 @@ protected release tag.
 - Exact-byte closure failed even though the dependency mappings are semantically equal. Do not
   promote `next`, do not accept `0.1.2-alpha.1` as the recovery release, and do not revise the
   authoritative frozen manifest after publication.
+- Live npm metadata already exposes alpha.1 through each package's `candidate` tag. The blocked
+  promotion concerns `next` and any other supported moving tag; it does not erase that existing
+  candidate exposure.
 - Boilerplate was returned to verified `0.1.0-alpha.4` with a zero-operation re-init and clean Git
   worktree. The invalid alpha.1 validation event and Memory record created during the aborted
   adoption were removed.
 - The packing proof now canonicalizes dependency-map order, repacks with pinned npm, and requires
   two consecutive canonical packs to be byte-identical. A new coherent version and packet remain
   required.
+
+### Replacement alpha.2 packet
+
+- Alpha.2 must publish all fourteen packages from the single annotated
+  `harness-v0.1.2-alpha.2` tag. No automation/resume tag may contribute provenance.
+- The workflow must freeze once, publish those exact files, and compare the registry to that
+  original packet after publication.
+- Dist-tag promotion remains separate from OIDC publication. `npm dist-tag` requires an isolated
+  short-lived interactive web-login userconfig, pre-verification, idempotent fourteen-package
+  updates, post-verification, logout, deletion, and session-credential revocation.
 
 | Package | Tarball | SHA-256 | SHA-512 |
 |---|---|---|---|

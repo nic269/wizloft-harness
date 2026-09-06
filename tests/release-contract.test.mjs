@@ -49,7 +49,7 @@ test('release contract accepts exactly the approved public package set', async (
   const inspection = await inspectReleaseContract(repositoryRoot);
 
   assert.deepEqual(inspection.errors, []);
-  assert.equal(inspection.releaseVersion, '0.1.2-alpha.1');
+  assert.equal(inspection.releaseVersion, '0.1.2-alpha.2');
   assert.equal(inspection.publicPackages.length, 14);
   assert.equal(new Set(PUBLIC_PACKAGES.map(({ name }) => name)).size, 14);
   const project = PUBLIC_PACKAGES.find((entry) => entry.name === '@wizloft/harness-project');

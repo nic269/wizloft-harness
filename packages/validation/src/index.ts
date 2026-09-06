@@ -545,7 +545,7 @@ export const VALIDATION_CAPABILITY =
 
 export const validationPlugin: WizloftPlugin = {
   name: VALIDATION_PLUGIN_NAME,
-  version: '0.1.2-alpha.1',
+  version: '0.1.2-alpha.2',
   requires: [requireCapability(EVIDENCE_CAPABILITY)],
   provides: [declareCapability(VALIDATION_CAPABILITY)],
   setup(context) {
