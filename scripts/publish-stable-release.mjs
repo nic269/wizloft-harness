@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile as execFileCallback } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -11,13 +11,51 @@ import { inspectReleaseArtifacts } from './inspect-release-artifacts.mjs';
 const execFile = promisify(execFileCallback);
 const RELEASE_VERSION = '0.2.0';
 const DEPRECATED_MALICIOUS_VERSION = '0.1.1-alpha.3';
-const EXPECTED_PACKAGES = Object.freeze([
-  '@wizloft/harness-kernel',
-  '@wizloft/harness',
-  '@wizloft/harness-file-providers',
-  '@wizloft/harness-project',
+const EXPECTED_ARTIFACTS = Object.freeze([
+  {
+    name: '@wizloft/harness-kernel',
+    version: '0.2.0',
+    filename: 'wizloft-harness-kernel-0.2.0.tgz',
+    size: 21866,
+    sha1: '63da209ff459ad2d3ca351876673a217e5556d63',
+    sha256: '93be03dca7db51d1ef26f63b1980b93c0d13ea11e80c9f8e720a30118c4d398e',
+    sha512:
+      'sha512-XbTRKw1MnWbidoHUbotzhd1cTQuka39S5XykjhvIErZlWGBrEoev+Nhkx8wHtBP2Wt31HGLSsy5JJ/aswvrnDA==',
+  },
+  {
+    name: '@wizloft/harness',
+    version: '0.2.0',
+    filename: 'wizloft-harness-0.2.0.tgz',
+    size: 36949,
+    sha1: 'c5677fc2d36a67b098754b902ca76e2e385a7970',
+    sha256: 'def2311c7fe475c0762132de31d462cf61e939f1ec7f86654605cbcf53fd4cfb',
+    sha512:
+      'sha512-yhR8U1e6JLLjDcoV1lbzExxk4NqgPgU9M21oCWoFxLZ0xK8L0cJ/qAqoz+3NI9r754irnDC5E8EV4e8UM0e2tw==',
+  },
+  {
+    name: '@wizloft/harness-file-providers',
+    version: '0.2.0',
+    filename: 'wizloft-harness-file-providers-0.2.0.tgz',
+    size: 12293,
+    sha1: '1f1398686869b16ebab350f206df0adf0ae3fee4',
+    sha256: '734609ab24a1018cc16cc59fd262bbfc9e704456742a3089af3a219c44a00b9b',
+    sha512:
+      'sha512-MVpU/uQPr0xTKUABUUePr/3ATnVABO/xD5ZIbIOm87n8ISuVfpkf0TqgmJyYE67JazQVLsJVdXM0XQK4sUvAww==',
+  },
+  {
+    name: '@wizloft/harness-project',
+    version: '0.2.0',
+    filename: 'wizloft-harness-project-0.2.0.tgz',
+    size: 55192,
+    sha1: 'df4a805d0cdd3c4980c97755606e41c760ddc902',
+    sha256: '754a3b8ea52f48ed318dd79256c65b192972c9fff8d2a7e7671d60ee36bbc65e',
+    sha512:
+      'sha512-UnNcGq5E/t2mgnrqPverG//V649MQ4EwH0Q9cRUAgxftOizny04P4YkBD0aiouhs/gAtrOWyx96d4HIZWZdSJg==',
+  },
 ]);
+const EXPECTED_PACKAGES = Object.freeze(EXPECTED_ARTIFACTS.map(({ name }) => name));
 const INTERACTIVE_BOOTSTRAP_PACKAGE = '@wizloft/harness-file-providers';
+const EXECUTION_TAG = 'harness-v0.2.0-resume.1';
 const REGISTRY = 'https://registry.npmjs.org';
 const REGISTRY_WAIT_MS = 5 * 60 * 1000;
 const POLL_MS = 5_000;
@@ -56,6 +94,10 @@ function sri(algorithm, bytes) {
   return `${algorithm}-${createHash(algorithm).update(bytes).digest('base64')}`;
 }
 
+function artifactIdentity({ name, version, filename, size, sha1, sha256, sha512 }) {
+  return { name, version, filename, size, sha1, sha256, sha512 };
+}
+
 function assertProvenanceClaims(artifact, verifiedPackage, release) {
   assert.equal(verifiedPackage.name, artifact.name);
   assert.equal(verifiedPackage.version, artifact.version);
@@ -84,7 +126,7 @@ function assertProvenanceClaims(artifact, verifiedPackage, release) {
     Buffer.from(artifact.sha512.slice('sha512-'.length), 'base64').toString('hex'),
     `${artifact.name} provenance digest mismatch`,
   );
-  const expectedRef = `refs/tags/harness-v${artifact.version}`;
+  const expectedRef = `refs/tags/${EXECUTION_TAG}`;
   assert.deepEqual(statement.predicate.buildDefinition.externalParameters.workflow, {
     ref: expectedRef,
     repository: 'https://github.com/nic269/wizloft-harness',
@@ -104,6 +146,7 @@ async function verifyRegistryEvidence(release, artifacts, { requireProvenance = 
   if (artifacts.length === 0) return;
   const auditRoot = await mkdtemp(path.join(tmpdir(), 'harness-stable-provenance-'));
   try {
+    const dependencies = Object.fromEntries(artifacts.map(({ name, version }) => [name, version]));
     await writeFile(
       path.join(auditRoot, 'package.json'),
       `${JSON.stringify(
@@ -111,13 +154,59 @@ async function verifyRegistryEvidence(release, artifacts, { requireProvenance = 
           name: 'harness-stable-provenance-verifier',
           version: '1.0.0',
           private: true,
-          dependencies: Object.fromEntries(artifacts.map(({ name, version }) => [name, version])),
+          dependencies,
         },
         null,
         2,
       )}\n`,
     );
-    await runNpm(['install', '--ignore-scripts', '--no-audit', '--fund=false'], auditRoot);
+    if (requireProvenance) {
+      await runNpm(['install', '--ignore-scripts', '--no-audit', '--fund=false'], auditRoot);
+    } else {
+      assert.equal(artifacts.length, 1, 'bootstrap signature verification accepts one artifact');
+      const [artifact] = artifacts;
+      const metadata = await registryMetadata(artifact.name, artifact.version);
+      assert.notEqual(metadata, null, `${artifact.name}@${artifact.version} is unavailable`);
+      const packageRoot = path.join(auditRoot, 'node_modules', artifact.name);
+      const tarballPath = path.join(auditRoot, artifact.filename);
+      await mkdir(packageRoot, { recursive: true });
+      const response = await fetch(metadata.dist.tarball, {
+        headers: { accept: 'application/octet-stream' },
+        redirect: 'error',
+      });
+      assert.equal(
+        response.ok,
+        true,
+        `${artifact.name} registry tarball returned ${response.status}`,
+      );
+      await writeFile(tarballPath, Buffer.from(await response.arrayBuffer()));
+      await execFile('tar', ['-xzf', tarballPath, '--strip-components=1', '-C', packageRoot]);
+      await writeFile(
+        path.join(auditRoot, 'package-lock.json'),
+        `${JSON.stringify(
+          {
+            name: 'harness-stable-provenance-verifier',
+            version: '1.0.0',
+            lockfileVersion: 3,
+            requires: true,
+            packages: {
+              '': {
+                name: 'harness-stable-provenance-verifier',
+                version: '1.0.0',
+                dependencies,
+              },
+              [`node_modules/${artifact.name}`]: {
+                version: artifact.version,
+                resolved: metadata.dist.tarball,
+                integrity: artifact.sha512,
+              },
+            },
+          },
+          null,
+          2,
+        )}\n`,
+      );
+    }
     const auditArguments = ['audit', 'signatures', '--json'];
     if (requireProvenance) auditArguments.push('--include-attestations');
     const { stdout } = await runNpm(auditArguments, auditRoot);
@@ -216,7 +305,7 @@ async function classifyArtifacts(release) {
 }
 
 async function assertReleaseTag(release) {
-  const expectedTag = `harness-v${release.releaseVersion}`;
+  const expectedTag = EXECUTION_TAG;
   const { stdout: tagOutput } = await execFile(
     'git',
     ['describe', '--exact-match', '--tags', 'HEAD'],
@@ -261,6 +350,11 @@ assert.deepEqual(
   release.artifacts.map(({ name }) => name),
   EXPECTED_PACKAGES,
   'stable packet must contain the exact four-package graph in dependency order',
+);
+assert.deepEqual(
+  release.artifacts.map(artifactIdentity),
+  EXPECTED_ARTIFACTS,
+  'stable packet must reproduce the exact authoritative four-package artifact identities',
 );
 
 let state;
