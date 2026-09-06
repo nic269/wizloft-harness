@@ -21,7 +21,7 @@ concurrency:
 env:
   RECOVERY_VERSION: 0.1.2-alpha.1
   RELEASE_TAG: harness-v0.1.2-alpha.1
-  AUTOMATION_TAG: harness-v0.1.2-alpha.1-resume.1
+  AUTOMATION_TAG: harness-v0.1.2-alpha.1-resume.2
   NODE_VERSION: 24.20.0
   NPM_VERSION: 11.19.0
 
