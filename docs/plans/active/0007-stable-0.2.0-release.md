@@ -1,6 +1,6 @@
 # Stable 0.2.0 Release
 
-Status: Active; owner authorized the exact-byte interactive bootstrap exception.
+Status: Active; exact file-provider bootstrap published, stable OIDC resume repair in progress.
 
 ## Outcome
 
@@ -44,48 +44,54 @@ Dependency order is kernel → harness → file-providers → project. All inter
 
 ## Gate S2 — Separate publication boundary
 
-- [x] Add `.github/workflows/publish-stable.yml`, pinned to `0.2.0`, exact tag
-  `harness-v0.2.0`, Node 24.20.0, npm 11.19.0, pnpm 11.10.0, and pinned GitHub actions.
+- [x] Add `.github/workflows/publish-stable.yml`, pinned to `0.2.0`, Node 24.20.0, npm
+  11.19.0, pnpm 11.10.0, and pinned GitHub actions.
 - [x] Add a stable-only publisher that requires GitHub Actions OIDC, rejects npm/repository tokens,
-  verifies the annotated tag and original artifact manifest, publishes dependency-first to a
-  temporary `candidate` tag, and cryptographically verifies registry bytes and provenance.
+  verifies the annotated execution tag and exact authoritative artifact identities, publishes
+  dependency-first to a temporary `candidate` tag, and cryptographically verifies registry bytes
+  and provenance.
 - [x] Keep verification/freeze and registry-consumer jobs credential-free; grant `id-token: write`
   only to the minimal publish job.
-- [x] Create GitHub environment `npm-stable` restricted to exact tag `harness-v0.2.0`.
-- [ ] Configure the three existing packages to trust repository `nic269/wizloft-harness`, workflow
+- [x] Create GitHub environment `npm-stable`, initially restricted to exact tag `harness-v0.2.0`.
+- [x] Configure all four packages to trust repository `nic269/wizloft-harness`, workflow
   `publish-stable.yml`, environment `npm-stable`.
 
 ## Gate S3 — New package trust bootstrap
 
-`@wizloft/harness-file-providers` does not yet exist, and npm requires a package to exist before
-Trusted Publishing can be configured. The owner authorized one bounded bootstrap: publish only that
+`@wizloft/harness-file-providers` did not exist, and npm required a package to exist before Trusted
+Publishing could be configured. The owner authorized one bounded bootstrap: publish only that
 package from the authoritative Linux packet through a short-lived interactive 2FA session, then
 attach the same trusted publisher used by the other three packages.
 
 - [x] Record the owner authorization for the exact-byte interactive first publication.
-- [ ] Create the protected annotated tag only after the three existing trusted publishers and
-  authoritative Linux packet are verified.
-- [ ] Publish only `@wizloft/harness-file-providers@0.2.0` from that packet to `candidate`.
-- [ ] Verify its registry tarball byte-for-byte and verify the npm registry signature.
-- [ ] Configure its trusted publisher to repository `nic269/wizloft-harness`, workflow
+- [x] Create protected annotated tag `harness-v0.2.0` after the three existing trusted publishers and
+  authoritative Linux packet were verified.
+- [x] Publish only `@wizloft/harness-file-providers@0.2.0` from that packet to `candidate`.
+- [x] Verify its registry tarball byte-for-byte and verify the npm registry signature.
+- [x] Configure its trusted publisher to repository `nic269/wizloft-harness`, workflow
   `publish-stable.yml`, environment `npm-stable`.
 - [ ] Confirm package access requires two-factor authentication and disallows bypass-2FA tokens.
 
-The bootstrap artifact cannot carry GitHub Actions provenance. The workflow must require exact bytes,
-registry signature, and `candidate` for that one existing artifact; every other artifact still
-requires provenance from `publish-stable.yml` and `refs/tags/harness-v0.2.0`.
+The bootstrap artifact cannot carry GitHub Actions provenance. The workflow requires exact bytes,
+registry signature, and `candidate` for that one existing artifact; every other artifact requires
+provenance from `publish-stable.yml` and the protected execution tag.
 
 ## Gate S4 — Immutable packet and tag
 
-- [ ] Freeze the four canonical tarballs twice in the pinned Linux workflow-equivalent container and
+- [x] Freeze the four canonical tarballs twice in the pinned Linux workflow-equivalent container and
   require byte-identical output.
-- [ ] Scan every shipped executable and JavaScript file using the retained incident IOC checks.
-- [ ] Record authoritative Linux source commit/tree, per-artifact SHA-1/SHA-256/SHA-512, sizes, and
+- [x] Scan every shipped executable and JavaScript file using the retained incident IOC checks.
+- [x] Record authoritative Linux source commit/tree, per-artifact SHA-1/SHA-256/SHA-512, sizes, and
   manifest SHA-256.
-- [ ] Reconfirm `0.2.0` is absent for all four package names immediately before tagging.
+- [x] Reconfirm `0.2.0` was absent for all four package names immediately before tagging.
 - [x] Restrict `npm-stable` to exact tag `harness-v0.2.0`.
-- [ ] Create and push protected annotated tag `harness-v0.2.0` only after every preceding item is
-  complete.
+- [x] Create and push protected annotated tag `harness-v0.2.0`.
+
+Authoritative Linux packet A and B are byte-identical. Source commit
+`489413f02f6dac5b7371faf54d23346837e954dd`, tree
+`7c64eb95dbc7c4e32f2f29e46bf7b769c741836f`, manifest SHA-256
+`a399e035c3c12ca8e8b79d53e11345a464ca4bc75fdce8e7d53e12369f099b17`. Protected annotated tag
+object `c8c4b2bffe3a052d95e88a3fe25ba029daaeaa7f` peels to that commit.
 
 ### Superseded local packet evidence
 
@@ -101,12 +107,24 @@ Stable publication must use the separately frozen Linux packet because the workf
 
 Magnitude of registry mutation: four new immutable versions and no legacy-package mutation.
 
-- [ ] Dispatch `publish-stable.yml` from `harness-v0.2.0` with the exact confirmation input.
+The first dispatch, run `34019988098` from `harness-v0.2.0`, stopped before its publish job. Its
+signature audit installed the existing file-provider package normally, which attempted to resolve
+the three intentionally unpublished exact `0.2.0` dependencies and ended with `ETARGET`. Registry
+bytes were not mismatched and no additional package was published. The immutable stable tag remains
+unchanged. Recovery uses protected annotated tag `harness-v0.2.0-resume.1`: the repaired verifier
+extracts the already byte-verified bootstrap tarball into an isolated audit tree, pins all four
+authoritative artifact identities, and still requires SLSA provenance for each OIDC publication.
+
+- [x] Dispatch `publish-stable.yml` from `harness-v0.2.0`; run `34019988098` stopped safely before
+  publication.
+- [ ] Review and merge the bounded resume repair, restrict `npm-stable` to
+  `harness-v0.2.0-resume.1`, create that protected annotated tag, and dispatch it.
 - [ ] Verify the existing file-provider bootstrap artifact, then publish the other three packages
-  dependency-first from the workflow-frozen packet to temporary `candidate`.
-- [ ] Verify each registry tarball byte-for-byte against that packet.
+  dependency-first from an exact reproduction of the authoritative packet to temporary `candidate`.
+- [ ] Verify each registry tarball byte-for-byte against the authoritative artifact identities.
 - [ ] Verify npm signatures for all four packages and SLSA provenance for the three OIDC-published
-  packages resolves to `publish-stable.yml`, `refs/tags/harness-v0.2.0`, and the exact source commit.
+  packages resolves to `publish-stable.yml`, `refs/tags/harness-v0.2.0-resume.1`, and the exact
+  resume commit.
 - [ ] Install `@wizloft/harness-project@0.2.0` in a credential-free repository and run inspect plus
   Validation.
 - [ ] Import every Harness and file-provider public subpath from the registry-installed graph.

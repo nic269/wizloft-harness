@@ -41,9 +41,9 @@ jobs:
           EXPECTED_VERSION: ${{ inputs.version }}
         run: |
           test "$EXPECTED_VERSION" = "$RELEASE_VERSION"
-          test "$GITHUB_REF" = "refs/tags/harness-v${EXPECTED_VERSION}"
+          test "$GITHUB_REF" = "refs/tags/harness-v${EXPECTED_VERSION}-resume.1"
           test "$(node -p "require('./package.json').version")" = "$EXPECTED_VERSION"
-          test "$(git cat-file -t "harness-v${EXPECTED_VERSION}")" = "tag"
+          test "$(git cat-file -t "harness-v${EXPECTED_VERSION}-resume.1")" = "tag"
 
       - name: Build pinned proof environment
         run: docker build --no-cache --tag wizloft-harness-release --file .github/release.Dockerfile .
@@ -115,7 +115,7 @@ jobs:
 
       - name: Assert exact publication runtime
         run: |
-          test "$GITHUB_REF" = "refs/tags/harness-v${RELEASE_VERSION}"
+          test "$GITHUB_REF" = "refs/tags/harness-v${RELEASE_VERSION}-resume.1"
           test "$(node --version)" = "v${NODE_VERSION}"
           test "$(npm --version)" = "${NPM_VERSION}"
 
@@ -149,7 +149,7 @@ jobs:
 
       - name: Assert exact registry-proof runtime
         run: |
-          test "$GITHUB_REF" = "refs/tags/harness-v${RELEASE_VERSION}"
+          test "$GITHUB_REF" = "refs/tags/harness-v${RELEASE_VERSION}-resume.1"
           test "$(node --version)" = "v${NODE_VERSION}"
           test "$(npm --version)" = "${NPM_VERSION}"
 
