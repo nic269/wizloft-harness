@@ -19,13 +19,13 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RECOVERY_VERSION: 0.1.2-alpha.2
+  RECOVERY_VERSION: 0.1.2-alpha.3
   NODE_VERSION: 24.20.0
   NPM_VERSION: 11.19.0
 
 jobs:
   verify-and-freeze:
-    if: inputs.confirmation == 'publish recovery release' && inputs.version == '0.1.2-alpha.2'
+    if: inputs.confirmation == 'publish recovery release' && inputs.version == '0.1.2-alpha.3'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     permissions:
