@@ -18,7 +18,7 @@ Snapshot date: **2026-09-06**
 | Boilerplate adoption | exact `0.1.2-alpha.3` merged as `66af9e6617a44e60f511c2bf6e692057ed0ec996`; validation Evidence and verified Memory write passed; exact-version re-init is zero-operation |
 | Phase 6 P2 | A4-10 through A4-13 independently accepted. CLI `c5e011383fd6b056d271517580b8cfd7d59bb7c3` is local/unpushed; Meldmark `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` is local with no remote |
 | OMP Stage D | A4-14 temp-only no-remote fixture passed; `.omp/` ignored/local-only; committed-profile discoverability open |
-| Active plans | CLI dogfood section 30 steps 1–14 complete; npm recovery publication, provenance proof, prerelease promotion, Boilerplate adoption, token hardening, and closure are complete; package-topology consolidation implementation is complete pending a separately authorized release |
+| Active plans | CLI dogfood section 30 steps 1–14 complete; npm recovery and package-topology implementation are complete; consolidated publication is awaiting its new-package bootstrap decision; legacy-package retirement is planned only after registry proof and consumer migration |
 
 ## Current operating objective
 
