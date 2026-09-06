@@ -1,6 +1,6 @@
 # npm Supply-Chain Recovery
 
-Status: Active; Owner selected `0.1.2-alpha.1`; publication remains gated.
+Status: Active; `0.1.2-alpha.1` is partially published and recovery resume is gated.
 
 ## Objective
 
@@ -22,11 +22,11 @@ Restore a trustworthy, token-minimized publication path after the malicious
 
 ## Gate R1 — Credential closure
 
-- [ ] Sign in to npm interactively with 2FA.
-- [ ] Revoke the broad `wizloft-release` granular token.
-- [ ] Confirm the token list is empty or contains only separately justified read-only credentials.
-- [ ] Confirm account 2FA and recovery methods from the npm account UI.
-- [ ] Keep publication frozen until Gate R2 is implemented and reviewed.
+- [x] Sign in to npm interactively with 2FA.
+- [x] Revoke the broad `wizloft-release` granular token.
+- [x] Confirm the token list is empty or contains only separately justified read-only credentials.
+- [x] Confirm account 2FA and recovery methods from the npm account UI.
+- [x] Keep publication frozen until Gate R2 is implemented and reviewed.
 
 The existing bypass-2FA token cannot perform its own account-governance deletion under npm's
 August 2026 policy. Do not create another bypass token as a workaround.
@@ -76,23 +76,23 @@ The later packet must record and prove:
 - exact-version registry consumer proof before any moving tag;
 - post-publish confirmation that no tag points to a deprecated malicious artifact.
 
-The selected packet uses annotated tag `harness-v0.1.2-alpha.1`, workflow `publish.yml`, and the
-tag-restricted `npm-recovery` GitHub environment. Dispatch is CLI-only because the GitHub UI exposes
-a branch selector:
+The selected packet uses immutable release tag `harness-v0.1.2-alpha.1`, workflow `publish.yml`, and
+the tag-restricted `npm-recovery` GitHub environment. The initial dispatch was CLI-only because the
+GitHub UI exposes a branch selector:
 
 ```sh
 gh workflow run publish.yml --ref harness-v0.1.2-alpha.1 \
   -f version=0.1.2-alpha.1 -f confirmation='publish recovery release'
 ```
 
-The workflow has a three-job credential boundary: credential-free isolated verification/freeze,
-minimal OIDC candidate publication, then credential-free exact-version registry consumer and
-all-dist-tag proof. The frozen artifact inspector rejects the five published malicious tarball
-SHA-1/SHA-512 indicators, the five malicious executable SHA-256 indicators, recorded loader strings,
-remote dynamic imports, dynamic execution sinks, and obfuscated long lines across every shipped
-JavaScript and declared bin before any packed import executes. It re-inspects the packet after
-packed execution; the proof container mounts reviewed source read-only, and later verification
-cannot access the packet.
+The initial workflow had a three-job credential boundary: credential-free isolated
+verification/freeze, minimal OIDC candidate publication, then credential-free exact-version
+registry consumer and all-dist-tag proof. The frozen artifact inspector rejects the five published
+malicious tarball SHA-1/SHA-512 indicators, the five malicious executable SHA-256 indicators,
+recorded loader strings, remote dynamic imports, dynamic execution sinks, and obfuscated long lines
+across every shipped JavaScript and declared bin before any packed import executes. It re-inspects
+the packet after packed execution; the proof container mounts reviewed source read-only, and later
+verification cannot access the packet.
 
 ### Frozen pre-publication checkpoint — 2026-09-06
 
@@ -111,12 +111,19 @@ protected release tag.
   SHA-256, loader-text, remote-import, execution-sink, and obfuscated-line indicators recovered
   from the preserved OSV and npm registry incident evidence. It rejects non-regular package
   members and scans every shipped `.js`, `.mjs`, `.cjs`, and declared bin, not only entrypoints.
-- Read-only registry preflight confirmed that none of the fourteen `0.1.2-alpha.1` identities
-  existed. No publication workflow was dispatched.
-- Publication remains unauthorized: interactive revocation of `wizloft-release`, confirmation of
-  the remaining token inventory, npm account 2FA and recovery-method inspection, and all fourteen
-  exact trusted-publisher registrations remain incomplete. Registry proof, moving-tag promotion,
-  and Boilerplate adoption therefore remain blocked.
+- The read-only registry preflight confirmed that none of the fourteen `0.1.2-alpha.1` identities
+  existed before run `34006358270`.
+- The Owner completed broad-token revocation, restored account 2FA with saved recovery codes, and
+  reported all fourteen trusted-publisher registrations configured before dispatch.
+- Run `34006358270` then published and byte-verified the first six dependency packages through OIDC.
+  `@wizloft/harness` rejected the same workflow identity with `ENEEDAUTH`; the final eight packages
+  were not attempted and registry-consumer proof did not run.
+- Live resume preflight subsequently proved the six existing registry tarballs and their
+  `candidate` tags against the frozen packet and classified the exact remaining eight as missing.
+- Do not rerun the immutable release-tag workflow: its fail-closed fresh-publication path correctly
+  rejects any existing version. Resume requires reviewed automation from a separate protected
+  annotated automation tag; it must rebuild the immutable release source, prove every existing
+  package's bytes and `candidate` tag before mutation, and publish only missing artifacts.
 
 | Package | Tarball | SHA-256 | SHA-512 |
 |---|---|---|---|
@@ -139,4 +146,7 @@ protected release tag.
 
 Stop without publishing if interactive account closure is incomplete, branch/tag protection is not
 active, a package lacks the exact trusted publisher, rebuilt content differs materially from the
-frozen artifact, or any registry state changes after preflight.
+frozen artifact, or registry state changes after preflight. The only partial-publication exception
+is the reviewed resume path: before every mutation it must prove each existing immutable package
+against the frozen SHA-1/SHA-256/SHA-512 and exact `candidate` tag, then publish only missing
+artifacts without moving `harness-v0.1.2-alpha.1`.

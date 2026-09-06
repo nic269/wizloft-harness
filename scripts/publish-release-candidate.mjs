@@ -66,21 +66,44 @@ async function fetchRegistryTarball(metadata, artifact) {
   assert.equal(sri('sha512', bytes), artifact.sha512, `${artifact.name} registry SHA-512 mismatch`);
 }
 
+async function inspectPublishedArtifact(artifact, metadata) {
+  assert.equal(metadata.dist.integrity, artifact.sha512, `${artifact.name} integrity mismatch`);
+  assert.equal(metadata.dist.shasum, artifact.sha1, `${artifact.name} registry SHA-1 mismatch`);
+  await fetchRegistryTarball(metadata, artifact);
+  const tags = await distTags(artifact.name);
+  assert.equal(
+    Object.values(tags).includes(DEPRECATED_MALICIOUS_VERSION),
+    false,
+    `${artifact.name} has a dist-tag on the deprecated malicious version`,
+  );
+  return tags.candidate === artifact.version;
+}
+
+async function classifyResumeArtifacts(release) {
+  const existing = [];
+  const missing = [];
+  for (const artifact of release.artifacts) {
+    const metadata = await registryMetadata(artifact.name, artifact.version);
+    if (metadata === null) {
+      missing.push(artifact);
+      continue;
+    }
+    assert.equal(
+      await inspectPublishedArtifact(artifact, metadata),
+      true,
+      `${artifact.name} candidate tag does not resolve to ${artifact.version}`,
+    );
+    existing.push(artifact);
+  }
+  return { existing, missing };
+}
+
 async function waitForPublishedArtifact(artifact) {
   const deadline = Date.now() + REGISTRY_WAIT_MS;
   while (Date.now() < deadline) {
     const metadata = await registryMetadata(artifact.name, artifact.version);
-    if (metadata !== null) {
-      assert.equal(metadata.dist.integrity, artifact.sha512, `${artifact.name} integrity mismatch`);
-      assert.equal(metadata.dist.shasum, artifact.sha1, `${artifact.name} registry SHA-1 mismatch`);
-      await fetchRegistryTarball(metadata, artifact);
-      const tags = await distTags(artifact.name);
-      assert.equal(
-        Object.values(tags).includes(DEPRECATED_MALICIOUS_VERSION),
-        false,
-        `${artifact.name} has a dist-tag on the deprecated malicious version`,
-      );
-      if (tags.candidate === artifact.version) return;
+    if (metadata !== null && (await inspectPublishedArtifact(artifact, metadata))) {
+      return;
     }
     await new Promise((resolve) => setTimeout(resolve, POLL_MS));
   }
@@ -121,10 +144,13 @@ function assertOidcBoundary() {
 assert.equal(
   process.argv.length,
   4,
-  'usage: node scripts/publish-release-candidate.mjs <preflight|publish|verify> <absolute-artifacts-directory>',
+  'usage: node scripts/publish-release-candidate.mjs <preflight|publish|resume-preflight|resume|verify> <absolute-artifacts-directory>',
 );
 const mode = process.argv[2];
-assert.ok(['preflight', 'publish', 'verify'].includes(mode), 'unsupported release mode');
+assert.ok(
+  ['preflight', 'publish', 'resume-preflight', 'resume', 'verify'].includes(mode),
+  'unsupported release mode',
+);
 const artifactsRoot = process.argv[3];
 assert.equal(path.isAbsolute(artifactsRoot), true, 'artifacts directory must be absolute');
 const release = await inspectReleaseArtifacts(artifactsRoot);
@@ -135,7 +161,8 @@ assert.equal(
   `this recovery workflow is restricted to ${RECOVERY_VERSION}`,
 );
 
-if (mode !== 'verify') {
+let resumeState;
+if (mode === 'preflight' || mode === 'publish') {
   for (const artifact of release.artifacts) {
     assert.equal(
       await registryMetadata(artifact.name, artifact.version),
@@ -143,12 +170,33 @@ if (mode !== 'verify') {
       `${artifact.name}@${artifact.version} already exists; stop instead of republishing`,
     );
   }
+} else if (mode === 'resume-preflight' || mode === 'resume') {
+  resumeState = await classifyResumeArtifacts(release);
+  assert.ok(
+    resumeState.existing.length > 0,
+    'resume requires at least one proven existing package',
+  );
+  assert.ok(resumeState.missing.length > 0, 'resume requires at least one missing package');
 }
 
 if (mode === 'preflight') {
   console.log(
     JSON.stringify(
       { ok: true, mode, releaseVersion: release.releaseVersion, packages: 14 },
+      null,
+      2,
+    ),
+  );
+} else if (mode === 'resume-preflight') {
+  console.log(
+    JSON.stringify(
+      {
+        ok: true,
+        mode,
+        releaseVersion: release.releaseVersion,
+        existing: resumeState.existing.map((artifact) => artifact.name),
+        missing: resumeState.missing.map((artifact) => artifact.name),
+      },
       null,
       2,
     ),
@@ -164,7 +212,14 @@ if (mode === 'preflight') {
   );
 } else {
   assertOidcBoundary();
+  const existingNames = new Set(resumeState?.existing.map((artifact) => artifact.name) ?? []);
   for (const artifact of release.artifacts) {
+    if (existingNames.has(artifact.name)) {
+      console.log(
+        `Skipped ${artifact.name}@${artifact.version} after verifying registry bytes and candidate tag`,
+      );
+      continue;
+    }
     await runNpm([
       'publish',
       path.join(artifactsRoot, artifact.filename),
