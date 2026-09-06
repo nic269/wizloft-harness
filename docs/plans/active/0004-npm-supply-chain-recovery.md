@@ -1,6 +1,6 @@
 # npm Supply-Chain Recovery
 
-Status: Active; `0.1.2-alpha.2` is authorized and source preparation is active.
+Status: Active; `0.1.2-alpha.3` is authorized and source preparation is active.
 
 ## Objective
 
@@ -57,7 +57,9 @@ npm provenance after the exact trusted publishers and token-free workflow are ac
 
 - [x] Owner selected `0.1.2-alpha.1` on 2026-09-06; exact-byte and source-provenance closure later
   failed.
-- [x] Owner selected coherent replacement version `0.1.2-alpha.2` on 2026-09-06.
+- [x] Owner selected coherent replacement version `0.1.2-alpha.2` on 2026-09-06, then retired it
+  before publication because its protected tag contained the non-convergent workflow.
+- [x] Owner selected `0.1.2-alpha.3` as the coherent replacement on 2026-09-06.
 - [x] The replacement sorts above malicious `0.1.1-alpha.3` and invalid `0.1.2-alpha.1`.
 - [x] Synchronize the complete lockstep graph at the replacement identity.
 
@@ -78,13 +80,13 @@ The later packet must record and prove:
 - exact-version registry consumer proof before any moving tag;
 - post-publish confirmation that no tag points to a deprecated malicious artifact.
 
-The replacement packet uses immutable release tag `harness-v0.1.2-alpha.2`, workflow `publish.yml`,
+The replacement packet uses immutable release tag `harness-v0.1.2-alpha.3`, workflow `publish.yml`,
 and the tag-restricted `npm-recovery` GitHub environment. Dispatch is CLI-only because the GitHub UI
 exposes a branch selector:
 
 ```sh
-gh workflow run publish.yml --ref harness-v0.1.2-alpha.2 \
-  -f version=0.1.2-alpha.2 -f confirmation='publish recovery release'
+gh workflow run publish.yml --ref harness-v0.1.2-alpha.3 \
+  -f version=0.1.2-alpha.3 -f confirmation='publish recovery release'
 ```
 
 The initial workflow had a three-job credential boundary: credential-free isolated
@@ -163,16 +165,15 @@ protected release tag.
   two consecutive canonical packs to be byte-identical. A new coherent version and packet remain
   required.
 
-### Replacement alpha.2 packet
+### Replacement alpha.3 packet
 
-- Alpha.2 must publish all fourteen packages from the single annotated
-  `harness-v0.1.2-alpha.2` tag. No automation/resume tag may contribute provenance.
+- Alpha.3 must publish all fourteen packages from the single annotated
+  `harness-v0.1.2-alpha.3` tag. No automation/resume tag may contribute provenance.
 - The workflow must freeze once, publish those exact files, and compare the registry to that
   original packet after publication.
 - The protected alpha.2 tag was created before review found that its baked workflow still used the
-  fail-closed fresh `publish` mode. It remains unpublished and must not be dispatched. Resolve it
-  either by an explicit protected-tag delete/recreate after merging convergence or by retiring
-  alpha.2 and selecting a later identity.
+  fail-closed fresh `publish` mode. It remains unpublished, must never be dispatched, and was retired
+  when the Owner selected alpha.3.
 - Convergent publication must classify all fourteen packages before each mutation, verify existing
   bytes and `candidate`, cryptographically verify registry signatures and SLSA bundles with pinned
   npm, assert the signed workflow ref/source commit against the same release tag, and publish only
