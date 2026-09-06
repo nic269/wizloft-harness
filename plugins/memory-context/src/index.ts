@@ -197,7 +197,7 @@ function createContributor(
 
 export const memoryContextPlugin: WizloftPlugin<MemoryContextConfig> = {
   name: MEMORY_CONTEXT_PLUGIN_NAME,
-  version: '0.1.2-alpha.1',
+  version: '0.1.2-alpha.2',
   requires: [requireCapability(MEMORY_CAPABILITY), requireCapability(CONTEXT_CAPABILITY)],
   setup(context) {
     const mappings = normalizeConfig(context.config);

@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Exact recovery version from the immutable harness-v* release tag
+        description: Exact recovery version from the annotated harness-v* tag
         required: true
         type: string
       confirmation:
-        description: Type "resume recovery release" to authorize remaining registry writes
+        description: Type "publish recovery release" to authorize registry mutation
         required: true
         type: string
 
@@ -19,50 +19,34 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RECOVERY_VERSION: 0.1.2-alpha.1
-  RELEASE_TAG: harness-v0.1.2-alpha.1
-  AUTOMATION_TAG: harness-v0.1.2-alpha.1-resume.2
+  RECOVERY_VERSION: 0.1.2-alpha.2
   NODE_VERSION: 24.20.0
   NPM_VERSION: 11.19.0
 
 jobs:
   verify-and-freeze:
-    if: inputs.confirmation == 'resume recovery release' && inputs.version == '0.1.2-alpha.1'
+    if: inputs.confirmation == 'publish recovery release' && inputs.version == '0.1.2-alpha.2'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     permissions:
       contents: read
     steps:
-      - name: Check out reviewed resume automation
+      - name: Check out the selected release tag
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
 
-      - name: Verify annotated automation identity
-        run: |
-          test "$GITHUB_REF" = "refs/tags/${AUTOMATION_TAG}"
-          test "$(git cat-file -t "${AUTOMATION_TAG}")" = "tag"
-
-      - name: Check out immutable release source
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          ref: ${{ env.RELEASE_TAG }}
-          path: release-source
-          persist-credentials: false
-
-      - name: Verify immutable release identity
+      - name: Verify annotated release identity
         env:
           EXPECTED_VERSION: ${{ inputs.version }}
         run: |
           test "$EXPECTED_VERSION" = "$RECOVERY_VERSION"
-          test "$(node -p "require('./release-source/package.json').version")" = "$EXPECTED_VERSION"
-          test "$(git -C release-source describe --exact-match --tags HEAD)" = "$RELEASE_TAG"
-          test "$(git -C release-source cat-file -t "$RELEASE_TAG")" = "tag"
-          test "$(git -C release-source rev-parse HEAD)" = "f2f19dbe26ce7975059d692012beea829ac5ec64"
-          test "$(git -C release-source rev-parse 'HEAD^{tree}')" = "570639882e2e1ca66b44518321ffb03f26e82af1"
+          test "$GITHUB_REF" = "refs/tags/harness-v${EXPECTED_VERSION}"
+          test "$(node -p "require('./package.json').version")" = "$EXPECTED_VERSION"
+          test "$(git cat-file -t "harness-v${EXPECTED_VERSION}")" = "tag"
 
       - name: Build pinned proof environment
-        run: docker build --no-cache --tag wizloft-harness-release --file release-source/.github/release.Dockerfile release-source
+        run: docker build --no-cache --tag wizloft-harness-release --file .github/release.Dockerfile .
 
       - name: Install dependencies without lifecycle scripts
         run: |
@@ -70,7 +54,7 @@ jobs:
             --user "$(id -u):$(id -g)" \
             --env HOME=/tmp \
             --env CI=true \
-            --volume "$PWD/release-source:/workspace" \
+            --volume "$PWD:/workspace" \
             wizloft-harness-release \
             pnpm --config.store-dir=/tmp/pnpm-store install --frozen-lockfile --ignore-scripts
 
@@ -80,7 +64,7 @@ jobs:
             --env HOME=/tmp \
             --env CI=true \
             --user "$(id -u):$(id -g)" \
-            --volume "$PWD/release-source:/workspace" \
+            --volume "$PWD:/workspace" \
             wizloft-harness-release \
             pnpm --config.store-dir=/tmp/pnpm-store verify
 
@@ -91,28 +75,15 @@ jobs:
             --env HOME=/tmp \
             --env CI=true \
             --tmpfs /tmp:rw,noexec,nosuid,size=1g \
-            --volume "$PWD/release-source:/workspace:ro" \
+            --volume "$PWD:/workspace:ro" \
             --volume "$RUNNER_TEMP:/runner-temp" \
             wizloft-harness-release \
             node scripts/prove-packed-consumer.mjs --artifacts-dir /runner-temp/release-artifacts
 
-      - name: Install exact registry preflight runtime
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          package-manager-cache: false
-
-      - name: Prove existing bytes and enumerate missing packages
-        working-directory: release-source
-        run: |
-          test "$(node --version)" = "v${NODE_VERSION}"
-          test "$(npm --version)" = "${NPM_VERSION}"
-          node ../scripts/publish-release-candidate.mjs resume-preflight "$RUNNER_TEMP/release-artifacts"
-
       - name: Retain the exact frozen release packet
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
-          name: harness-${{ inputs.version }}-frozen-release-resume
+          name: harness-${{ inputs.version }}-frozen-release
           path: ${{ runner.temp }}/release-artifacts
           if-no-files-found: error
           retention-days: 90
@@ -128,16 +99,9 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - name: Check out reviewed resume automation
+      - name: Check out the selected release tag
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
-          persist-credentials: false
-
-      - name: Check out immutable release source
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          ref: ${{ env.RELEASE_TAG }}
-          path: release-source
           persist-credentials: false
 
       - name: Install exact OIDC-capable npm runtime
@@ -148,19 +112,18 @@ jobs:
 
       - name: Assert exact publication runtime
         run: |
-          test "$GITHUB_REF" = "refs/tags/${AUTOMATION_TAG}"
+          test "$GITHUB_REF" = "refs/tags/harness-v${RECOVERY_VERSION}"
           test "$(node --version)" = "v${NODE_VERSION}"
           test "$(npm --version)" = "${NPM_VERSION}"
 
       - name: Download the frozen release packet
         uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
-          name: harness-${{ inputs.version }}-frozen-release-resume
+          name: harness-${{ inputs.version }}-frozen-release
           path: ${{ runner.temp }}/release-artifacts
 
-      - name: Re-verify existing packages and publish only missing artifacts
-        working-directory: release-source
-        run: node ../scripts/publish-release-candidate.mjs resume "$RUNNER_TEMP/release-artifacts"
+      - name: Re-hash and publish only the frozen candidate graph
+        run: node scripts/publish-release-candidate.mjs publish "$RUNNER_TEMP/release-artifacts"
 
   prove-registry-consumer:
     needs: publish-candidate
@@ -170,16 +133,9 @@ jobs:
       actions: read
       contents: read
     steps:
-      - name: Check out reviewed resume automation
+      - name: Check out the selected release tag
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
-          persist-credentials: false
-
-      - name: Check out immutable release source
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          ref: ${{ env.RELEASE_TAG }}
-          path: release-source
           persist-credentials: false
 
       - name: Install exact Node runtime
@@ -190,14 +146,14 @@ jobs:
 
       - name: Assert exact registry-proof runtime
         run: |
-          test "$GITHUB_REF" = "refs/tags/${AUTOMATION_TAG}"
+          test "$GITHUB_REF" = "refs/tags/harness-v${RECOVERY_VERSION}"
           test "$(node --version)" = "v${NODE_VERSION}"
           test "$(npm --version)" = "${NPM_VERSION}"
 
       - name: Download the frozen release packet
         uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
-          name: harness-${{ inputs.version }}-frozen-release-resume
+          name: harness-${{ inputs.version }}-frozen-release
           path: ${{ runner.temp }}/release-artifacts
 
       - name: Prove exact-version registry consumer
@@ -216,5 +172,4 @@ jobs:
             '{"correlationId":"registry-proof","changedPaths":[".wizloft/PROJECT.md"]}'
 
       - name: Re-fetch registry bytes and audit every dist-tag
-        working-directory: release-source
-        run: node ../scripts/publish-release-candidate.mjs verify "$RUNNER_TEMP/release-artifacts"
+        run: node scripts/publish-release-candidate.mjs verify "$RUNNER_TEMP/release-artifacts"

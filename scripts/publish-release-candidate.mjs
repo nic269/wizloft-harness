@@ -7,7 +7,7 @@ import { promisify } from 'node:util';
 import { inspectReleaseArtifacts } from './inspect-release-artifacts.mjs';
 
 const execFile = promisify(execFileCallback);
-const RECOVERY_VERSION = '0.1.2-alpha.1';
+const RECOVERY_VERSION = '0.1.2-alpha.2';
 const DEPRECATED_MALICIOUS_VERSION = '0.1.1-alpha.3';
 const REGISTRY = 'https://registry.npmjs.org';
 const REGISTRY_WAIT_MS = 5 * 60 * 1000;
