@@ -1,20 +1,20 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { authorityPlugin } from '@wizloft/harness-authority';
-import { contextPlugin } from '@wizloft/harness-context';
-import { evidencePlugin } from '@wizloft/harness-evidence';
+import { authorityPlugin } from '@wizloft/harness/authority';
+import { contextPlugin } from '@wizloft/harness/context';
+import { evidencePlugin } from '@wizloft/harness/evidence';
+import { VALIDATION_CAPABILITY, validationPlugin } from '@wizloft/harness/validation';
+import { fileEventsPlugin } from '@wizloft/harness-file-providers/events';
+import { fileMemoryPlugin } from '@wizloft/harness-file-providers/memory';
+import { memoryContextPlugin } from '@wizloft/harness-file-providers/memory-context';
+import { repositoryFilesPlugin } from '@wizloft/harness-file-providers/repository';
 import {
   type Disposer,
   defineProfile,
   requireCapability,
   type WizloftPlugin,
 } from '@wizloft/harness-kernel';
-import { fileEventsPlugin } from '@wizloft/harness-plugin-file-events';
-import { fileMemoryPlugin } from '@wizloft/harness-plugin-file-memory';
-import { memoryContextPlugin } from '@wizloft/harness-plugin-memory-context';
-import { repositoryFilesPlugin } from '@wizloft/harness-plugin-repository-files';
-import { VALIDATION_CAPABILITY, validationPlugin } from '@wizloft/harness-validation';
 
 export const SELF_HOST_CONTEXT_SUBJECT = 'self-host:maintenance';
 export const SELF_HOST_MEMORY_SCOPE = 'project:wizloft-harness';

@@ -163,8 +163,8 @@ Harness tooling dependencies live in the isolated `.wizloft/harness/package.json
 materialization, not part of the tracked initialized contract.
 
 The isolated manifest depends directly on exact `@wizloft/harness-project` only. That package owns
-its own coherent public runtime dependency closure. `@wizloft/harness-memory` remains transitive
-unless a later accepted decision makes it a direct import.
+its coherent public runtime dependency closure; ADR 0014 consolidates that closure to
+`@wizloft/harness`, `@wizloft/harness-file-providers`, and `@wizloft/harness-kernel`.
 
 ### Project identity
 

@@ -266,8 +266,8 @@ async function finalizeReleaseArtifacts(
       sha512: artifact.integrity,
     };
   });
-  assert.equal(artifacts.length, 14);
-  assert.equal(new Set(artifacts.map(({ filename }) => filename)).size, 14);
+  assert.equal(artifacts.length, PUBLIC_PACKAGES.length);
+  assert.equal(new Set(artifacts.map(({ filename }) => filename)).size, PUBLIC_PACKAGES.length);
   const manifest = {
     schemaVersion: 1,
     releaseVersion,
@@ -570,19 +570,19 @@ import assert from 'node:assert/strict';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { authorityPlugin } from '@wizloft/harness-authority';
 import { createHarness, defineProfile } from '@wizloft/harness';
-import { createHarnessCliAdapter } from '@wizloft/harness-cli-adapter';
-import { createCommandExecutor } from '@wizloft/harness-commands';
-import { contextPlugin } from '@wizloft/harness-context';
-import { evidencePlugin } from '@wizloft/harness-evidence';
+import { authorityPlugin } from '@wizloft/harness/authority';
+import { createHarnessCliAdapter } from '@wizloft/harness/cli';
+import { createCommandExecutor } from '@wizloft/harness/commands';
+import { contextPlugin } from '@wizloft/harness/context';
+import { evidencePlugin } from '@wizloft/harness/evidence';
+import { MEMORY_CAPABILITY_ID } from '@wizloft/harness/memory';
+import { VALIDATION_CAPABILITY, validationPlugin } from '@wizloft/harness/validation';
+import { fileEventsPlugin, readFileEvents } from '@wizloft/harness-file-providers/events';
+import { fileMemoryPlugin } from '@wizloft/harness-file-providers/memory';
+import { memoryContextPlugin } from '@wizloft/harness-file-providers/memory-context';
+import { repositoryFilesPlugin } from '@wizloft/harness-file-providers/repository';
 import { requireCapability } from '@wizloft/harness-kernel';
-import { MEMORY_CAPABILITY_ID } from '@wizloft/harness-memory';
-import { fileEventsPlugin, readFileEvents } from '@wizloft/harness-plugin-file-events';
-import { fileMemoryPlugin } from '@wizloft/harness-plugin-file-memory';
-import { memoryContextPlugin } from '@wizloft/harness-plugin-memory-context';
-import { repositoryFilesPlugin } from '@wizloft/harness-plugin-repository-files';
-import { VALIDATION_CAPABILITY, validationPlugin } from '@wizloft/harness-validation';
 
 const releaseVersion = process.env.WIZLOFT_RELEASE_VERSION;
 assert.equal(typeof releaseVersion, 'string');
@@ -903,8 +903,8 @@ try {
   const releaseInspection = await inspectReleaseContract(repositoryRoot);
   assert.deepEqual(releaseInspection.errors, []);
   const releaseVersion = releaseInspection.releaseVersion;
-  assert.equal(PUBLIC_PACKAGES.length, 14);
-  assert.equal(new Set(PUBLIC_PACKAGES.map(({ name }) => name)).size, 14);
+  assert.equal(PUBLIC_PACKAGES.length, 4);
+  assert.equal(new Set(PUBLIC_PACKAGES.map(({ name }) => name)).size, 4);
   assert.equal(
     PUBLIC_PACKAGES.some((entry) => entry.name === PROJECT_NAME),
     true,
@@ -993,24 +993,16 @@ try {
     );
     assert.equal((await readFile(path.join(packageRoot, 'LICENSE'))).equals(rootLicense), true);
     await lstat(path.join(packageRoot, 'package.json'));
-    await lstat(path.join(packageRoot, manifest.exports['.'].import));
-    await lstat(path.join(packageRoot, manifest.exports['.'].types));
+    for (const exportTarget of Object.values(manifest.exports)) {
+      await lstat(path.join(packageRoot, exportTarget.import));
+      await lstat(path.join(packageRoot, exportTarget.types));
+    }
     if (entry.name === PROJECT_NAME) {
       assert.deepEqual(Object.keys(manifest.dependencies ?? {}).sort(), [
         '@wizloft/harness',
-        '@wizloft/harness-authority',
-        '@wizloft/harness-cli-adapter',
-        '@wizloft/harness-commands',
-        '@wizloft/harness-context',
-        '@wizloft/harness-evidence',
+        '@wizloft/harness-file-providers',
         '@wizloft/harness-kernel',
-        '@wizloft/harness-plugin-file-events',
-        '@wizloft/harness-plugin-file-memory',
-        '@wizloft/harness-plugin-memory-context',
-        '@wizloft/harness-plugin-repository-files',
-        '@wizloft/harness-validation',
       ]);
-      assert.equal(manifest.dependencies['@wizloft/harness-memory'], undefined);
       assert.equal(manifest.optionalDependencies, undefined);
       assert.equal(manifest.peerDependencies, undefined);
       await lstat(path.join(packageRoot, manifest.bin['wizloft-harness-project']));
@@ -1038,7 +1030,7 @@ try {
       shasum: createHash('sha1').update(bytes).digest('hex'),
     });
   }
-  assert.equal(packedArtifacts.size, 14);
+  assert.equal(packedArtifacts.size, PUBLIC_PACKAGES.length);
   const [{ stdout: npmVersion }, { stdout: pnpmVersion }] = await Promise.all([
     run('npm', ['--version']),
     run('pnpm', ['--version']),

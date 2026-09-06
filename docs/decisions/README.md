@@ -18,3 +18,4 @@ execution details belong in active plans and milestone documents.
 - [0011 Wizloft CLI Rewrite Strategy](0011-wizloft-cli-rewrite-strategy.md)
 - [0012 Public Package Release Contract](0012-public-package-release-contract.md)
 - [0013 Project Onboarding And Discovery](0013-project-onboarding-and-discovery.md)
+- [0014 Consolidated Public Package Topology](0014-consolidated-public-package-topology.md)

@@ -4,7 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { HARNESS_CLI_HELP } from '@wizloft/harness-cli-adapter';
+import { HARNESS_CLI_HELP } from '@wizloft/harness/cli';
 import { HarnessProjectError } from '../dist/errors.js';
 import { PROJECT_HEALTH_VALIDATOR_ID } from '../dist/health.js';
 import { runProjectHarness } from '../dist/run.js';

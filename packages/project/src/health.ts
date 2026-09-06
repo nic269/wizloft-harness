@@ -1,8 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-
+import { VALIDATION_CAPABILITY } from '@wizloft/harness/validation';
 import { type Disposer, requireCapability, type WizloftPlugin } from '@wizloft/harness-kernel';
-import { VALIDATION_CAPABILITY } from '@wizloft/harness-validation';
 
 import { inspectLocalProjectRuntime } from './identity.js';
 import { parseProjectMarker } from './marker.js';

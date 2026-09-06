@@ -32,25 +32,47 @@ Start with [`START-HERE.md`](START-HERE.md), then [`AGENTS.md`](AGENTS.md).
 
 ## Current status
 
-Slices 0–6, MUH, Self-host, External Package Release Readiness, the local alpha.3
-implementation, and the selected alpha.4 coherent recovery are complete as recorded here.
+Slices 0–6, MUH, Self-host, External Package Release Readiness, alpha.3 recovery, and the alpha.4
+coherent publication are retained as completed history.
 
-Alpha.3 remains immutable partial history: only `@wizloft/harness-project@0.1.0-alpha.3` was
-published for that version, and `latest` still points at thirteen packages on `0.1.0-alpha.2` plus
-that project artifact. Do not repair, move, delete, unpublish, or retag alpha.3.
+The repository now implements the unpublished `0.2.0-alpha.1` four-package release candidate:
+`@wizloft/harness-kernel`, `@wizloft/harness`, `@wizloft/harness-file-providers`, and
+`@wizloft/harness-project`. Capability, command, CLI-adapter, and first-party provider APIs remain
+separate modules exposed through explicit subpaths; runtime plugin and capability ids are unchanged.
 
-The current public prerelease graph is fourteen packages at lockstep `0.1.0-alpha.4` on both
-`candidate` and `next`. Source commit `R` is `f662a454216d90c61c443c55a83165618d5e9843` (tree
-`68d5bb37d506b49301e2d3c433979b0c7fa64f2f`). The frozen artifact-manifest SHA-256 is
-`553c0e4ee510b3087360b0e2e7910aa07adf6c8140b4fbff798049e703a482bd`. Annotated tag
-`harness-v0.1.0-alpha.4` object `7c70e518458eb4923d42353dcba7d2069adb7b04` is remote-pushed and
-peels to `R`. Ordered downstream proofs A4-10 through A4-14 are independently accepted. Wizloft CLI
-and Meldmark have local durable commits that are not pushed; OMP Stage D passed as a temp-only
-no-remote fixture with `.omp/` ignored. Committed-profile discoverability, external pushes, formal
-docs commit/push, and broader readiness remain separate.
+Published alpha versions and their dist-tags remain immutable historical state. This source change
+authorizes no publish, tag, push, registry mutation, external-repository push, deprecation, or OMP
+profile commit.
 
-This status record authorizes no publish, tag, push, registry mutation, external-repository push,
-or OMP profile commit.
+## Package topology and migration
+
+New consumers install only the packages required by their boundary:
+
+- plugin authors can depend on lightweight `@wizloft/harness-kernel`;
+- facade and command consumers use `@wizloft/harness` plus its explicit subpaths;
+- first-party file integrations use explicit `@wizloft/harness-file-providers/*` subpaths;
+- repository onboarding installs exact `@wizloft/harness-project`, which owns the three-package
+  internal closure.
+
+The clean-cutover import map is:
+
+| Former package | `0.2.0-alpha.1` import |
+|---|---|
+| `@wizloft/harness-authority` | `@wizloft/harness/authority` |
+| `@wizloft/harness-context` | `@wizloft/harness/context` |
+| `@wizloft/harness-evidence` | `@wizloft/harness/evidence` |
+| `@wizloft/harness-memory` | `@wizloft/harness/memory` |
+| `@wizloft/harness-validation` | `@wizloft/harness/validation` |
+| `@wizloft/harness-commands` | `@wizloft/harness/commands` |
+| `@wizloft/harness-cli-adapter` | `@wizloft/harness/cli` |
+| `@wizloft/harness-plugin-file-events` | `@wizloft/harness-file-providers/events` |
+| `@wizloft/harness-plugin-file-memory` | `@wizloft/harness-file-providers/memory` |
+| `@wizloft/harness-plugin-memory-context` | `@wizloft/harness-file-providers/memory-context` |
+| `@wizloft/harness-plugin-repository-files` | `@wizloft/harness-file-providers/repository` |
+
+There are no legacy aliases or compatibility packages. Deprecating former npm package names is a
+separate registry operation allowed only after the consolidated release is published and
+consumer-proven.
 
 ## Development
 

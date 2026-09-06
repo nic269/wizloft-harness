@@ -2,7 +2,7 @@ import { lstat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { normalizeRepositorySourcePath } from '@wizloft/harness-plugin-repository-files';
+import { normalizeRepositorySourcePath } from '@wizloft/harness-file-providers/repository';
 
 import { fail, isFilesystemErrno } from './errors.js';
 import {

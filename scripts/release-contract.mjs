@@ -13,130 +13,66 @@ export const PUBLIC_PACKAGES = Object.freeze([
     name: '@wizloft/harness-kernel',
     dependencies: [],
     devDependencies: [],
-  },
-  {
-    directory: 'packages/authority',
-    name: '@wizloft/harness-authority',
-    dependencies: ['@wizloft/harness-kernel'],
-    devDependencies: [],
-    pluginSource: 'packages/authority/src/index.ts',
-  },
-  {
-    directory: 'packages/context',
-    name: '@wizloft/harness-context',
-    dependencies: ['@wizloft/harness-kernel'],
-    devDependencies: [],
-    pluginSource: 'packages/context/src/index.ts',
-  },
-  {
-    directory: 'packages/evidence',
-    name: '@wizloft/harness-evidence',
-    dependencies: ['@wizloft/harness-kernel'],
-    devDependencies: [],
-    pluginSource: 'packages/evidence/src/index.ts',
-  },
-  {
-    directory: 'packages/memory',
-    name: '@wizloft/harness-memory',
-    dependencies: ['@wizloft/harness-kernel'],
-    devDependencies: [],
-  },
-  {
-    directory: 'packages/validation',
-    name: '@wizloft/harness-validation',
-    dependencies: ['@wizloft/harness-evidence', '@wizloft/harness-kernel'],
-    devDependencies: [],
-    pluginSource: 'packages/validation/src/index.ts',
+    exports: { '.': 'index' },
+    pluginSources: [],
   },
   {
     directory: 'packages/harness',
     name: '@wizloft/harness',
-    dependencies: [
-      '@wizloft/harness-authority',
-      '@wizloft/harness-context',
-      '@wizloft/harness-evidence',
-      '@wizloft/harness-kernel',
-      '@wizloft/harness-memory',
-      '@wizloft/harness-validation',
-    ],
-    devDependencies: [],
-  },
-  {
-    directory: 'packages/commands',
-    name: '@wizloft/harness-commands',
-    dependencies: ['@wizloft/harness'],
-    devDependencies: [],
-  },
-  {
-    directory: 'packages/cli-adapter',
-    name: '@wizloft/harness-cli-adapter',
-    dependencies: ['@wizloft/harness-commands'],
-    devDependencies: [],
-  },
-  {
-    directory: 'plugins/file-events',
-    name: '@wizloft/harness-plugin-file-events',
     dependencies: ['@wizloft/harness-kernel'],
     devDependencies: [],
-    pluginSource: 'plugins/file-events/src/index.ts',
+    exports: {
+      '.': 'index',
+      './authority': 'authority',
+      './cli': 'cli',
+      './commands': 'commands',
+      './context': 'context',
+      './evidence': 'evidence',
+      './memory': 'memory',
+      './validation': 'validation',
+    },
+    pluginSources: [
+      'packages/harness/src/authority.ts',
+      'packages/harness/src/context.ts',
+      'packages/harness/src/evidence.ts',
+      'packages/harness/src/validation.ts',
+    ],
   },
   {
-    directory: 'plugins/file-memory',
-    name: '@wizloft/harness-plugin-file-memory',
-    dependencies: ['@wizloft/harness-kernel', '@wizloft/harness-memory'],
+    directory: 'packages/file-providers',
+    name: '@wizloft/harness-file-providers',
+    dependencies: ['@wizloft/harness', '@wizloft/harness-kernel'],
     devDependencies: [],
-    pluginSource: 'plugins/file-memory/src/index.ts',
-  },
-  {
-    directory: 'plugins/memory-context',
-    name: '@wizloft/harness-plugin-memory-context',
-    dependencies: [
-      '@wizloft/harness-context',
-      '@wizloft/harness-kernel',
-      '@wizloft/harness-memory',
+    exports: {
+      './events': 'events',
+      './memory': 'memory',
+      './memory-context': 'memory-context',
+      './repository': 'repository',
+    },
+    pluginSources: [
+      'packages/file-providers/src/events.ts',
+      'packages/file-providers/src/memory.ts',
+      'packages/file-providers/src/memory-context.ts',
+      'packages/file-providers/src/repository.ts',
     ],
-    devDependencies: [
-      '@wizloft/harness-authority',
-      '@wizloft/harness-plugin-file-memory',
-      '@wizloft/harness-plugin-repository-files',
-    ],
-    pluginSource: 'plugins/memory-context/src/index.ts',
-  },
-  {
-    directory: 'plugins/repository-files',
-    name: '@wizloft/harness-plugin-repository-files',
-    dependencies: [
-      '@wizloft/harness-authority',
-      '@wizloft/harness-context',
-      '@wizloft/harness-kernel',
-    ],
-    devDependencies: [],
-    pluginSource: 'plugins/repository-files/src/index.ts',
   },
   {
     directory: 'packages/project',
     name: '@wizloft/harness-project',
     dependencies: [
       '@wizloft/harness',
-      '@wizloft/harness-authority',
-      '@wizloft/harness-cli-adapter',
-      '@wizloft/harness-commands',
-      '@wizloft/harness-context',
-      '@wizloft/harness-evidence',
+      '@wizloft/harness-file-providers',
       '@wizloft/harness-kernel',
-      '@wizloft/harness-plugin-file-events',
-      '@wizloft/harness-plugin-file-memory',
-      '@wizloft/harness-plugin-memory-context',
-      '@wizloft/harness-plugin-repository-files',
-      '@wizloft/harness-validation',
     ],
     devDependencies: [],
+    exports: { '.': 'index' },
+    pluginSources: [],
   },
 ]);
 
 export const PUBLIC_PACKAGE_NAMES = new Set(PUBLIC_PACKAGES.map(({ name }) => name));
 
-const WORKSPACE_ROOTS = Object.freeze(['packages', 'plugins', 'profiles']);
+const WORKSPACE_ROOTS = Object.freeze(['packages', 'profiles']);
 const MODELED_DEPENDENCY_SECTIONS = Object.freeze(['dependencies', 'devDependencies']);
 const UNAPPROVED_DEPENDENCY_SECTIONS = Object.freeze(['optionalDependencies', 'peerDependencies']);
 const PACKED_DEPENDENCY_SECTIONS = Object.freeze([
@@ -206,14 +142,25 @@ function validatePublicManifest(errors, manifest, entry, releaseVersion) {
   if (!sameStrings(manifest.files, RELEASE_FILES)) {
     errors.push(`${prefix} files must be dist, README.md, and LICENSE`);
   }
-  if (manifest.types !== './dist/index.d.ts') {
-    errors.push(`${prefix} types must be ./dist/index.d.ts`);
+  const expectedExportKeys = Object.keys(entry.exports).sort();
+  const actualExportKeys = Object.keys(manifest.exports ?? {}).sort();
+  if (!sameStrings(actualExportKeys, expectedExportKeys)) {
+    errors.push(`${prefix} exports must match the approved public subpaths`);
   }
+  for (const [subpath, basename] of Object.entries(entry.exports)) {
+    if (
+      manifest.exports?.[subpath]?.types !== `./dist/${basename}.d.ts` ||
+      manifest.exports?.[subpath]?.import !== `./dist/${basename}.js`
+    ) {
+      errors.push(`${prefix} export ${subpath} must expose ${basename} JS and declarations`);
+    }
+  }
+  const rootExport = entry.exports['.'];
   if (
-    manifest.exports?.['.']?.types !== './dist/index.d.ts' ||
-    manifest.exports?.['.']?.import !== './dist/index.js'
+    (rootExport === undefined && manifest.types !== undefined) ||
+    (rootExport !== undefined && manifest.types !== `./dist/${rootExport}.d.ts`)
   ) {
-    errors.push(`${prefix} exports must expose the public JS and declaration entrypoints`);
+    errors.push(`${prefix} top-level types must match its root export`);
   }
   if (
     manifest.repository?.type !== 'git' ||
@@ -296,14 +243,16 @@ export async function inspectReleaseContract(repositoryRoot) {
       errors.push(`${entry.name} LICENSE is missing`);
     }
 
-    if (entry.pluginSource !== undefined) {
+    for (const pluginSource of entry.pluginSources) {
       try {
-        const source = await readFile(path.join(repositoryRoot, entry.pluginSource), 'utf8');
+        const source = await readFile(path.join(repositoryRoot, pluginSource), 'utf8');
         if (sourcePluginVersion(source) !== releaseVersion) {
-          errors.push(`${entry.name} runtime plugin version must equal ${releaseVersion}`);
+          errors.push(
+            `${entry.name} runtime plugin version in ${pluginSource} must equal ${releaseVersion}`,
+          );
         }
       } catch {
-        errors.push(`${entry.name} runtime plugin source is missing or invalid`);
+        errors.push(`${entry.name} runtime plugin source ${pluginSource} is missing or invalid`);
       }
     }
   }

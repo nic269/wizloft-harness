@@ -11,19 +11,19 @@ Repository = what we have decided is true
 Memory is first-class, persistent, queryable, and useful across sessions/projects, but it never
 becomes hidden product authority.
 
-## Slice 5 package boundary
+## Consolidated package boundary
 
-`@wizloft/harness-memory` owns the exact-major `memory@1` capability token, public record/query/
+`@wizloft/harness/memory` owns the exact-major `memory@1` capability token, public record/query/
 service/store contracts, and the generic runtime-scoped Memory service implementation.
 
-`@wizloft/harness-plugin-file-memory` owns the JSONL store, runtime plugin id
+`@wizloft/harness-file-providers/memory` owns the JSONL store, runtime plugin id
 `@wizloft/file-memory`, and the first-party plugin that provides `memory@1` without requiring
 Context.
 
-`@wizloft/harness-plugin-memory-context` owns runtime plugin id `@wizloft/memory-context` and the
-optional exact-subject Memory-to-Context mappings. It requires `memory@1` and `context@1` but has no
-file/JSONL responsibility. There is one MemoryStore seam in v0 and no competing default in-memory
-plugin.
+`@wizloft/harness-file-providers/memory-context` owns runtime plugin id
+`@wizloft/memory-context` and the optional exact-subject Memory-to-Context mappings. It requires
+`memory@1` and `context@1` but has no file/JSONL responsibility. There is one MemoryStore seam in v0
+and no competing default in-memory plugin.
 
 ## Kinds, scopes, and provenance
 

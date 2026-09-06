@@ -11,26 +11,31 @@ Snapshot date: **2026-09-06**
 | Frozen artifact manifest | SHA-256 `f19e07e15cf4c0e6ed3dffd7576476aad9d02806b6a55688ededa1fd89b53f53` |
 | Git tag | annotated `harness-v0.1.2-alpha.3` object `b9da397199b93d088e7c29c7a56151fb8a974fa0`, peeled to the source commit and remote-pushed |
 | Public prerelease graph | fourteen packages at lockstep `0.1.2-alpha.3` on `candidate` and `next`; exact registry bytes, npm signatures, and SLSA provenance independently verified |
+| Unpublished development candidate | four-package `0.2.0-alpha.1` source graph implemented and proved by `pnpm release:verify`; no packet has been published, tagged, pushed, or used for npm deprecation |
 | `latest` | intentionally unchanged: thirteen packages remain `0.1.0-alpha.2`; `@wizloft/harness-project@0.1.0-alpha.3` |
 | Failed release identities | alpha.1 is immutable failed exact-byte history; protected alpha.2 remains unpublished and must never be dispatched |
 | 2026-09-02 npm incident recovery | five malicious `0.1.1-alpha.3` artifacts remain deprecated; zero tags resolve to them; broad token revoked; all fourteen trusted publishers active; all fourteen package access policies disallow bypass-2FA tokens |
 | Boilerplate adoption | exact `0.1.2-alpha.3` merged as `66af9e6617a44e60f511c2bf6e692057ed0ec996`; validation Evidence and verified Memory write passed; exact-version re-init is zero-operation |
 | Phase 6 P2 | A4-10 through A4-13 independently accepted. CLI `c5e011383fd6b056d271517580b8cfd7d59bb7c3` is local/unpushed; Meldmark `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` is local with no remote |
 | OMP Stage D | A4-14 temp-only no-remote fixture passed; `.omp/` ignored/local-only; committed-profile discoverability open |
-| Active plans | CLI dogfood section 30 steps 1–14 complete; npm recovery publication, provenance proof, prerelease promotion, Boilerplate adoption, token hardening, and closure are complete |
+| Active plans | CLI dogfood section 30 steps 1–14 complete; npm recovery and package-topology implementation are complete; consolidated publication is awaiting its new-package bootstrap decision; legacy-package retirement is planned only after registry proof and consumer migration |
 
 ## Current operating objective
 
-The coherent `0.1.2-alpha.3` graph is the supported public prerelease on `candidate` and `next`.
-Treat its frozen manifest, annotated tag, successful publication run, independent registry proof, and
-Boilerplate adoption as the accepted recovery baseline. `latest` remains deliberately unchanged.
+The coherent `0.1.2-alpha.3` graph remains the supported public prerelease on `candidate` and
+`next`. The repository now also contains an unpublished four-package `0.2.0-alpha.1` development
+candidate. Treat the alpha.3 frozen manifest, annotated tag, successful publication run, independent
+registry proof, and Boilerplate adoption as the accepted published recovery baseline. `latest`
+remains deliberately unchanged.
 
 The npm supply-chain recovery is closed. Do not republish, retag, unpublish, regenerate the frozen
 packet, move `latest`, or use the retired alpha.2 tag without a new exact release packet and
 separate explicit owner authorization.
 
-Authority remains `docs/decisions/0012-public-package-release-contract.md`, the recovery record in
-`docs/plans/active/0004-npm-supply-chain-recovery.md`, and the broader contract record in
+Authority remains `docs/decisions/0012-public-package-release-contract.md`,
+`docs/decisions/0014-consolidated-public-package-topology.md`, the recovery record in
+`docs/plans/active/0004-npm-supply-chain-recovery.md`, the consolidation record in
+`docs/plans/active/0005-package-topology-consolidation.md`, and the broader contract record in
 `docs/plans/active/0003-cli-dogfood-hardening-cycle-1.md`.
 
 ## Historical correction checkpoint

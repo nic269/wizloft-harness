@@ -123,7 +123,16 @@ async function listExecutableFiles(packageRoot, manifest) {
     }
   }
   await walk(packageRoot);
-  assert.ok(executableFiles.includes('dist/index.js'), `${manifest.name} entrypoint is missing`);
+  const exportEntrypoints = Object.values(manifest.exports ?? {}).map(({ import: entrypoint }) =>
+    normalizePackagePath(manifest.name, entrypoint),
+  );
+  assert.notDeepEqual(exportEntrypoints, [], `${manifest.name} must declare an export`);
+  for (const entrypoint of exportEntrypoints) {
+    assert.ok(
+      executableFiles.includes(entrypoint),
+      `${manifest.name} export ${entrypoint} is missing`,
+    );
+  }
   for (const declaredBin of declaredBins) {
     assert.ok(
       executableFiles.includes(declaredBin),
@@ -193,8 +202,12 @@ async function inspectTarball(artifactsRoot, artifact, releaseVersion) {
     for (const relativePath of await listExecutableFiles(packageRoot, manifest)) {
       executableFiles.push(await inspectExecutable(packageRoot, artifact.name, relativePath));
     }
+    const primaryEntrypoint = normalizePackagePath(
+      manifest.name,
+      manifest.exports?.['.']?.import ?? Object.values(manifest.exports ?? {})[0]?.import,
+    );
     const entrypointSha256 = executableFiles.find(
-      ({ path: relativePath }) => relativePath === 'dist/index.js',
+      ({ path: relativePath }) => relativePath === primaryEntrypoint,
     ).sha256;
 
     return Object.freeze({
@@ -225,7 +238,10 @@ export async function inspectReleaseArtifacts(artifactsRoot) {
     PUBLIC_PACKAGES.map(({ name }) => name),
     'artifact manifest must preserve dependency-safe public package order',
   );
-  assert.equal(new Set(manifest.artifacts.map(({ filename }) => filename)).size, 14);
+  assert.equal(
+    new Set(manifest.artifacts.map(({ filename }) => filename)).size,
+    PUBLIC_PACKAGES.length,
+  );
 
   const artifacts = [];
   for (const artifact of manifest.artifacts) {

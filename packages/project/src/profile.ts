@@ -1,14 +1,14 @@
 import path from 'node:path';
 
-import { authorityPlugin } from '@wizloft/harness-authority';
-import { contextPlugin } from '@wizloft/harness-context';
-import { evidencePlugin } from '@wizloft/harness-evidence';
+import { authorityPlugin } from '@wizloft/harness/authority';
+import { contextPlugin } from '@wizloft/harness/context';
+import { evidencePlugin } from '@wizloft/harness/evidence';
+import { validationPlugin } from '@wizloft/harness/validation';
+import { fileEventsPlugin } from '@wizloft/harness-file-providers/events';
+import { fileMemoryPlugin } from '@wizloft/harness-file-providers/memory';
+import { memoryContextPlugin } from '@wizloft/harness-file-providers/memory-context';
+import { repositoryFilesPlugin } from '@wizloft/harness-file-providers/repository';
 import { defineProfile, type HarnessProfile } from '@wizloft/harness-kernel';
-import { fileEventsPlugin } from '@wizloft/harness-plugin-file-events';
-import { fileMemoryPlugin } from '@wizloft/harness-plugin-file-memory';
-import { memoryContextPlugin } from '@wizloft/harness-plugin-memory-context';
-import { repositoryFilesPlugin } from '@wizloft/harness-plugin-repository-files';
-import { validationPlugin } from '@wizloft/harness-validation';
 
 import { fail } from './errors.js';
 import { PROJECT_HEALTH_PLUGIN_NAME, projectHealthPlugin } from './health.js';

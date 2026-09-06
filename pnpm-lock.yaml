@@ -18,194 +18,46 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/authority:
-    dependencies:
-      '@wizloft/harness-kernel':
-        specifier: workspace:*
-        version: link:../kernel
-
-  packages/cli-adapter:
-    dependencies:
-      '@wizloft/harness-commands':
-        specifier: workspace:*
-        version: link:../commands
-
-  packages/commands:
+  packages/file-providers:
     dependencies:
       '@wizloft/harness':
         specifier: workspace:*
         version: link:../harness
-
-  packages/context:
-    dependencies:
-      '@wizloft/harness-kernel':
-        specifier: workspace:*
-        version: link:../kernel
-
-  packages/evidence:
-    dependencies:
       '@wizloft/harness-kernel':
         specifier: workspace:*
         version: link:../kernel
 
   packages/harness:
     dependencies:
-      '@wizloft/harness-authority':
-        specifier: workspace:*
-        version: link:../authority
-      '@wizloft/harness-context':
-        specifier: workspace:*
-        version: link:../context
-      '@wizloft/harness-evidence':
-        specifier: workspace:*
-        version: link:../evidence
       '@wizloft/harness-kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@wizloft/harness-memory':
-        specifier: workspace:*
-        version: link:../memory
-      '@wizloft/harness-validation':
-        specifier: workspace:*
-        version: link:../validation
 
   packages/kernel: {}
-
-  packages/memory:
-    dependencies:
-      '@wizloft/harness-kernel':
-        specifier: workspace:*
-        version: link:../kernel
 
   packages/project:
     dependencies:
       '@wizloft/harness':
         specifier: workspace:*
         version: link:../harness
-      '@wizloft/harness-authority':
+      '@wizloft/harness-file-providers':
         specifier: workspace:*
-        version: link:../authority
-      '@wizloft/harness-cli-adapter':
-        specifier: workspace:*
-        version: link:../cli-adapter
-      '@wizloft/harness-commands':
-        specifier: workspace:*
-        version: link:../commands
-      '@wizloft/harness-context':
-        specifier: workspace:*
-        version: link:../context
-      '@wizloft/harness-evidence':
-        specifier: workspace:*
-        version: link:../evidence
+        version: link:../file-providers
       '@wizloft/harness-kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@wizloft/harness-plugin-file-events':
-        specifier: workspace:*
-        version: link:../../plugins/file-events
-      '@wizloft/harness-plugin-file-memory':
-        specifier: workspace:*
-        version: link:../../plugins/file-memory
-      '@wizloft/harness-plugin-memory-context':
-        specifier: workspace:*
-        version: link:../../plugins/memory-context
-      '@wizloft/harness-plugin-repository-files':
-        specifier: workspace:*
-        version: link:../../plugins/repository-files
-      '@wizloft/harness-validation':
-        specifier: workspace:*
-        version: link:../validation
-
-  packages/validation:
-    dependencies:
-      '@wizloft/harness-evidence':
-        specifier: workspace:*
-        version: link:../evidence
-      '@wizloft/harness-kernel':
-        specifier: workspace:*
-        version: link:../kernel
-
-  plugins/file-events:
-    dependencies:
-      '@wizloft/harness-kernel':
-        specifier: workspace:*
-        version: link:../../packages/kernel
-
-  plugins/file-memory:
-    dependencies:
-      '@wizloft/harness-kernel':
-        specifier: workspace:*
-        version: link:../../packages/kernel
-      '@wizloft/harness-memory':
-        specifier: workspace:*
-        version: link:../../packages/memory
-
-  plugins/memory-context:
-    dependencies:
-      '@wizloft/harness-context':
-        specifier: workspace:*
-        version: link:../../packages/context
-      '@wizloft/harness-kernel':
-        specifier: workspace:*
-        version: link:../../packages/kernel
-      '@wizloft/harness-memory':
-        specifier: workspace:*
-        version: link:../../packages/memory
-    devDependencies:
-      '@wizloft/harness-authority':
-        specifier: workspace:*
-        version: link:../../packages/authority
-      '@wizloft/harness-plugin-file-memory':
-        specifier: workspace:*
-        version: link:../file-memory
-      '@wizloft/harness-plugin-repository-files':
-        specifier: workspace:*
-        version: link:../repository-files
-
-  plugins/repository-files:
-    dependencies:
-      '@wizloft/harness-authority':
-        specifier: workspace:*
-        version: link:../../packages/authority
-      '@wizloft/harness-context':
-        specifier: workspace:*
-        version: link:../../packages/context
-      '@wizloft/harness-kernel':
-        specifier: workspace:*
-        version: link:../../packages/kernel
 
   profiles/self-host:
     dependencies:
-      '@wizloft/harness-authority':
+      '@wizloft/harness':
         specifier: workspace:*
-        version: link:../../packages/authority
-      '@wizloft/harness-context':
+        version: link:../../packages/harness
+      '@wizloft/harness-file-providers':
         specifier: workspace:*
-        version: link:../../packages/context
-      '@wizloft/harness-evidence':
-        specifier: workspace:*
-        version: link:../../packages/evidence
+        version: link:../../packages/file-providers
       '@wizloft/harness-kernel':
         specifier: workspace:*
         version: link:../../packages/kernel
-      '@wizloft/harness-memory':
-        specifier: workspace:*
-        version: link:../../packages/memory
-      '@wizloft/harness-plugin-file-events':
-        specifier: workspace:*
-        version: link:../../plugins/file-events
-      '@wizloft/harness-plugin-file-memory':
-        specifier: workspace:*
-        version: link:../../plugins/file-memory
-      '@wizloft/harness-plugin-memory-context':
-        specifier: workspace:*
-        version: link:../../plugins/memory-context
-      '@wizloft/harness-plugin-repository-files':
-        specifier: workspace:*
-        version: link:../../plugins/repository-files
-      '@wizloft/harness-validation':
-        specifier: workspace:*
-        version: link:../../packages/validation
 
 packages:
 

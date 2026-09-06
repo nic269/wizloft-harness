@@ -1,6 +1,6 @@
 # 0012 Public Package Release Contract
 
-Status: Accepted
+Status: Accepted for releases through `0.1.2-alpha.3`; package topology superseded by [0014](0014-consolidated-public-package-topology.md)
 
 ## Context
 

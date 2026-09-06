@@ -3,9 +3,9 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { createHarness, type Harness, type HarnessProfile } from '@wizloft/harness';
-import { createHarnessCliAdapter } from '@wizloft/harness-cli-adapter';
-import { createCommandExecutor } from '@wizloft/harness-commands';
-import { readFileEvents } from '@wizloft/harness-plugin-file-events';
+import { createHarnessCliAdapter } from '@wizloft/harness/cli';
+import { createCommandExecutor } from '@wizloft/harness/commands';
+import { readFileEvents } from '@wizloft/harness-file-providers/events';
 
 import { fail } from './errors.js';
 import { assertLocalProjectRuntime } from './identity.js';

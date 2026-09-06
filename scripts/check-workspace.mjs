@@ -2,7 +2,7 @@ import { lstat, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const WORKSPACE_ROOTS = ['packages', 'plugins', 'profiles'];
+const WORKSPACE_ROOTS = ['packages', 'profiles'];
 const REQUIRED_SCRIPTS = ['build', 'test', 'typecheck'];
 const WIZLOFT_CLI_EXECUTABLES = new Set(['wizanh', 'wizharness', 'wizloft', 'wizshopify']);
 

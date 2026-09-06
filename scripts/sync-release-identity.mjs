@@ -42,7 +42,18 @@ for (const entry of PUBLIC_PACKAGES) {
   manifest.license = 'MIT';
   manifest.engines = { node: '>=22.13.0' };
   manifest.files = [...RELEASE_FILES];
-  manifest.types = './dist/index.d.ts';
+  manifest.exports = Object.fromEntries(
+    Object.entries(entry.exports).map(([subpath, basename]) => [
+      subpath,
+      {
+        types: `./dist/${basename}.d.ts`,
+        import: `./dist/${basename}.js`,
+      },
+    ]),
+  );
+  const rootExport = entry.exports['.'];
+  if (rootExport === undefined) delete manifest.types;
+  else manifest.types = `./dist/${rootExport}.d.ts`;
   manifest.repository = {
     type: 'git',
     url: RELEASE_REPOSITORY_URL,
@@ -54,12 +65,12 @@ for (const entry of PUBLIC_PACKAGES) {
   await writeJson(manifestPath, manifest);
   await writeFile(path.join(packageRoot, 'LICENSE'), rootLicense);
 
-  if (entry.pluginSource !== undefined) {
-    const sourcePath = path.join(repositoryRoot, entry.pluginSource);
+  for (const pluginSource of entry.pluginSources) {
+    const sourcePath = path.join(repositoryRoot, pluginSource);
     const source = await readFile(sourcePath, 'utf8');
     const matches = [...source.matchAll(/\bversion:\s*'([^']+)'/gu)];
     if (matches.length !== 1) {
-      throw new Error(`${entry.pluginSource} must contain exactly one runtime plugin version`);
+      throw new Error(`${pluginSource} must contain exactly one runtime plugin version`);
     }
     await writeFile(
       sourcePath,
