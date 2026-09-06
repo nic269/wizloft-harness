@@ -1,6 +1,6 @@
 # Stable 0.2.0 Release
 
-Status: Active; stable graph promoted and first-party consumers adopted, legacy retirement pending.
+Status: Complete; stable graph published and promoted, consumers adopted, and legacy names retired.
 
 ## Outcome
 
@@ -149,8 +149,8 @@ All four retained names now map `latest`, `next`, and `candidate` to exact `0.2.
 ## Gate S7 — Consumer adoption and retirement
 
 - [x] Update and verify first-party consumers using exact `0.2.0` before unqualified installs.
-- [ ] Execute `docs/plans/active/0006-legacy-package-retirement.md` only after adoption succeeds.
-- [ ] Record final tag, packet, provenance, consumer, and retirement evidence in current status.
+- [x] Execute `docs/plans/active/0006-legacy-package-retirement.md` only after adoption succeeds.
+- [x] Record final tag, packet, provenance, consumer, and retirement evidence in current status.
 
 ## Stop conditions
 

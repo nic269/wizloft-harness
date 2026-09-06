@@ -10,16 +10,17 @@ Snapshot date: **2026-09-06**
 | Alpha.3 source / tree | `9ed8da5892878f4cff9ac5a33b98b406eda5ce2a` / `f9446386633e56bc5a0e2952f591305eac2c29b6` |
 | Frozen artifact manifest | SHA-256 `f19e07e15cf4c0e6ed3dffd7576476aad9d02806b6a55688ededa1fd89b53f53` |
 | Git tag | annotated `harness-v0.1.2-alpha.3` object `b9da397199b93d088e7c29c7a56151fb8a974fa0`, peeled to the source commit and remote-pushed |
-| Public prerelease graph | fourteen packages at lockstep `0.1.2-alpha.3` on `candidate` and `next`; exact registry bytes, npm signatures, and SLSA provenance independently verified |
+| Recovery prerelease artifacts | fourteen package names retain immutable exact `0.1.2-alpha.3` artifacts; moving prerelease tags were removed from the eleven retired names after exact-version deprecation |
 | Stable `0.2.0` graph | all four exact versions published; `@wizloft/harness-file-providers` was interactively bootstrapped, and the other three were OIDC-published by successful run `34020713589`; exact bytes, npm signatures, SLSA provenance where applicable, and a credential-free registry consumer were verified |
 | Stable identities | source tag `harness-v0.2.0` → `489413f02f6dac5b7371faf54d23346837e954dd`; resume tag `harness-v0.2.0-resume.1` → `bb4c763d987e4050c5194dd807246cb694e3ac76`; retained workflow manifest SHA-256 `c351ccd700c6908396f1368c496d2bb952ac2c4b8f93701c657d32436382e38f` |
 | `latest` / `next` | all four retained package names map `latest`, `next`, and `candidate` coherently to exact `0.2.0`; the isolated npm session was logged out, removed, and revoked after verification |
 | Failed release identities | alpha.1 is immutable failed exact-byte history; protected alpha.2 remains unpublished and must never be dispatched |
 | 2026-09-02 npm incident recovery | five malicious `0.1.1-alpha.3` artifacts remain deprecated; zero tags resolve to them; broad token revoked; all fourteen trusted publishers active; all fourteen package access policies disallow bypass-2FA tokens |
 | First-party adoption | Boilerplate exact `0.2.0` merged in PR #2 at `3e5208e`; CLI repository onboarding and product imports migrated to the consolidated graph in PR #1 at `74a1f85`; both passed native Harness runtime proof |
+| Legacy retirement | complete: 55 non-malicious exact versions deprecated with replacement imports; three malicious `0.1.1-alpha.3` OSV warnings preserved byte-for-byte; all 25 proposed moving tags removed; each retired name retains only npm's unavoidable deprecated `latest` target |
 | Phase 6 P2 | A4-10 through A4-13 independently accepted. CLI `c5e011383fd6b056d271517580b8cfd7d59bb7c3` is local/unpushed; Meldmark `3f4ab1a6b29b90e82112ffbf64a853183cb0de30` is local with no remote |
 | OMP Stage D | A4-14 temp-only no-remote fixture passed; `.omp/` ignored/local-only; committed-profile discoverability open |
-| Active plans | obtain separate owner authorization for the frozen 55-version deprecation and 25-tag removal operation, execute legacy retirement without changing three OSV warnings, then record closure |
+| Active release work | stable `0.2.0` release and legacy package retirement are complete; historical plans remain repository evidence |
 
 ## Current operating objective
 
@@ -39,9 +40,15 @@ Wizloft CLI migrated both repository onboarding and its product integration to t
 three-package dependency graph; `npm run verify` passed 96 tests with two expected skips, followed by
 live inspect, Validation, and zero-operation re-init.
 
-Legacy retirement is now blocked only on its separate owner authorization. The current registry
-preview covers 55 non-malicious exact-version deprecations and 25 moving-tag removals while
-preserving three OSV-specific malicious-version warnings byte-for-byte.
+Legacy retirement is complete. Registry read-back at `2026-09-06T09:35:42.243Z` confirmed all 55
+non-malicious exact-version deprecations, preserved the three OSV-specific malicious-version
+warnings byte-for-byte, and confirmed removal of all 25 proposed `candidate`, `next`, `alpha`, and
+`beta` tags. Each retired name retains only npm's unavoidable `latest` mapping to deprecated
+`0.1.0-alpha.2`; no retained or retired tag resolves to malicious `0.1.1-alpha.3`. A fresh
+credential-free install imported all fourteen public modules from the exact stable `0.2.0` graph. A
+separately initialized exact `@wizloft/harness-project@0.2.0` repository passed inspect and
+`@wizloft/harness-project:runtime-health` Validation. The isolated retirement npm session was then
+logged out and removed.
 
 The npm supply-chain recovery is closed. Do not republish, retag, unpublish, regenerate the frozen
 packet, move `latest`, or use the retired alpha.2 tag without a new exact release packet and
